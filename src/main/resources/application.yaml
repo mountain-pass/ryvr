@@ -1,0 +1,40 @@
+server:
+    port: 8443
+    ssl:
+        key-store: build/keystore.jks
+        key-store-password: secret
+        key-password: secret
+        key-alias: selfsigned
+    servlet-path: /system
+
+spring:
+  application:
+    name: ryvr
+  jersey:
+    application-path: /
+  jackson:
+    date-format: com.fasterxml.jackson.databind.util.ISO8601DateFormat
+    default-property-inclusion: NON_ABSENT
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+      INDENT_OUTPUT: true
+       
+    
+security:
+  user:
+    name: 'user'
+    password: 'password'
+    
+    
+
+logging:
+    level.org.apache.http.wire: 'DEBUG'
+    level.au.com.windyroad.servicegateway: 'DEBUG'
+    
+server.tomcat.access-log-enabled: true
+      
+      
+au.com.windyroad.service-gateway:
+    ssl:
+        hostname: localhost
+      

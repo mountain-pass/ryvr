@@ -1,0 +1,9 @@
+controllerPackage: au.com.mountainpass.inflector.springboot.controllers
+controllerClass: MainRyvrController
+modelPackage: au.com.mountainpass.inflector.springboot.models
+swaggerUrl: src/main/swagger/swagger.yaml
+
+entityProcessors:
+  - json
+  - yaml
+#  - xml

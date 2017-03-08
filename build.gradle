@@ -1,0 +1,135 @@
+buildscript {
+	ext {
+		springBootVersion = '1.4.2.RELEASE'
+	}
+	repositories {
+        jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath('gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:1.4.17')
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'announce'
+
+
+group = 'au.com.mountainpass'
+project.version = '1.0.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+
+
+repositories {
+    mavenLocal()
+    jcenter()
+}
+
+springBoot  {
+    buildInfo()
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+//task javadocJar(type: Jar, dependsOn: javadoc) {
+//    classifier = 'javadoc'
+//    from javadoc.destinationDir
+//}
+
+artifacts {
+    archives sourcesJar
+//    archives javadocJar
+}
+
+dependencies {
+	compile('io.swagger:swagger-inflector:1.0.10')
+    compile('com.github.javafaker:javafaker:0.11') {
+        exclude group: 'com.github.bmoliveira'
+    }
+    compile('com.fasterxml.jackson.core:jackson-annotations')
+    compile('com.fasterxml.jackson.core:jackson-databind')
+    compile('com.fasterxml.jackson.datatype:jackson-datatype-jdk8')
+    compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+	compile('org.springframework.boot:spring-boot-starter-actuator')
+	compile('org.springframework.boot:spring-boot-starter-jersey')
+    compile('org.springframework.boot:spring-boot-starter-web')
+	compile group: 'org.webjars', name: 'swagger-ui', version: '2.2.10'
+
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.1'
+    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.1'
+    
+    compile 'org.springframework.hateoas:spring-hateoas'
+    compile 'org.springframework.data:spring-data-commons'
+    compile('org.apache.httpcomponents:httpasyncclient')
+    
+    
+    testCompile group: 'info.cukes', name: 'cucumber-java', version:'1.2.2'
+    testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.2'
+    testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.2'
+    testCompile(group: 'org.seleniumhq.selenium', name: 'selenium-java', version:'2.44.0') { exclude(module: 'commons-logging') }
+    testCompile group: 'org.seleniumhq.selenium', name: 'selenium-firefox-driver', version:'2.44.0'
+
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+    testCompile 'org.bouncycastle:bcpkix-jdk15on:1.53'
+    
+}
+
+
+test {
+    exclude '**'
+}
+
+
+task unitTest(type: Test) {
+    testClassesDir = sourceSets.test.output.classesDir
+    classpath = sourceSets.test.runtimeClasspath
+    ext.outputDir = "${buildDir}/test-results-ut"
+    outputs.dir file(outputDir)
+    include 'RyvrUnitTests.class'
+    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+}
+
+
+task systemTest(type: Test, dependsOn : unitTest) {
+    testClassesDir = sourceSets.test.output.classesDir
+    classpath = sourceSets.test.runtimeClasspath
+    ext.outputDir = "${buildDir}/test-results-st"
+    outputs.dir file(outputDir)
+    include 'RyvrSystemTests.class'
+    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+}
+
+//task uiTest(type: Test, dependsOn : integrationTest) {
+//    testClassesDir = sourceSets.test.output.classesDir
+//    classpath = sourceSets.test.runtimeClasspath
+//    ext.outputDir = "${buildDir}/test-results-ui"
+//    outputs.dir file(outputDir)
+//    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+//}
+
+test.dependsOn {
+    tasks.findAll { task -> task.name.endsWith('Test') }
+}
+
+gradle.taskGraph.afterTask { Task task, TaskState state ->
+    if (state.failure) {
+        announce.announce("':${task.name}' FAILED", "local")
+    }
+    else {
+        announce.announce("':${task.name}' succeeded", "local")
+    }
+}
+
