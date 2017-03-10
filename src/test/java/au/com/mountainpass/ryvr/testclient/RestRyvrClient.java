@@ -1,18 +1,18 @@
-package au.com.mountainpass.ryvr.client;
+package au.com.mountainpass.ryvr.testclient;
 
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
-
-import javax.ws.rs.core.MediaType;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.AsyncRestTemplate;
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
+import au.com.mountainpass.ryvr.testclient.model.JavaSwaggerResponse;
+import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 import io.swagger.parser.SwaggerParser;
 
-public class RestRyvrClient implements RyvrClient {
+public class RestRyvrClient implements RyvrTestClient {
 
     @Autowired
     AsyncRestTemplate restTemplate;
@@ -23,14 +23,14 @@ public class RestRyvrClient implements RyvrClient {
     SwaggerParser swaggerParser = new SwaggerParser();
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getApiDocs(MediaType resource) {
+    public CompletableFuture<SwaggerResponse> getApiDocs() {
         URI url = config.getBaseUri().resolve("/api-docs");
 
         CompletableFuture<ResponseEntity<String>> rval = FutureConverter
                 .convert(restTemplate.getForEntity(url, String.class));
         return rval.thenApply(response -> {
-            return new ResponseEntity<>(swaggerParser.parse(response.getBody()),
-                    response.getHeaders(), response.getStatusCode());
+            return new JavaSwaggerResponse(
+                    swaggerParser.parse(response.getBody()));
         });
     }
 

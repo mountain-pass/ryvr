@@ -76,12 +76,14 @@ dependencies {
     compile('org.apache.httpcomponents:httpasyncclient')
     
     
-    testCompile group: 'info.cukes', name: 'cucumber-java', version:'1.2.2'
-    testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.2'
-    testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.2'
-    testCompile(group: 'org.seleniumhq.selenium', name: 'selenium-java', version:'2.44.0') { exclude(module: 'commons-logging') }
-    testCompile group: 'org.seleniumhq.selenium', name: 'selenium-firefox-driver', version:'2.44.0'
+    testCompile group: 'info.cukes', name: 'cucumber-java', version:'1.2.5'
+    testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'
+    testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
+    testCompile ('org.seleniumhq.selenium:selenium-java:3.0.1') { exclude(module: 'commons-logging') }
+    testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.0.1'
+    
 
+    
 	testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile 'org.bouncycastle:bcpkix-jdk15on:1.53'
     
@@ -112,16 +114,17 @@ task systemTest(type: Test, dependsOn : unitTest) {
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
 }
 
-//task uiTest(type: Test, dependsOn : integrationTest) {
-//    testClassesDir = sourceSets.test.output.classesDir
-//    classpath = sourceSets.test.runtimeClasspath
-//    ext.outputDir = "${buildDir}/test-results-ui"
-//    outputs.dir file(outputDir)
-//    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
-//}
+task uiTest(type: Test, dependsOn : systemTest) {
+    testClassesDir = sourceSets.test.output.classesDir
+    classpath = sourceSets.test.runtimeClasspath
+    ext.outputDir = "${buildDir}/test-results-ui"
+    outputs.dir file(outputDir)
+    include 'RyvrUiTests.class'
+    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+}
 
 test.dependsOn {
-    tasks.findAll { task -> task.name.endsWith('Test') }
+    tasks.findAll { task ->  task.name.endsWith('Test') }
 }
 
 gradle.taskGraph.afterTask { Task task, TaskState state ->

@@ -9,7 +9,7 @@ import cucumber.api.CucumberOptions;
 @CucumberOptions(plugin = { "pretty" }, features = {
         "src/test/resources/features/" }, strict = false, glue = {
                 "au.com.mountainpass.ryvr" }, tags = {})
-@ActiveProfiles("unitTest")
-public class RyvrUnitTests {
+@ActiveProfiles("uiTest")
+public class RyvrUiTests {
 
 }

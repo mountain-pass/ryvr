@@ -30,7 +30,6 @@ import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletCon
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.client.AsyncClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsAsyncClientHttpRequestFactory;
@@ -46,9 +45,10 @@ import au.com.mountainpass.TestKeyStoreManager;
 import au.com.mountainpass.WebDriverFactory;
 import au.com.mountainpass.inflector.springboot.InflectorApplication;
 import au.com.mountainpass.inflector.springboot.config.InflectorConfig;
-import au.com.mountainpass.ryvr.client.JavaRyvrClient;
-import au.com.mountainpass.ryvr.client.RestRyvrClient;
-import au.com.mountainpass.ryvr.client.RyvrClient;
+import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
+import au.com.mountainpass.ryvr.testclient.JavaRyvrClient;
+import au.com.mountainpass.ryvr.testclient.RestRyvrClient;
+import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 
 @Configuration
 public class TestConfiguration implements
@@ -58,14 +58,20 @@ public class TestConfiguration implements
     InflectorApplication infelctorApplication;
 
     @Bean
-    @Primary
     @Profile(value = { "systemTest" })
-    RyvrClient restClient() {
+    RyvrTestClient restClient() {
         return new RestRyvrClient();
     }
 
     @Bean
-    RyvrClient javaClient() {
+    @Profile(value = { "uiTest" })
+    RyvrTestClient uiClient() {
+        return new HtmlRyvrClient();
+    }
+
+    @Bean
+    @Profile(value = { "unitTest" })
+    RyvrTestClient javaClient() {
         return new JavaRyvrClient();
     }
 
@@ -283,11 +289,11 @@ public class TestConfiguration implements
         return asyncRestTemplate;
     }
 
-    @Autowired
+    @Autowired(required = false)
     private WebDriverFactory webDriverFactory;
 
     @Bean(destroyMethod = "quit")
-    @Profile("ui-integration")
+    @Profile("uiTest")
     public WebDriver webDriver()
             throws ClassNotFoundException, NoSuchMethodException,
             SecurityException, InstantiationException, IllegalAccessException,

@@ -21,10 +21,10 @@ import org.slf4j.LoggerFactory;
 
 public class TestKeyStoreManager {
 
-    public TestKeyStoreManager(String keyStore,
-            String keyStorePassword, String keyPassword, String keyAlias,
-            String sslHostname, String trustStoreFile,
-            String trustStorePassword, String trustStoreType) throws Exception {
+    public TestKeyStoreManager(String keyStore, String keyStorePassword,
+            String keyPassword, String keyAlias, String sslHostname,
+            String trustStoreFile, String trustStorePassword,
+            String trustStoreType) throws Exception {
         createKeyStore(keyStore, keyStorePassword, keyPassword, keyAlias,
                 sslHostname, trustStoreFile, trustStorePassword,
                 trustStoreType);
@@ -91,6 +91,7 @@ public class TestKeyStoreManager {
         if (trustStoreFile != null) {
             KeyStore ks = KeyStore.getInstance(trustStoreType);
             File trustFile = new File(trustStoreFile);
+            trustFile.getParentFile().mkdirs();
             ks.load(null, null);
             ks.setCertificateEntry(keyAlias, cert);
             FileOutputStream fos = new FileOutputStream(trustFile);

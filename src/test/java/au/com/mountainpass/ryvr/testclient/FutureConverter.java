@@ -1,4 +1,4 @@
-package au.com.mountainpass.ryvr.client;
+package au.com.mountainpass.ryvr.testclient;
 
 import java.util.concurrent.CompletableFuture;
 
