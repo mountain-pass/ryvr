@@ -10,10 +10,14 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import au.com.mountainpass.ryvr.SwaggerFetcher;
+import au.com.mountainpass.ryvr.model.Root;
 import io.swagger.config.FilterFactory;
 import io.swagger.core.filter.SwaggerSpecFilter;
 import io.swagger.inflector.models.RequestContext;
@@ -39,11 +43,13 @@ public class JsonController implements RyvrContentController {
                 Map<String, String> cookies = new HashMap<String, String>();
                 MultivaluedMap<String, String> headers = request.getHeaders();
 
-                return ResponseEntity.ok(new VendorSpecFilter().filter(swagger,
-                        filter, null, cookies, headers));
+                swagger = new VendorSpecFilter().filter(swagger, filter, null,
+                        cookies, headers);
             }
-
-            return ResponseEntity.ok(swagger);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .contentType(
+                            org.springframework.http.MediaType.APPLICATION_JSON)
+                    .body(swagger);
         });
     }
 
@@ -62,6 +68,27 @@ public class JsonController implements RyvrContentController {
     public CompletableFuture<ResponseEntity<?>> getRvyrs(RequestContext request,
             String group) {
         throw new NotImplementedException();
+    }
+
+    @Override
+    public CompletableFuture<ResponseEntity<?>> getRoot(
+            RequestContext request) {
+        return CompletableFuture.supplyAsync(() -> {
+            Root root = new Root();
+            final ObjectMapper mapper = new ObjectMapper();
+
+            try {
+                final String json = mapper.writeValueAsString(root);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .contentType(org.springframework.http.MediaType
+                            .valueOf("application/hal+json"))
+                    .body(root);
+        });
     }
 
 }

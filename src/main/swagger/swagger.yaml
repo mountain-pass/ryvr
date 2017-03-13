@@ -7,8 +7,7 @@ basePath: /
 schemes:
   - https
 produces:
-  - application/json
-  - application/yaml
+  - application/hal+json
   - text/html
 tags:
   - name: system
@@ -16,6 +15,36 @@ tags:
   - name: ryvr
     description: Data feed services
 paths:
+  /:
+    get:
+      description: THe server root. Provides access to other operations
+      operationId: getRoot
+      responses:
+        '200':
+          description: A page of ryvrs
+          schema:
+              $ref: '#/definitions/root'
+          headers:
+            ETag:
+              description: |
+                The entity tag for the page.
+
+                The ID of the most recent record in the page is used as the ETag as this is quick to generate and will change as new records are added to the page. The service implementation version is also included in the ETag as changes in the service version may result in different page output as well.
+
+              type: string
+              pattern: '([wW]/)?"([^"]|\\")*"'
+            X-Request-Id:
+              type: string
+              pattern: '^[0-9+\/=\-]{20,200}$'
+              description: "Logging correlation ID for this request"
+            Vary:
+              type: string
+              description: |
+                The Vary field value indicates the set of request-header fields that fully determines, while the response is fresh, whether a cache is permitted to use the response to reply to a subsequent request without revalidation. For uncacheable or stale responses, the Vary field value advises the user agent about the criteria that were used to select the representation.
+            Cache-Control:
+              description: |
+                Caching directives for the response
+              type: string
   /ryvrs:
     get:
       tags:
@@ -91,6 +120,9 @@ paths:
           description: "the name of the subset of the API"
           type: string
           required: false
+      produces:
+        - application/json
+        - text/html
       responses:
         '200':
           description: OK
@@ -296,6 +328,9 @@ definitions:
     title: "HAL Embedded Resource"
     description: "An embedded HAL resource"
     type: "object"
+  root:
+    allOf:
+      - $ref: "#/definitions/page"
 parameters:
   X-Request-Id:
     in: header

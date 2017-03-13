@@ -41,4 +41,10 @@ public class YamlController implements RyvrContentController {
         throw new NotImplementedException();
     }
 
+    @Override
+    public CompletableFuture<ResponseEntity<?>> getRoot(
+            RequestContext request) {
+        throw new NotImplementedException();
+    }
+
 }

@@ -52,4 +52,5 @@ public class RyvrConfiguration implements
             EmbeddedServletContainerInitializedEvent event) {
         this.port = event.getEmbeddedServletContainer().getPort();
     }
+
 }

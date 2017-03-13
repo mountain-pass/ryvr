@@ -12,6 +12,7 @@ import org.springframework.test.context.ContextConfiguration;
 import au.com.mountainpass.inflector.springboot.InflectorApplication;
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
+import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -27,6 +28,7 @@ public class StepDefs {
     @Autowired
     private RyvrTestClient client;
     private CompletableFuture<SwaggerResponse> swaggerResponseFuture;
+    private CompletableFuture<RootResponse> rootResponseFuture;
 
     @When("^a request is made for the API Docs$")
     public void a_request_is_made_for_the_API_Docs() throws Throwable {
@@ -37,7 +39,23 @@ public class StepDefs {
     public void the_API_Docs_will_contain_an_operation_for_getting_the_API_Docs()
             throws Throwable {
         swaggerResponseFuture.get().assertHasGetApiDocsOperation();
+    }
 
+    @When("^a request is made to the server's base URL$")
+    public void a_request_is_made_to_the_server_s_base_URL() throws Throwable {
+        rootResponseFuture = client.getRoot();
+    }
+
+    @Then("^the root entity will contain a link to the api-docs$")
+    public void the_root_entity_will_contain_a_link_to_the_api_docs()
+            throws Throwable {
+        rootResponseFuture.get().assertHasApiDocsLink();
+    }
+
+    @Then("^the root entity will contain a link to the ryvrs$")
+    public void the_root_entity_will_contain_a_link_to_the_ryvrs()
+            throws Throwable {
+        rootResponseFuture.get().assertHasRyvrsLink();
     }
 
 }

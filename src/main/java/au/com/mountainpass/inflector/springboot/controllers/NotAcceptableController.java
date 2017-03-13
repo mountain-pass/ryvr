@@ -15,9 +15,7 @@ public class NotAcceptableController implements RyvrContentController {
     @Override
     public CompletableFuture<ResponseEntity<?>> getApiDocs(
             RequestContext request, String group) {
-        return CompletableFuture.supplyAsync(() -> {
-            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
-        });
+        return notAcceptable();
     }
 
     @Override
@@ -33,9 +31,19 @@ public class NotAcceptableController implements RyvrContentController {
     @Override
     public CompletableFuture<ResponseEntity<?>> getRvyrs(RequestContext request,
             String group) {
+        return notAcceptable();
+    }
+
+    private CompletableFuture<ResponseEntity<?>> notAcceptable() {
         return CompletableFuture.supplyAsync(() -> {
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
         });
+    }
+
+    @Override
+    public CompletableFuture<ResponseEntity<?>> getRoot(
+            RequestContext request) {
+        return notAcceptable();
     }
 
 }

@@ -1,5 +1,7 @@
 package au.com.mountainpass.inflector.springboot.controllers;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 
@@ -7,6 +9,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.core.Ordered;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -41,6 +44,21 @@ public class HtmlController implements RyvrContentController {
     public CompletableFuture<ResponseEntity<?>> getRvyrs(RequestContext request,
             String group) {
         throw new NotImplementedException();
+    }
+
+    @Override
+    public CompletableFuture<ResponseEntity<?>> getRoot(
+            RequestContext request) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                ClassPathResource index = new ClassPathResource(
+                        "static/index.html");
+                InputStream indexStream = index.getInputStream();
+                return ResponseEntity.ok(indexStream);
+            } catch (IOException e) {
+                throw new NotImplementedException();
+            }
+        });
     }
 
 }

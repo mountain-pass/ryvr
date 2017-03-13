@@ -3,11 +3,16 @@ package au.com.mountainpass.ryvr.testclient;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
+import au.com.mountainpass.ryvr.testclient.model.HtmlRootResponse;
 import au.com.mountainpass.ryvr.testclient.model.HtmlSwaggerResponse;
+import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 
 public class HtmlRyvrClient implements RyvrTestClient {
@@ -25,6 +30,26 @@ public class HtmlRyvrClient implements RyvrTestClient {
             webDriver.get(url.toString());
             return new HtmlSwaggerResponse(webDriver);
         });
+    }
+
+    @Override
+    public CompletableFuture<RootResponse> getRoot() {
+        return CompletableFuture.supplyAsync(() -> {
+            URI url = config.getBaseUri().resolve("/");
+            webDriver.get(url.toString());
+            return new HtmlRootResponse(webDriver);
+        });
+    }
+
+    public static void waitTillLoaded(WebDriver webDriver,
+            long timeoutInSeconds) {
+        waitTillLoaded(webDriver, timeoutInSeconds, By.id("loaded"));
+    }
+
+    public static void waitTillLoaded(WebDriver webDriver,
+            long timeoutInSeconds, By by) {
+        (new WebDriverWait(webDriver, timeoutInSeconds))
+                .until(ExpectedConditions.visibilityOfElementLocated(by));
     }
 
 }

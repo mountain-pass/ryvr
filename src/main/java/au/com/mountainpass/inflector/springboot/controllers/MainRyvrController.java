@@ -29,7 +29,7 @@ public class MainRyvrController {
 
     public ResponseContext getApiDocs(
             io.swagger.inflector.models.RequestContext request, String group)
-                    throws InterruptedException, ExecutionException {
+            throws InterruptedException, ExecutionException {
         CompletableFuture<ResponseEntity<?>> result = router.getApiDocs(request,
                 group);
         return toResponseContext(result);
@@ -39,9 +39,15 @@ public class MainRyvrController {
         throw new NotImplementedException();
     }
 
+    public ResponseContext getRoot(RequestContext request)
+            throws InterruptedException, ExecutionException {
+        CompletableFuture<ResponseEntity<?>> result = router.getRoot(request);
+        return toResponseContext(result);
+    }
+
     private ResponseContext toResponseContext(
             CompletableFuture<ResponseEntity<?>> result)
-                    throws InterruptedException, ExecutionException {
+            throws InterruptedException, ExecutionException {
         ResponseEntity<?> response = result.get();
         ResponseContext rval = new ResponseContext();
         rval.setStatus(response.getStatusCodeValue());
