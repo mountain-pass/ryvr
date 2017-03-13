@@ -25,9 +25,8 @@ app.config(function($locationProvider, $httpProvider) {
                 angular.element(document.getElementById('controller')).scope().controller.loading = true;
                 // app.controller.loading = true;
 //                config.headers.get['Accept'] = 
-                console.log('request', new Date());
-                console.log(config);
                 config.headers['Accept']='application/hal+json;q=1,application/json;q=0.8,*/*;q=0.1';
+                console.log('request', new Date());
                 console.log(config);
                 return config;
             },
@@ -84,6 +83,7 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
     controller.lastForm = null;
 
     controller.processNavClick = function(event) {
+        return false;
         // console.log("processNavClick");
         // console.log(event);
         // $http.get(event.target.href, {

@@ -65,8 +65,8 @@ public class JsonController implements RyvrContentController {
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRvyrs(RequestContext request,
-            String group) {
+    public CompletableFuture<ResponseEntity<?>> getRvyrs(
+            RequestContext request) {
         throw new NotImplementedException();
     }
 

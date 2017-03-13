@@ -12,7 +12,7 @@ public interface RyvrController {
             io.swagger.inflector.models.RequestContext request, String group);
 
     public CompletableFuture<ResponseEntity<?>> getRvyrs(
-            io.swagger.inflector.models.RequestContext request, String group);
+            io.swagger.inflector.models.RequestContext request);
 
     public CompletableFuture<ResponseEntity<?>> getRoot(RequestContext request);
 

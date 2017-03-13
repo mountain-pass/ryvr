@@ -29,8 +29,8 @@ public class NotAcceptableController implements RyvrContentController {
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRvyrs(RequestContext request,
-            String group) {
+    public CompletableFuture<ResponseEntity<?>> getRvyrs(
+            RequestContext request) {
         return notAcceptable();
     }
 
