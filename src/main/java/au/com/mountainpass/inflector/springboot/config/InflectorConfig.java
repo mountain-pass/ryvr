@@ -16,14 +16,10 @@
 package au.com.mountainpass.inflector.springboot.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
-import au.com.mountainpass.ryvr.client.HalEntityProcessor;
 import io.swagger.inflector.SwaggerInflector;
 import io.swagger.inflector.config.Configuration;
-import io.swagger.inflector.processors.EntityProcessor;
-import io.swagger.inflector.processors.EntityProcessorFactory;
 
 /**
  *
@@ -34,16 +30,6 @@ public class InflectorConfig extends SwaggerInflector {
     @Autowired
     public InflectorConfig(Configuration configuration) {
         super(configuration);
-    }
-
-    @Bean
-    EntityProcessor myProcessor() {
-        EntityProcessor myProcessor = new HalEntityProcessor(); // implements
-                                                                // EntityProcessor
-
-        EntityProcessorFactory.addProcessor(HalEntityProcessor.class,
-                HalEntityProcessor.APPLICATION_HAL_TYPE);
-        return myProcessor;
     }
 
 }
