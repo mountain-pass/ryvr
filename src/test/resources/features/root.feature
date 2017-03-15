@@ -6,5 +6,7 @@ Feature: Root
 Scenario: Get Root
     When a request is made to the server's base URL
     Then the root entity will contain a link to the api-docs
-    Then the root entity will contain a link to the ryvrs
+    And the root entity will contain a link to the ryvrs
+    And the root entity will have an application name of "ryvr"
+    
 

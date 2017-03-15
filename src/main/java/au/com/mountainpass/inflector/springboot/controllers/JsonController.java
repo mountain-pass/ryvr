@@ -9,6 +9,7 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +30,12 @@ public class JsonController implements RyvrContentController {
 
     private static final MediaType APPLICATION_YAML_TYPE = new MediaType(
             "application", "yaml");
+
     @Autowired
-    SwaggerFetcher swaggerFetcher;
+    private SwaggerFetcher swaggerFetcher;
+
+    @Value("${spring.application.name}")
+    private String applicationName;
 
     @Override
     public CompletableFuture<ResponseEntity<?>> getApiDocs(
@@ -74,7 +79,7 @@ public class JsonController implements RyvrContentController {
     public CompletableFuture<ResponseEntity<?>> getRoot(
             RequestContext request) {
         return CompletableFuture.supplyAsync(() -> {
-            Root root = new Root();
+            Root root = new Root(applicationName);
             final ObjectMapper mapper = new ObjectMapper();
 
             try {

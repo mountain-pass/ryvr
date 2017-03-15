@@ -43,4 +43,13 @@ public class HtmlRootResponse implements RootResponse {
         assertThat(linkTitles, hasItem("Ryvrs"));
     }
 
+    @Override
+    public void assertHasTitle(String title) {
+        HtmlRyvrClient.waitTillLoaded(webDriver, 5);
+        WebElement menuBarTitle = webDriver
+                .findElement(By.className("navbar-header"))
+                .findElement(By.className("title"));
+        assertThat(menuBarTitle.getText(), equalTo("ryvr"));
+    }
+
 }

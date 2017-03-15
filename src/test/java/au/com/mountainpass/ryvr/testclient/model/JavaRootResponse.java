@@ -33,4 +33,9 @@ public class JavaRootResponse implements RootResponse {
         assertHasLink("Ryvrs");
     }
 
+    @Override
+    public void assertHasTitle(String title) {
+        assertThat(root.getTitle(), equalTo(title));
+    }
+
 }

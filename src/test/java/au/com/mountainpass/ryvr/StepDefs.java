@@ -58,4 +58,10 @@ public class StepDefs {
         rootResponseFuture.get().assertHasRyvrsLink();
     }
 
+    @Then("^the root entity will have an application name of \"([^\"]*)\"$")
+    public void the_root_entity_will_have_an_application_name_of(
+            String applicationName) throws Throwable {
+        rootResponseFuture.get().assertHasTitle(applicationName);
+    }
+
 }

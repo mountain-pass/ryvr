@@ -6,4 +6,6 @@ public interface RootResponse {
 
     void assertHasRyvrsLink();
 
+    void assertHasTitle(String title);
+
 }
