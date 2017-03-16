@@ -9,10 +9,11 @@ import io.swagger.inflector.models.RequestContext;
 public interface RyvrController {
 
     public CompletableFuture<ResponseEntity<?>> getApiDocs(
-            io.swagger.inflector.models.RequestContext request, String group);
+            RequestContext request, String group);
 
-    public CompletableFuture<ResponseEntity<?>> getRvyrs(
-            io.swagger.inflector.models.RequestContext request);
+    public CompletableFuture<ResponseEntity<?>> getRvyrsCollection(
+            RequestContext request, Long page, String xRequestId, String accept,
+            String cacheControl);
 
     public CompletableFuture<ResponseEntity<?>> getRoot(RequestContext request);
 

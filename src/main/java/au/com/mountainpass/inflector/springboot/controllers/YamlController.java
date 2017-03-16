@@ -36,8 +36,9 @@ public class YamlController implements RyvrContentController {
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRvyrs(
-            RequestContext request) {
+    public CompletableFuture<ResponseEntity<?>> getRvyrsCollection(
+            RequestContext request, Long page, String xRequestId, String accept,
+            String cacheControl) {
         throw new NotImplementedException();
     }
 

@@ -41,14 +41,19 @@ public class HtmlController implements RyvrContentController {
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRvyrs(
-            RequestContext request) {
-        throw new NotImplementedException();
+    public CompletableFuture<ResponseEntity<?>> getRvyrsCollection(
+            RequestContext request, Long page, String xRequestId, String accept,
+            String cacheControl) {
+        return getIndex();
     }
 
     @Override
     public CompletableFuture<ResponseEntity<?>> getRoot(
             RequestContext request) {
+        return getIndex();
+    }
+
+    private CompletableFuture<ResponseEntity<?>> getIndex() {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 ClassPathResource index = new ClassPathResource(

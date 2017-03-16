@@ -1,5 +1,7 @@
 package au.com.mountainpass.ryvr.testclient.model;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface RootResponse {
 
     void assertHasApiDocsLink();
@@ -7,5 +9,7 @@ public interface RootResponse {
     void assertHasRyvrsLink();
 
     void assertHasTitle(String title);
+
+    CompletableFuture<RyvrsCollectionResponse> followRyvrsLink();
 
 }

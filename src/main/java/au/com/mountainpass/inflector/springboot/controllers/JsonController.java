@@ -7,7 +7,6 @@ import java.util.concurrent.CompletableFuture;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
@@ -15,10 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import au.com.mountainpass.ryvr.SwaggerFetcher;
 import au.com.mountainpass.ryvr.model.Root;
+import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import io.swagger.config.FilterFactory;
 import io.swagger.core.filter.SwaggerSpecFilter;
 import io.swagger.inflector.models.RequestContext;
@@ -36,6 +34,9 @@ public class JsonController implements RyvrContentController {
 
     @Value("${spring.application.name}")
     private String applicationName;
+
+    @Autowired
+    private RyvrsCollection ryvrsCollection;
 
     @Override
     public CompletableFuture<ResponseEntity<?>> getApiDocs(
@@ -70,9 +71,16 @@ public class JsonController implements RyvrContentController {
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRvyrs(
-            RequestContext request) {
-        throw new NotImplementedException();
+    public CompletableFuture<ResponseEntity<?>> getRvyrsCollection(
+            RequestContext request, Long page, String xRequestId, String accept,
+            String cacheControl) {
+        return CompletableFuture.supplyAsync(() -> {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .contentType(org.springframework.http.MediaType
+                            .valueOf("application/hal+json"))
+                    .body(ryvrsCollection);
+        });
+
     }
 
     @Override
@@ -80,15 +88,6 @@ public class JsonController implements RyvrContentController {
             RequestContext request) {
         return CompletableFuture.supplyAsync(() -> {
             Root root = new Root(applicationName);
-            final ObjectMapper mapper = new ObjectMapper();
-
-            try {
-                final String json = mapper.writeValueAsString(root);
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
             return ResponseEntity.status(HttpStatus.OK)
                     .contentType(org.springframework.http.MediaType
                             .valueOf("application/hal+json"))

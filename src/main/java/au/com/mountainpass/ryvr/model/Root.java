@@ -17,7 +17,7 @@ public class Root extends HalRepresentation {
         super(linkingTo(linkBuilder("self", "/").withTitle("Home").build(),
                 linkBuilder("describedby", "/api-docs").withTitle("API Docs")
                         .build(),
-                linkBuilder("https://ryvr.io/rels/ryvrs", "/ryvrs")
+                linkBuilder("https://ryvr.io/rels/ryvrs-collection", "/ryvrs")
                         .withTitle("Ryvrs").build()));
         this.title = title;
     }

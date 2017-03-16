@@ -4,6 +4,8 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
@@ -22,7 +24,6 @@ public class HtmlRootResponse implements RootResponse {
 
     @Override
     public void assertHasApiDocsLink() {
-        HtmlRyvrClient.waitTillLoaded(webDriver, 5);
         List<String> linkTitles = getLinkTitles();
         assertThat(linkTitles, hasItem("API Docs"));
     }
@@ -38,18 +39,30 @@ public class HtmlRootResponse implements RootResponse {
 
     @Override
     public void assertHasRyvrsLink() {
-        HtmlRyvrClient.waitTillLoaded(webDriver, 5);
         List<String> linkTitles = getLinkTitles();
         assertThat(linkTitles, hasItem("Ryvrs"));
     }
 
     @Override
     public void assertHasTitle(String title) {
-        HtmlRyvrClient.waitTillLoaded(webDriver, 5);
         WebElement menuBarTitle = webDriver
                 .findElement(By.className("navbar-header"))
                 .findElement(By.className("title"));
         assertThat(menuBarTitle.getText(), equalTo("ryvr"));
+    }
+
+    @Override
+    public CompletableFuture<RyvrsCollectionResponse> followRyvrsLink() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<WebElement> links = webDriver.findElement(By.id("links"))
+                    .findElements(By.tagName("a"));
+            Optional<WebElement> link = links.stream()
+                    .filter(element -> "Ryvrs".equals(element.getText()))
+                    .findAny();
+            link.get().click();
+            HtmlRyvrClient.waitTillLoaded(webDriver, 5);
+            return new HtmlRyvrsCollectionResponse(webDriver);
+        });
     }
 
 }

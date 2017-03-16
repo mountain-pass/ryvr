@@ -29,13 +29,12 @@
             <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand title" href=".">{{controller.resource.title}}</a>
+          <a class="navbar-brand title" href=".">{{controller.root.title}}</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav" id="links">
-            <li ng-repeat="(rel, link) in controller.resource._links" class="{{rel + ' ' + ('self'==rel ? 'active' : '')}}"><a
-              href="{{link.href}}" rel="{{rel}}" ng-click="controller.processNavClick($event)">{{link.title
-                ? link.title : rel }}</a></li>
+            <li ng-repeat="(rel, link) in controller.root._links" ng-class="{active: isActive(link.href)}"><a
+              href="{{link.href}}" rel="{{rel}}">{{link.title ? link.title : rel }}</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li ng-hide="!controller.loading" class="" id="loading"><a href="#">Loading...</a></li>
@@ -49,14 +48,15 @@
 
     <div class="container" ng-if="controller.hasOwnProperty('resource')">
       <div class="page-header">
-        <h1>
-          <a href="{{controller.resource.path}}">{{controller.resource.type}}</a>
+        <h1 ng-if="controller.resource._links.hasOwnProperty('self')">
+          <a href="{{controller.resource._links['self'].href}}">{{controller.resource.title}}</a>
         </h1>
+        <h1 ng-if="!controller.resource._links.hasOwnProperty('self')">{{controller.resource.title}}</h1>
       </div>
 
       <div id="properties">
-        <div class="row" ng-repeat="(key, value) in controller.resource.data">
-          <div class="item">
+        <div class="row" ng-repeat="(key, value) in controller.resource">
+          <div class="item" ng-if="key != 'title' && key[0] != '_'">
             <div class="properties:{{id}}:{{key}}">
               <label for="property:{{id}}:{{key}}">{{key}}</label>
               <div id="property:{{id}}:{{key}}">{{value}}</div>
@@ -65,11 +65,11 @@
         </div>
       </div>
 
-      <div id="resources">
-        <div class="row" ng-repeat="summary in controller.resource.subResources">
+      <div id="_embedded">
+        <div class="row" ng-repeat="summary in controller.resource._embedded">
           <div id="{{summary.id}}" class="item" title="{{summary.type}}">
             <h2>
-              <a href="{{summary.path}}" ng-click="controller.processNavClick($event)">{{summary.data.name}}</a>
+              <a href="{{summary.path}}">{{summary.data.name}}</a>
             </h2>
             <ul>
               <li class="dataItem" ng-repeat="(key, value) in summary.data"><label for="{{summary.path}}:{{key}}">{{key}}</label><span

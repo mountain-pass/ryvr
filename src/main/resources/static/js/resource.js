@@ -24,8 +24,8 @@ app.config(function($locationProvider, $httpProvider) {
             'request' : function(config) {
                 angular.element(document.getElementById('controller')).scope().controller.loading = true;
                 // app.controller.loading = true;
-//                config.headers.get['Accept'] = 
-                config.headers['Accept']='application/hal+json;q=1,application/json;q=0.8,*/*;q=0.1';
+                // config.headers.get['Accept'] =
+                config.headers['Accept'] = 'application/hal+json;q=1,application/json;q=0.8,*/*;q=0.1';
                 console.log('request', new Date());
                 console.log(config);
                 return config;
@@ -42,7 +42,7 @@ app.config(function($locationProvider, $httpProvider) {
                 angular.element(document.getElementById('controller')).scope().controller.loading = false;
                 console.log('response', new Date());
                 console.log(response);
-                if( response.headers("Content-Type") != "application/hal+json" ) {
+                if (response.headers("Content-Type") != "application/hal+json") {
                     window.location.href = response.config.url;
                 }
                 return response;
@@ -81,6 +81,7 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
     controller.actionValues = {};
     controller.error = {};
     controller.lastForm = null;
+    controller.href = $window.location.href
 
     controller.processNavClick = function(event) {
         return false;
@@ -143,11 +144,21 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
     }
 
     controller.doLoad = function(href) {
+        controller.href = href
         $http.get(href, {
             cache : false
         }).then(function successCallback(response) {
             controller.resource = response.data;
             controller.lastForm = null;
+        }, controller.errorCallback);
+
+    }
+
+    controller.doLoadRoot = function(href) {
+        $http.get(href, {
+            cache : false
+        }).then(function successCallback(response) {
+            controller.root = response.data;
         }, controller.errorCallback);
 
     }
@@ -185,6 +196,7 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
     });
 
     console.log("initial load", new Date());
+    controller.doLoadRoot(".");
     controller.doLoad($window.location.href);
     console.log("initial requested", new Date());
 
@@ -194,7 +206,6 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
         console.log(form);
         var action = form.action;
         href = $(location).attr('href');
-        
 
         var method = action.method || "GET";
         console.log(method);
@@ -234,4 +245,18 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
         }
         return false;
     };
+
+    // credit to http://stackoverflow.com/a/12592693/269221
+    $scope.isActive = function(path) {
+        if ($location.path().substr(0, path.length) == path) {
+            if (path == "/" && $location.path() == "/") {
+                return true;
+            } else if (path == "/") {
+                return false;
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
 });

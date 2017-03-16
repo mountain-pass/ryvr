@@ -14,9 +14,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.model.Root;
-import au.com.mountainpass.ryvr.testclient.model.JavaRootResponse;
 import au.com.mountainpass.ryvr.testclient.model.JavaSwaggerResponse;
+import au.com.mountainpass.ryvr.testclient.model.RestRootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
+import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 import io.swagger.parser.SwaggerParser;
 
@@ -52,9 +53,16 @@ public class RestRyvrClient implements RyvrTestClient {
         URI url = config.getBaseUri().resolve("/");
 
         CompletableFuture<RootResponse> rval = FutureConverter
-                .convert(restTemplate.getForEntity(url, Root.class)).thenApply(
-                        response -> new JavaRootResponse(response.getBody()));
+                .convert(restTemplate.getForEntity(url, Root.class))
+                .thenApply(response -> new RestRootResponse(restTemplate,
+                        config, response.getBody()));
         return rval;
     }
 
+    @Override
+    public CompletableFuture<RyvrsCollectionResponse> getRyvrsCollection() {
+        CompletableFuture<RootResponse> rootFuture = getRoot();
+        return rootFuture
+                .thenCompose(rootResponse -> rootResponse.followRyvrsLink());
+    }
 }

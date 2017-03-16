@@ -44,10 +44,12 @@ public class AcceptRouter implements RyvrController {
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRvyrs(
-            RequestContext request) {
+    public CompletableFuture<ResponseEntity<?>> getRvyrsCollection(
+            RequestContext request, Long page, String xRequestId, String accept,
+            String cacheControl) {
         return findContentController(request.getAcceptableMediaTypes())
-                .getRvyrs(request);
+                .getRvyrsCollection(request, page, xRequestId, accept,
+                        cacheControl);
     }
 
     @Override

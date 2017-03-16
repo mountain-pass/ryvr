@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutionException;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +34,12 @@ public class MainRyvrController {
         return toResponseContext(result);
     }
 
-    public ResponseContext getRvyrs(RequestContext request, String group) {
-        throw new NotImplementedException();
+    public ResponseContext getRvyrsCollection(RequestContext request, Long page,
+            String xRequestId, String accept, String cacheControl)
+            throws InterruptedException, ExecutionException {
+        CompletableFuture<ResponseEntity<?>> result = router.getRvyrsCollection(
+                request, page, xRequestId, accept, cacheControl);
+        return toResponseContext(result);
     }
 
     public ResponseContext getRoot(RequestContext request)

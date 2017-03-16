@@ -50,7 +50,7 @@ paths:
       tags:
         - ryvrs
       description: The current page of the feed
-      operationId: getRyvrs
+      operationId: getRvyrsCollection
       parameters:
         - name: page
           description: which page to fetch
@@ -314,8 +314,6 @@ definitions:
       _links:
         $ref: "#/definitions/pageLinks"
   pageOfRyvrs:
-    allOf:
-      - $ref: "#/definitions/page"
     type: object
     properties:
       count:
@@ -324,10 +322,8 @@ definitions:
         type: integer
       _embedded:
         $ref: "#/definitions/pageLinks"
-  embedded:
-    title: "HAL Embedded Resource"
-    description: "An embedded HAL resource"
-    type: "object"
+      _links:
+        $ref: "#/definitions/pageLinks"
   root:
     allOf:
       - $ref: "#/definitions/page"

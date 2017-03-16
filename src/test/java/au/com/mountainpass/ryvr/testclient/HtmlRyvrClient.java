@@ -13,6 +13,7 @@ import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.testclient.model.HtmlRootResponse;
 import au.com.mountainpass.ryvr.testclient.model.HtmlSwaggerResponse;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
+import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 
 public class HtmlRyvrClient implements RyvrTestClient {
@@ -28,6 +29,7 @@ public class HtmlRyvrClient implements RyvrTestClient {
         return CompletableFuture.supplyAsync(() -> {
             URI url = config.getBaseUri().resolve("/api-docs");
             webDriver.get(url.toString());
+            waitTillLoaded(webDriver, 5, By.id("api_info"));
             return new HtmlSwaggerResponse(webDriver);
         });
     }
@@ -37,6 +39,7 @@ public class HtmlRyvrClient implements RyvrTestClient {
         return CompletableFuture.supplyAsync(() -> {
             URI url = config.getBaseUri().resolve("/");
             webDriver.get(url.toString());
+            waitTillLoaded(webDriver, 5);
             return new HtmlRootResponse(webDriver);
         });
     }
@@ -50,6 +53,12 @@ public class HtmlRyvrClient implements RyvrTestClient {
             long timeoutInSeconds, By by) {
         (new WebDriverWait(webDriver, timeoutInSeconds))
                 .until(ExpectedConditions.visibilityOfElementLocated(by));
+    }
+
+    @Override
+    public CompletableFuture<RyvrsCollectionResponse> getRyvrsCollection() {
+        return getRoot()
+                .thenCompose(rootResponse -> rootResponse.followRyvrsLink());
     }
 
 }

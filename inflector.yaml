@@ -7,4 +7,6 @@ entityProcessors:
   - json
 #  - xml
 
-validatePayloads: true
+validatePayloads: false
+
+environment: production

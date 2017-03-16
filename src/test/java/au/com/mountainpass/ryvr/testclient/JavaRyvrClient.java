@@ -12,6 +12,7 @@ import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.testclient.model.JavaRootResponse;
 import au.com.mountainpass.ryvr.testclient.model.JavaSwaggerResponse;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
+import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 import io.swagger.inflector.models.RequestContext;
 import io.swagger.models.Swagger;
@@ -37,8 +38,14 @@ public class JavaRyvrClient implements RyvrTestClient {
         request.setAcceptableMediaTypes(
                 Collections.singletonList(MediaType.APPLICATION_JSON_TYPE));
         return router.getRoot(request).thenApply(response -> {
-            return new JavaRootResponse((Root) response.getBody());
+            return new JavaRootResponse((Root) response.getBody(), router);
         });
+    }
+
+    @Override
+    public CompletableFuture<RyvrsCollectionResponse> getRyvrsCollection() {
+        return getRoot()
+                .thenCompose(rootResponse -> rootResponse.followRyvrsLink());
     }
 
 }
