@@ -1,6 +1,6 @@
 buildscript {
 	ext {
-		springBootVersion = '1.4.2.RELEASE'
+		springBootVersion = '1.5.2.RELEASE'
 	}
 	repositories {
         jcenter()
@@ -70,7 +70,10 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-data-rest')
     compile('org.springframework.boot:spring-boot-starter-thymeleaf')
     runtime('com.h2database:h2')
-    compile("org.springframework.boot:spring-boot-devtools")
+    
+    // Devtools can't be used, because swagger inflector uses the
+    // wrong class loader
+    //compile("org.springframework.boot:spring-boot-devtools")
 
     
     compile 'de.otto.edison:edison-hal:1.0.0.RC5'
