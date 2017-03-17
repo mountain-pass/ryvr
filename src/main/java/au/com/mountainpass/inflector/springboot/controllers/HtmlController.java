@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.core.MediaType;
@@ -18,10 +20,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
-import com.github.mustachejava.TemplateContext;
 
+import au.com.mountainpass.ryvr.model.Root;
+import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import io.swagger.inflector.models.RequestContext;
 
 @Component()
@@ -29,6 +33,12 @@ public class HtmlController implements RyvrContentController {
 
     @Autowired
     DefaultMustacheFactory mustacheFactory;
+
+    @Autowired
+    JsonController jsonController;
+
+    @Autowired
+    ObjectMapper om;
 
     @Override
     public CompletableFuture<ResponseEntity<?>> getApiDocs(
@@ -55,26 +65,34 @@ public class HtmlController implements RyvrContentController {
     public CompletableFuture<ResponseEntity<?>> getRvyrsCollection(
             RequestContext request, Long page, String xRequestId, String accept,
             String cacheControl) {
-        return getIndex();
+        Root root = (Root) jsonController.getRoot(request).join().getBody();
+        RyvrsCollection collection = (RyvrsCollection) jsonController
+                .getRvyrsCollection(request, page, xRequestId, accept,
+                        cacheControl)
+                .join().getBody();
+        return getIndex(root, collection);
     }
 
     @Override
     public CompletableFuture<ResponseEntity<?>> getRoot(
             RequestContext request) {
-        return getIndex();
+        Root root = (Root) jsonController.getRoot(request).join().getBody();
+        return getIndex(root, root);
     }
 
-    private CompletableFuture<ResponseEntity<?>> getIndex() {
+    private CompletableFuture<ResponseEntity<?>> getIndex(Root root,
+            Object resource) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ClassPathResource index = new ClassPathResource("static/index.html");
         try {
             Mustache mustache = mustacheFactory.compile(
                     new InputStreamReader(index.getInputStream()),
                     "static/index.html", "<%", "%>");
-            TemplateContext context = new TemplateContext("<%", "%>",
-                    "static/index.html", 0, false);
+            Map<String, String> scope = new HashMap<>();
+            scope.put("root", om.writeValueAsString(root));
+            scope.put("resource", om.writeValueAsString(resource));
             OutputStreamWriter writer = new OutputStreamWriter(baos);
-            mustache.execute(writer, context).flush();
+            mustache.execute(writer, scope).flush();
             writer.flush();
             return CompletableFuture.supplyAsync(() -> {
                 return ResponseEntity
@@ -83,14 +101,6 @@ public class HtmlController implements RyvrContentController {
         } catch (IOException e) {
             throw new NotImplementedException(e);
         }
-        // return CompletableFuture.supplyAsync(() -> {
-        // try {
-        // return ResponseEntity.ok(index.getInputStream());
-        // } catch (Exception e) {
-        // // TODO Auto-generated catch block
-        // throw new NotImplementedException(e);
-        // }
-        // });
     }
 
 }

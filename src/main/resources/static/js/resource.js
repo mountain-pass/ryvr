@@ -73,7 +73,7 @@ function getLocation(href) {
     return location;
 };
 
-app.controller('ResourceController', function($scope, $http, $location, $window) {
+app.controller('ResourceController', function($scope, $http, $location, $window, $document) {
     var controller = this;
     var loaded = true;
     var loading = true;
@@ -191,14 +191,22 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
 
     $scope.$on('$locationChangeSuccess', function(event, newUrl, oldUrl) {
         console.log('$locationChangeSuccess:', oldUrl, " -> ", newUrl, new Date());
-        if (newUrl != null) {
+        if (newUrl != null && oldUrl != newUrl) {
             controller.doLoad(newUrl);
         }
     });
 
+    controller.initRoot = function() {
+        controller.root = JSON.parse(document.getElementById("init-root").textContent);
+    }
+
+    controller.initResource = function() {
+        controller.resource = JSON.parse(document.getElementById("init-resource").textContent);        
+    }
+
     console.log("initial load", new Date());
-    controller.doLoadRoot(".");
-    controller.doLoad($window.location.href);
+    controller.initRoot();
+    controller.initResource();
     console.log("initial requested", new Date());
 
     controller.processForm = function(form) {
