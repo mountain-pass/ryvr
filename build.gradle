@@ -1,17 +1,13 @@
 buildscript {
-	ext {
-		springBootVersion = '1.5.2.RELEASE'
-	}
-	repositories {
+    ext { springBootVersion = '1.5.2.RELEASE' }
+    repositories {
         jcenter()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-	}
-	dependencies {
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath('gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:1.4.17')
-	}
+    }
 }
 
 apply plugin: 'java'
@@ -35,9 +31,7 @@ repositories {
     jcenter()
 }
 
-springBoot  {
-    buildInfo()
-}
+springBoot  { buildInfo() }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
@@ -49,66 +43,60 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 //    from javadoc.destinationDir
 //}
 
-artifacts {
-    archives sourcesJar
-//    archives javadocJar
+artifacts { archives sourcesJar //    archives javadocJar
 }
 
 dependencies {
-	compile('io.swagger:swagger-inflector:1.0.10')
-    compile('com.github.javafaker:javafaker:0.11') {
-        exclude group: 'com.github.bmoliveira'
-    }
+    compile('io.swagger:swagger-inflector:1.0.10')
+    compile('com.github.javafaker:javafaker:0.11') { exclude group: 'com.github.bmoliveira' }
     compile('com.fasterxml.jackson.core:jackson-annotations')
     compile('com.fasterxml.jackson.core:jackson-databind')
     compile('com.fasterxml.jackson.datatype:jackson-datatype-jdk8')
     compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
-	compile('org.springframework.boot:spring-boot-starter-actuator')
-	compile('org.springframework.boot:spring-boot-starter-jersey')
+    compile('org.springframework.boot:spring-boot-starter-actuator')
+    compile('org.springframework.boot:spring-boot-starter-jersey')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
     compile('org.springframework.boot:spring-boot-starter-data-rest')
-    compile('org.springframework.boot:spring-boot-starter-thymeleaf')
+    compile('com.github.spullara.mustache.java:compiler:0.9.2')
     runtime('com.h2database:h2')
-    
+
     // Devtools can't be used, because swagger inflector uses the
     // wrong class loader
     //compile("org.springframework.boot:spring-boot-devtools")
 
-    
+
     compile 'de.otto.edison:edison-hal:1.0.0.RC5'
-    
-	compile group: 'org.webjars', name: 'swagger-ui', version: '2.2.10'
+
+    compile group: 'org.webjars', name: 'swagger-ui', version: '2.2.10'
 
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.1'
     compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.1'
-    
+
     compile 'org.springframework.data:spring-data-commons'
     compile('org.apache.httpcomponents:httpasyncclient')
 
     compile('org.webjars:bootstrap:3.3.7-1')
     compile('org.webjars:jquery:3.1.1-1')
     compile('org.webjars.bower:angularjs:1.6.0')
-    
+
     testCompile group: 'info.cukes', name: 'cucumber-java', version:'1.2.5'
     testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'
     testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
     testCompile ('org.seleniumhq.selenium:selenium-java:3.0.1') { exclude(module: 'commons-logging') }
     testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.0.1'
-    
-    
-    
-	testCompile('org.springframework.boot:spring-boot-starter-test')
+
+
+
+    testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile 'org.bouncycastle:bcpkix-jdk15on:1.53'
 
-    
+
 
 }
 
 
-test {
-    exclude '**'
-}
+test { exclude '**' }
 
 
 task unitTest(type: Test) {

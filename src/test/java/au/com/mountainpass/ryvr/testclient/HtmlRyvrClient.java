@@ -36,10 +36,10 @@ public class HtmlRyvrClient implements RyvrTestClient {
 
     @Override
     public CompletableFuture<RootResponse> getRoot() {
+        URI url = config.getBaseUri().resolve("/");
+        webDriver.get(url.toString());
+        waitTillLoaded(webDriver, 5);
         return CompletableFuture.supplyAsync(() -> {
-            URI url = config.getBaseUri().resolve("/");
-            webDriver.get(url.toString());
-            waitTillLoaded(webDriver, 5);
             return new HtmlRootResponse(webDriver);
         });
     }

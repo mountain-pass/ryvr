@@ -3,12 +3,13 @@ package au.com.mountainpass.ryvr;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.SpringApplicationContextLoader;
-import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import au.com.mountainpass.inflector.springboot.InflectorApplication;
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
@@ -20,14 +21,12 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 
-@ComponentScan(basePackages = { "au.com.mountainpass.ryvr" })
+@ComponentScan("au.com.mountainpass")
 @ContextConfiguration(classes = { InflectorApplication.class,
-        RyvrConfiguration.class }, loader = SpringApplicationContextLoader.class)
-@SpringApplicationConfiguration(classes = { InflectorApplication.class,
         RyvrConfiguration.class })
-@WebIntegrationTest({ "server.port=0" })
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class StepDefs {
-
     @Autowired
     private RyvrTestClient client;
     private CompletableFuture<SwaggerResponse> swaggerResponseFuture;

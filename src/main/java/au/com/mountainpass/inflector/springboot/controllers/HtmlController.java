@@ -1,23 +1,34 @@
 package au.com.mountainpass.inflector.springboot.controllers;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.core.MediaType;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.TemplateContext;
+
 import io.swagger.inflector.models.RequestContext;
 
 @Component()
 public class HtmlController implements RyvrContentController {
+
+    @Autowired
+    DefaultMustacheFactory mustacheFactory;
 
     @Override
     public CompletableFuture<ResponseEntity<?>> getApiDocs(
@@ -54,16 +65,32 @@ public class HtmlController implements RyvrContentController {
     }
 
     private CompletableFuture<ResponseEntity<?>> getIndex() {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                ClassPathResource index = new ClassPathResource(
-                        "static/index.html");
-                InputStream indexStream = index.getInputStream();
-                return ResponseEntity.ok(indexStream);
-            } catch (IOException e) {
-                throw new NotImplementedException();
-            }
-        });
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ClassPathResource index = new ClassPathResource("static/index.html");
+        try {
+            Mustache mustache = mustacheFactory.compile(
+                    new InputStreamReader(index.getInputStream()),
+                    "static/index.html", "<%", "%>");
+            TemplateContext context = new TemplateContext("<%", "%>",
+                    "static/index.html", 0, false);
+            OutputStreamWriter writer = new OutputStreamWriter(baos);
+            mustache.execute(writer, context).flush();
+            writer.flush();
+            return CompletableFuture.supplyAsync(() -> {
+                return ResponseEntity
+                        .ok(new ByteArrayInputStream(baos.toByteArray()));
+            });
+        } catch (IOException e) {
+            throw new NotImplementedException(e);
+        }
+        // return CompletableFuture.supplyAsync(() -> {
+        // try {
+        // return ResponseEntity.ok(index.getInputStream());
+        // } catch (Exception e) {
+        // // TODO Auto-generated catch block
+        // throw new NotImplementedException(e);
+        // }
+        // });
     }
 
 }
