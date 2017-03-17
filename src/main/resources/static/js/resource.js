@@ -1,4 +1,4 @@
-var app = angular.module('advisorHub', []);
+var app = angular.module('ryvr', []);
 
 app.config(function($locationProvider, $httpProvider) {
     $locationProvider.html5Mode(true);
@@ -82,6 +82,7 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
     controller.error = {};
     controller.lastForm = null;
     controller.href = $window.location.href
+    controller.debug = true;
 
     controller.processNavClick = function(event) {
         return false;
@@ -258,5 +259,27 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
         } else {
             return false;
         }
+    }
+
+    $scope.resourceProperties = function() {
+        var rval = {};
+        if (controller.hasOwnProperty('resource')) {
+            var keys = Object.keys(controller.resource);
+            keys.forEach(function(key) {
+                if (key != 'title' && key[0] != "_") {
+                    rval[key] = controller.resource[key];
+                }
+            });
+        }
+        return rval;
+    }
+
+    $scope.resourceHasProperties = function() {
+        return Object.keys($scope.resourceProperties()).length != 0;
+    }
+
+    // credit to http://stackoverflow.com/a/7220510/269221
+    controller.pretty = function(json) {
+        return JSON.stringify(json, null, 2);
     }
 });

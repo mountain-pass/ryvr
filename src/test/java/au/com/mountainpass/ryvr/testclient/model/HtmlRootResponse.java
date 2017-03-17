@@ -45,10 +45,10 @@ public class HtmlRootResponse implements RootResponse {
 
     @Override
     public void assertHasTitle(String title) {
-        WebElement menuBarTitle = webDriver
-                .findElement(By.className("navbar-header"))
+        WebElement titleElement = webDriver
+                .findElement(By.className("jumbotron"))
                 .findElement(By.className("title"));
-        assertThat(menuBarTitle.getText(), equalTo("ryvr"));
+        assertThat(titleElement.getText(), equalTo("ryvr"));
     }
 
     @Override

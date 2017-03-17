@@ -16,7 +16,6 @@
 package au.com.mountainpass.inflector.springboot.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import io.swagger.inflector.SwaggerInflector;
 import io.swagger.inflector.config.Configuration;
@@ -24,7 +23,7 @@ import io.swagger.inflector.config.Configuration;
 /**
  *
  */
-@Component
+@org.springframework.context.annotation.Configuration
 public class InflectorConfig extends SwaggerInflector {
 
     @Autowired

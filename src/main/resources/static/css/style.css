@@ -1,4 +1,8 @@
 
 body > .container {
-  padding: 60px 15px 0;
+/*   padding: 60px 15px 0; */
+}
+
+#properties > div.row > div.property-label {
+	text-align: right;
 }

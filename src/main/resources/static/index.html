@@ -1,12 +1,17 @@
-<!doctype html>
-<html id="controller" ng-app="advisorHub" ng-controller="ResourceController as controller">
+<!DOCTYPE html>
+<html lang="en" id="controller" ng-app="ryvr" ng-controller="ResourceController as controller">
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<meta name="description" content="">
+<meta name="author" content="">
+<link rel="icon" href="favicon.ico">
+
 <base href="/">
-<title>advisorHub</title>
+<title>ryvr</title>
+
 <link rel="stylesheet" type="text/css" href="/system/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" />
 <link rel="stylesheet" type="text/css" href="/system/webjars/angularjs/1.6.0/angular-csp.css" />
 <link rel="stylesheet" href="/system/css/style.css">
@@ -18,52 +23,98 @@
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 </head>
+
 <body>
-  <div ng-hide="!controller.loaded">Loading...</div>
-  <div ng-show="!controller.loaded">
-    <nav class="navbar navbar-default navbar-fixed-top">
-      <div class="container">
+  <div class="container" ng-hide="!controller.loaded">Loading...</div>
+
+  <div class="container" ng-show="!controller.loaded">
+
+    <!-- Static navbar -->
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
             aria-expanded="false" aria-controls="navbar">
             <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand title" href=".">{{controller.root.title}}</a>
+          <a class="navbar-brand" href="/">{{controller.root.title}}</a>
         </div>
-        <div id="navbar" class="collapse navbar-collapse">
+        <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav" id="links">
             <li ng-repeat="(rel, link) in controller.root._links" ng-class="{active: isActive(link.href)}"><a
               href="{{link.href}}" rel="{{rel}}">{{link.title ? link.title : rel }}</a></li>
+
+            <!-- li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button"
+              aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="#">Action</a></li>
+                <li><a href="#">Another action</a></li>
+                <li><a href="#">Something else here</a></li>
+                <li role="separator" class="divider"></li>
+                <li class="dropdown-header">Nav header</li>
+                <li><a href="#">Separated link</a></li>
+                <li><a href="#">One more separated link</a></li>
+              </ul></li-->
           </ul>
+
           <ul class="nav navbar-nav navbar-right">
             <li ng-hide="!controller.loading" class="" id="loading"><a href="#">Loading...</a></li>
             <li ng-show="!controller.loading" class="ng-hide" id="loaded"><a href="#">Loaded</a></li>
           </ul>
+
+          <!-- ul class="nav navbar-nav navbar-right">
+            <li class="active"><a href="./">Default <span class="sr-only">(current)</span></a></li>
+            <li><a href="../navbar-static-top/">Static top</a></li>
+            <li><a href="../navbar-fixed-top/">Fixed top</a></li>
+          </ul-->
         </div>
         <!--/.nav-collapse -->
-
       </div>
+      <!--/.container-fluid -->
     </nav>
 
-    <div class="container" ng-if="controller.hasOwnProperty('resource')">
-      <div class="page-header">
-        <h1 ng-if="controller.resource._links.hasOwnProperty('self')">
-          <a href="{{controller.resource._links['self'].href}}">{{controller.resource.title}}</a>
-        </h1>
-        <h1 ng-if="!controller.resource._links.hasOwnProperty('self')">{{controller.resource.title}}</h1>
-      </div>
+    <!-- Main component for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <h1 ng-if="controller.resource._links.hasOwnProperty('self')" class="title">
+        <a href="{{controller.resource._links['self'].href}}">{{controller.resource.title}}</a>
+      </h1>
+      <h1 ng-if="!controller.resource._links.hasOwnProperty('self')" class="title">{{controller.resource.title}}</h1>
+      <!-- p>This example is a quick exercise to illustrate how the default, static navbar and fixed to top navbar work.
+        It includes the responsive CSS and HTML, so it also adapts to your viewport and device.</p>
+      <p>
+        <a class="btn btn-lg btn-primary" href="../../components/#navbar" role="button">View navbar docs &raquo;</a>
+      </p-->
+    </div>
+    <!-- /jumbotron -->
 
-      <div id="properties">
-        <div class="row" ng-repeat="(key, value) in controller.resource">
-          <div class="item" ng-if="key != 'title' && key[0] != '_'">
-            <div class="properties:{{id}}:{{key}}">
-              <label for="property:{{id}}:{{key}}">{{key}}</label>
-              <div id="property:{{id}}:{{key}}">{{value}}</div>
-            </div>
-          </div>
+    <div id="properties" ng-if="resourceHasProperties()">
+      <h2>Properties</h2>
+      <div class="row item properties:{{id}}:{{key}}" ng-repeat="(key, value) in resourceProperties()">
+        <div class="col-md-2 property-label">
+          <label for="property:{{id}}:{{key}}">{{key}}</label>
         </div>
+        <div class="col-md-10" id="property:{{id}}:{{key}}">{{value}}</div>
       </div>
+      <!-- /row -->
+    </div>
+    <!-- /properties -->
+
+    <div id="rawjson" ng-if="controller.debug">
+      <h2>Debug Json</h2>
+      <h3>Resource</h3>
+      <pre><code class="json">{{controller.pretty(controller.resource)}}</code></pre>
+      <h3>Root</h3>
+      <pre><code class="json">{{controller.pretty(controller.root)}}</code></pre>
+    </div>
+  </div>
+  <!-- /container -->
+
+  <div ng-show="!controller.loaded">
+
+
+    <div class="container" ng-if="controller.hasOwnProperty('resource')">
+
 
       <div id="_embedded">
         <div class="row" ng-repeat="summary in controller.resource._embedded">
@@ -86,8 +137,7 @@
           <form ng-submit="controller.processForm(this)" name="{{action.name}}" method="get">
             <div class="row">
               <div ng-repeat="field in action.fields" ng-if="field.type!='submit'" class="form-group col-sm-4">
-                <div class="control-group"
-                  ng-class="{'has-error': field.hasOwnProperty('error')}">
+                <div class="control-group" ng-class="{'has-error': field.hasOwnProperty('error')}">
                   <label class="control-label" for="{{field.name}}" ng-if="field.type!='hidden'">{{field.name}}</label>
                   <div class="controls">
                     <input name="{{field.name}}" type="{{field.type}}" value="{{field.value}}" class="form-control"
@@ -101,8 +151,8 @@
             </div>
             <div class="row">
               <div ng-repeat="field in action.fields" ng-if="field.type=='submit'" class="form-group col-sm-4">
-                <input type="submit" class="btn btn-success" value="{{field.value}}"
-                  name="{{field.name}}" ng-model="controller.actionValues[action.name][field.name]"
+                <input type="submit" class="btn btn-success" value="{{field.value}}" name="{{field.name}}"
+                  ng-model="controller.actionValues[action.name][field.name]"
                   ng-init="controller.actionValues[action.name][field.name]=field.value" />
               </div>
             </div>
@@ -117,8 +167,7 @@
           <form ng-submit="controller.processForm(this)" name="{{action.name}}" method="{{action.method}}">
             <div class="row">
               <div ng-repeat="field in action.fields" ng-if="field.type!='submit'" class="form-group col-sm-4">
-                <div class="control-group"
-                  ng-class="{'has-error': field.hasOwnProperty('error')}">
+                <div class="control-group" ng-class="{'has-error': field.hasOwnProperty('error')}">
                   <label class="control-label" for="{{field.name}}" ng-if="field.type!='hidden'">{{field.name}}</label>
                   <div class="controls">
                     <input name="{{field.name}}" type="{{field.type}}" value="{{field.value}}" class="form-control"
@@ -132,8 +181,8 @@
             </div>
             <div class="row">
               <div ng-repeat="field in action.fields" ng-if="field.type=='submit'" class="form-group col-sm-4">
-                <input type="submit" class="btn btn-success" value="{{field.value}}"
-                  name="{{field.name}}" ng-model="controller.actionValues[action.name][field.name]"
+                <input type="submit" class="btn btn-success" value="{{field.value}}" name="{{field.name}}"
+                  ng-model="controller.actionValues[action.name][field.name]"
                   ng-init="controller.actionValues[action.name][field.name]=field.value" />
               </div>
             </div>
@@ -148,8 +197,7 @@
           <form ng-submit="controller.processForm(this)" name="{{action.name}}" method="{{action.method}}">
             <div class="row">
               <div ng-repeat="field in action.fields" ng-if="field.type!='submit'" class="form-group col-sm-4">
-                <div class="control-group"
-                  ng-class="{'has-error': field.hasOwnProperty('error')}">
+                <div class="control-group" ng-class="{'has-error': field.hasOwnProperty('error')}">
                   <label class="control-label" for="{{field.name}}" ng-if="field.type!='hidden'">{{field.name}}</label>
                   <div class="controls">
                     <input name="{{field.name}}" type="{{field.type}}" value="{{field.value}}" class="form-control"
@@ -163,8 +211,8 @@
             </div>
             <div class="row">
               <div ng-repeat="field in action.fields" ng-if="field.type=='submit'" class="form-group col-sm-4">
-                <input type="submit" class="btn btn-success" value="{{field.value}}"
-                  name="{{field.name}}" ng-model="controller.actionValues[action.name][field.name]"
+                <input type="submit" class="btn btn-success" value="{{field.value}}" name="{{field.name}}"
+                  ng-model="controller.actionValues[action.name][field.name]"
                   ng-init="controller.actionValues[action.name][field.name]=field.value" />
               </div>
             </div>
@@ -174,7 +222,6 @@
         </div>
 
       </div>
-      <pre>{{controller.resource}}</pre>
     </div>
 
     <div class="container" ng-if="!controller.hasOwnProperty('resource')">
