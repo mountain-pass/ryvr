@@ -1,5 +1,10 @@
 package au.com.mountainpass.ryvr;
 
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -8,6 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -17,6 +27,9 @@ import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
+import cucumber.api.DataTable;
+import cucumber.api.PendingException;
+import cucumber.api.java.After;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -32,6 +45,13 @@ public class StepDefs {
     private CompletableFuture<SwaggerResponse> swaggerResponseFuture;
     private CompletableFuture<RootResponse> rootResponseFuture;
     private CompletableFuture<RyvrsCollectionResponse> ryvrsCollectionResponse;
+
+    @After
+    public void tearDown() {
+        if (db != null) {
+            db.shutdown();
+        }
+    }
 
     @When("^a request is made for the API Docs$")
     public void a_request_is_made_for_the_API_Docs() throws Throwable {
@@ -77,6 +97,69 @@ public class StepDefs {
     @When("^the ryvrs list is retrieved$")
     public void the_ryvrs_list_is_retrieved() throws Throwable {
         ryvrsCollectionResponse = client.getRyvrsCollection();
+    }
+
+    private EmbeddedDatabase db;
+
+    @Given("^a database \"([^\"]*)\"$")
+    public void a_database(String dbName) throws Throwable {
+        db = new EmbeddedDatabaseBuilder().setName(dbName)
+                .setType(EmbeddedDatabaseType.H2).setScriptEncoding("UTF-8")
+                .ignoreFailedDrops(true).addScript("initH2.sql").build();
+    }
+
+    @Given("^it has a table \"([^\"]*)\" with the following events$")
+    public void it_has_a_table_with_the_following_events(String table,
+            List<Map<String, String>> events) throws Throwable {
+        JdbcTemplate jt = new JdbcTemplate(db);
+        StringBuffer statementBuffer = new StringBuffer();
+        statementBuffer.append("create table ");
+        statementBuffer.append(table);
+        // | ID | ACCOUNT | DESCRIPTION | AMOUNT |
+        statementBuffer.append(
+                " (ID INT, ACCOUNT VARCHAR, DESCRIPTION VARCHAR, AMOUNT Decimal(19,4))");
+
+        jt.execute(statementBuffer.toString());
+
+        jt.batchUpdate(
+                "insert into " + table
+                        + "(ID, ACCOUNT, DESCRIPTION, AMOUNT) values (?, ?, ?, ?)",
+                new BatchPreparedStatementSetter() {
+
+                    @Override
+                    public void setValues(PreparedStatement ps, int i)
+                            throws SQLException {
+                        // TODO Auto-generated method stub
+                        Map<String, String> row = events.get(i + 1);
+                        ps.setInt(i, Integer.parseInt(row.get("ID")));
+                        ps.setString(i, row.get("ACCOUNT"));
+                        ps.setString(i, row.get("DESCRIPTION"));
+
+                        ps.setBigDecimal(i, new BigDecimal(row.get("AMOUNT")));
+                    }
+
+                    @Override
+                    public int getBatchSize() {
+                        return events.size() - 1;
+                    }
+                });
+    }
+
+    @Given("^a \"([^\"]*)\" ryvr for \"([^\"]*)\" for table \"([^\"]*)\"$")
+    public void a_ryvr_for_for_table(String arg1, String arg2, String arg3)
+            throws Throwable {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
+    }
+
+    @Then("^the ryvrs list will contain the following entries$")
+    public void the_ryvrs_list_will_contain_the_following_entries(
+            DataTable arg1) throws Throwable {
+        // Write code here that turns the phrase above into concrete actions
+        // For automatic transformation, change DataTable to one of
+        // List<YourType>, List<List<E>>, List<Map<K,V>> or Map<K,V>.
+        // E,K,V must be a scalar (String, Integer, Date, enum etc)
+        throw new PendingException();
     }
 
     @Then("^the ryvrs list will be empty$")

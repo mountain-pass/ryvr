@@ -306,4 +306,5 @@ public class TestConfiguration implements
             EmbeddedServletContainerInitializedEvent event) {
         this.port = event.getEmbeddedServletContainer().getPort();
     }
+
 }
