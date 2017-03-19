@@ -2,7 +2,6 @@
 
 Provides extremely fast access to your data, in fine precise slices
 
-
 The project uses [Gradle](https://gradle.org/) for its build system and you can build the project by running:
 
 	./gradlew build
@@ -26,3 +25,41 @@ Unimplemented controllers and methods are available here:
 
 Have fun!
 
+## Testing
+
+Ryvr uses JUnit with layered Cucumber testing in order to execute the same tests against the Java, REST and UI layers, which
+are execute as separate test runs. Each run shares the same Cucumber scenarios and test steps, which calls a test 
+client to execute the step against the appropriate layer. Spring profiles are used to enable the appropriate client
+for each layer.
+
+Tests for the three layers can be executed by running `./gradlew test`
+
+#### Unit Tests
+
+The Unit tests are run with the `unitTest` Spring profile, which enables the
+`au.com.mountainpass.ryvr.testclient.JavaRyvrClient` client.
+
+The `RyvrUnitTests` is used to run the tests against the Java layer and automatically activates the `unitTest` Spring
+profile. It can either by run as a JUnit test from within your IDE or run using `./gradlew unitTest`.
+
+`./gradlew unitTest` will record test results in `build/test-results-ut`
+
+#### System Tests
+
+The System tests are run with the `systemTest` Spring profile, which enables the
+`au.com.mountainpass.ryvr.testclient.RestRyvrClient` client.
+
+The `RyvrSystemTests` is used to run the tests against the Java layer and automatically activates the `systemTest` Spring
+profile. It can either by run as a JUnit test from within your IDE or run using `./gradlew systemTest`
+
+`./gradlew systemTest` will record test results in `build/test-results-st`
+
+#### UI Tests
+
+The UI tests are run with the `uiTest` Spring profile, which enables the
+`au.com.mountainpass.ryvr.testclient.HtmlRyvrClient` client.
+
+The `RyvrUiTests` is used to run the tests against the Java layer and automatically activates the `uiTest` Spring
+profile. It can either by run as a JUnit test from within your IDE or run using `./gradlew uiTest`
+
+`./gradlew uiTest` will record test results in `build/test-results-ui`
