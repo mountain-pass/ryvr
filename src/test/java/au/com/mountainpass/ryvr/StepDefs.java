@@ -1,5 +1,8 @@
 package au.com.mountainpass.ryvr;
 
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -7,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +27,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import au.com.mountainpass.inflector.springboot.InflectorApplication;
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
+import au.com.mountainpass.ryvr.jdbc.JdbcRyvr;
+import au.com.mountainpass.ryvr.model.Ryvr;
+import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
-import cucumber.api.DataTable;
-import cucumber.api.PendingException;
 import cucumber.api.java.After;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
@@ -45,6 +50,9 @@ public class StepDefs {
     private CompletableFuture<SwaggerResponse> swaggerResponseFuture;
     private CompletableFuture<RootResponse> rootResponseFuture;
     private CompletableFuture<RyvrsCollectionResponse> ryvrsCollectionResponse;
+
+    @Autowired
+    private RyvrsCollection ryvrsCollection;
 
     @After
     public void tearDown() {
@@ -100,18 +108,19 @@ public class StepDefs {
     }
 
     private EmbeddedDatabase db;
+    private JdbcTemplate jt;
 
     @Given("^a database \"([^\"]*)\"$")
     public void a_database(String dbName) throws Throwable {
         db = new EmbeddedDatabaseBuilder().setName(dbName)
                 .setType(EmbeddedDatabaseType.H2).setScriptEncoding("UTF-8")
                 .ignoreFailedDrops(true).addScript("initH2.sql").build();
+        jt = new JdbcTemplate(db);
     }
 
     @Given("^it has a table \"([^\"]*)\" with the following events$")
     public void it_has_a_table_with_the_following_events(String table,
             List<Map<String, String>> events) throws Throwable {
-        JdbcTemplate jt = new JdbcTemplate(db);
         StringBuffer statementBuffer = new StringBuffer();
         statementBuffer.append("create table ");
         statementBuffer.append(table);
@@ -134,7 +143,6 @@ public class StepDefs {
                         ps.setInt(i, Integer.parseInt(row.get("ID")));
                         ps.setString(i, row.get("ACCOUNT"));
                         ps.setString(i, row.get("DESCRIPTION"));
-
                         ps.setBigDecimal(i, new BigDecimal(row.get("AMOUNT")));
                     }
 
@@ -146,20 +154,19 @@ public class StepDefs {
     }
 
     @Given("^a \"([^\"]*)\" ryvr for \"([^\"]*)\" for table \"([^\"]*)\"$")
-    public void a_ryvr_for_for_table(String arg1, String arg2, String arg3)
+    public void a_ryvr_for_for_table(String name, String dbName, String table)
             throws Throwable {
-        // Write code here that turns the phrase above into concrete actions
-        throw new PendingException();
+        JdbcRyvr ryvr = new JdbcRyvr(name, jt, table);
+        ryvrsCollection.add(ryvr);
     }
 
     @Then("^the ryvrs list will contain the following entries$")
     public void the_ryvrs_list_will_contain_the_following_entries(
-            DataTable arg1) throws Throwable {
-        // Write code here that turns the phrase above into concrete actions
-        // For automatic transformation, change DataTable to one of
-        // List<YourType>, List<List<E>>, List<Map<K,V>> or Map<K,V>.
-        // E,K,V must be a scalar (String, Integer, Date, enum etc)
-        throw new PendingException();
+            List<String> names) throws Throwable {
+        List<String> titles = ryvrsCollection.getEmbedded()
+                .getItemsBy("item", Ryvr.class).stream()
+                .map(item -> item.getTitle()).collect(Collectors.toList());
+        assertThat(titles, containsInAnyOrder(names.toArray()));
     }
 
     @Then("^the ryvrs list will be empty$")

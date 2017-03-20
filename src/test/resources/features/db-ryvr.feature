@@ -10,7 +10,8 @@ Scenario: Get Ryvr
       | ID | ACCOUNT | DESCRIPTION    | AMOUNT  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 | 
     And a "transactions" ryvr for "TEST_DB" for table "TEST_EVENTS"
-    Then the count of ryvrs will be 0
+    When the ryvrs list is retrieved
+    Then the count of ryvrs will be 1
     Then the ryvrs list will contain the following entries
       | transactions |
     

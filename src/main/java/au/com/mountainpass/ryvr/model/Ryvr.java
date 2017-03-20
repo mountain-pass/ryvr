@@ -3,12 +3,17 @@ package au.com.mountainpass.ryvr.model;
 import static de.otto.edison.hal.Link.*;
 import static de.otto.edison.hal.Links.*;
 
-import de.otto.edison.hal.HalRepresentation;
+public class Ryvr extends MutableHalRepresentation {
 
-public class Ryvr extends HalRepresentation {
+    private String title;
 
-    public Ryvr() {
+    public Ryvr(String title) {
         super(linkingTo(linkBuilder("self", "/").withTitle("Ryvr").build()));
+        this.title = title;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
 }
