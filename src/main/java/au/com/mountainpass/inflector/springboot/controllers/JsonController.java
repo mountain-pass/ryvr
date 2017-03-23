@@ -29,6 +29,9 @@ public class JsonController implements RyvrContentController {
     private static final MediaType APPLICATION_YAML_TYPE = new MediaType(
             "application", "yaml");
 
+    private static final MediaType APPLICATION_HAL_JSON_TYPE = new MediaType(
+            "application", "hal+json");
+
     @Autowired
     private SwaggerFetcher swaggerFetcher;
 
@@ -61,7 +64,8 @@ public class JsonController implements RyvrContentController {
 
     @Override
     public boolean isCompatible(MediaType type) {
-        return MediaType.APPLICATION_JSON_TYPE.isCompatible(type)
+        return APPLICATION_HAL_JSON_TYPE.isCompatible(type)
+                || MediaType.APPLICATION_JSON_TYPE.isCompatible(type)
                 || APPLICATION_YAML_TYPE.isCompatible(type);
     }
 

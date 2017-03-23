@@ -1,8 +1,5 @@
 package au.com.mountainpass.ryvr;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -10,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +24,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import au.com.mountainpass.inflector.springboot.InflectorApplication;
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.jdbc.JdbcRyvr;
-import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 import cucumber.api.java.After;
+import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
@@ -53,6 +49,11 @@ public class StepDefs {
 
     @Autowired
     private RyvrsCollection ryvrsCollection;
+
+    @Before
+    public void setUp() {
+        ryvrsCollection.clear();
+    }
 
     @After
     public void tearDown() {
@@ -163,10 +164,8 @@ public class StepDefs {
     @Then("^the ryvrs list will contain the following entries$")
     public void the_ryvrs_list_will_contain_the_following_entries(
             List<String> names) throws Throwable {
-        List<String> titles = ryvrsCollection.getEmbedded()
-                .getItemsBy("item", Ryvr.class).stream()
-                .map(item -> item.getTitle()).collect(Collectors.toList());
-        assertThat(titles, containsInAnyOrder(names.toArray()));
+        ryvrsCollectionResponse.get(5, TimeUnit.SECONDS)
+                .assertHasEmbedded(names);
     }
 
     @Then("^the ryvrs list will be empty$")
@@ -176,7 +175,7 @@ public class StepDefs {
 
     @Then("^the count of ryvrs will be (\\d+)$")
     public void the_count_of_ryvrs_will_be(int count) throws Throwable {
-        ryvrsCollectionResponse.get(5, TimeUnit.SECONDS).assertCount(count);
+        ryvrsCollectionResponse.get(50, TimeUnit.SECONDS).assertCount(count);
     }
 
 }

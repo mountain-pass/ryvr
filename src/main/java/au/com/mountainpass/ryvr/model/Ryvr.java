@@ -7,6 +7,9 @@ public class Ryvr extends MutableHalRepresentation {
 
     private String title;
 
+    private Ryvr() {
+    }
+
     public Ryvr(String title) {
         super(linkingTo(linkBuilder("self", "/").withTitle("Ryvr").build()));
         this.title = title;

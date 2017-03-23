@@ -7,6 +7,7 @@ import de.otto.edison.hal.HalRepresentation;
 
 public class Root extends HalRepresentation {
 
+    public static final String RELS_RYVRS_COLLECTION = "https://mountain-pass.github.io/ryvr/rels/ryvrs-collection";
     private String title;
 
     @SuppressWarnings("unused")
@@ -17,8 +18,9 @@ public class Root extends HalRepresentation {
         super(linkingTo(linkBuilder("self", "/").withTitle("Home").build(),
                 linkBuilder("describedby", "/api-docs").withTitle("API Docs")
                         .build(),
-                linkBuilder("https://ryvr.io/rels/ryvrs-collection", "/ryvrs")
-                        .withTitle("Ryvrs").build()));
+                linkBuilder(
+                        RELS_RYVRS_COLLECTION,
+                        "/ryvrs").withTitle("Ryvrs").build()));
         this.title = title;
     }
 

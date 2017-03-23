@@ -54,10 +54,11 @@ public class RestRootResponse implements RootResponse {
         CompletableFuture<ResponseEntity<RyvrsCollection>> rval = FutureConverter
                 .convert(restTemplate.getForEntity(url, RyvrsCollection.class));
 
-        return rval.thenApply(
-                ryvrsCollectionResponse -> new RestRyvrsCollectionResponse(
-                        restTemplate, config,
-                        ryvrsCollectionResponse.getBody()));
+        return rval.thenApply(ryvrsCollectionResponse -> {
+            RyvrsCollection body = ryvrsCollectionResponse.getBody();
+            return new RestRyvrsCollectionResponse(restTemplate, config,
+                    body);
+        });
 
     }
 
