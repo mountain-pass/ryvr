@@ -1,13 +1,16 @@
 package au.com.mountainpass.ryvr.testclient.model;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface RyvrsCollectionResponse {
 
-    void assertIsEmpty();
+    public void assertIsEmpty();
 
-    void assertCount(int count);
+    public void assertCount(int count);
 
-    void assertHasEmbedded(List<String> names);
+    public void assertHasEmbedded(List<String> names);
+
+    public CompletableFuture<RyvrResponse> followEmbeddedRyvrLink(String name);
 
 }

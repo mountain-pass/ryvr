@@ -36,6 +36,10 @@ import org.springframework.http.client.HttpComponentsAsyncClientHttpRequestFacto
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
+import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
@@ -305,6 +309,19 @@ public class TestConfiguration implements
     public void onApplicationEvent(
             EmbeddedServletContainerInitializedEvent event) {
         this.port = event.getEmbeddedServletContainer().getPort();
+    }
+
+    @Bean
+    EmbeddedDatabase db() {
+        return new EmbeddedDatabaseBuilder().setName("TEST_DB")
+                .setType(EmbeddedDatabaseType.H2).setScriptEncoding("UTF-8")
+                .ignoreFailedDrops(true).addScript("initH2.sql").build();
+
+    }
+
+    @Bean
+    JdbcTemplate jdbcTemplate() {
+        return new JdbcTemplate(db());
     }
 
 }

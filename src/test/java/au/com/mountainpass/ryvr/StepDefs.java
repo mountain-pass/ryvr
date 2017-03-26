@@ -27,6 +27,7 @@ import au.com.mountainpass.ryvr.jdbc.JdbcRyvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
+import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 import cucumber.api.java.After;
@@ -108,8 +109,13 @@ public class StepDefs {
         ryvrsCollectionResponse = client.getRyvrsCollection();
     }
 
+    @Autowired
     private EmbeddedDatabase db;
+
+    @Autowired
     private JdbcTemplate jt;
+
+    private CompletableFuture<RyvrResponse> ryvrResponse;
 
     @Given("^a database \"([^\"]*)\"$")
     public void a_database(String dbName) throws Throwable {
@@ -140,16 +146,16 @@ public class StepDefs {
                     public void setValues(PreparedStatement ps, int i)
                             throws SQLException {
                         // TODO Auto-generated method stub
-                        Map<String, String> row = events.get(i + 1);
-                        ps.setInt(i, Integer.parseInt(row.get("ID")));
-                        ps.setString(i, row.get("ACCOUNT"));
-                        ps.setString(i, row.get("DESCRIPTION"));
-                        ps.setBigDecimal(i, new BigDecimal(row.get("AMOUNT")));
+                        Map<String, String> row = events.get(i);
+                        ps.setInt(1, Integer.parseInt(row.get("ID")));
+                        ps.setString(2, row.get("ACCOUNT"));
+                        ps.setString(3, row.get("DESCRIPTION"));
+                        ps.setBigDecimal(4, new BigDecimal(row.get("AMOUNT")));
                     }
 
                     @Override
                     public int getBatchSize() {
-                        return events.size() - 1;
+                        return events.size();
                     }
                 });
     }
@@ -178,4 +184,26 @@ public class StepDefs {
         ryvrsCollectionResponse.get(50, TimeUnit.SECONDS).assertCount(count);
     }
 
+    @When("^the \"([^\"]*)\" ryvr is retrieved$")
+    public void the_ryvr_is_retrieved(String name) throws Throwable {
+        ryvrResponse = client.getRyvr(name);
+    }
+
+    @Then("^it will contain$")
+    public void it_will_contain(List<Map<String, String>> events)
+            throws Throwable {
+        ryvrResponse.get(5, TimeUnit.SECONDS).assertHasEmbedded(events);
+    }
+
+    @Then("^it will have the following links$")
+    public void it_will_have_the_following_links(List<String> links)
+            throws Throwable {
+        ryvrResponse.get(5, TimeUnit.SECONDS).assertHasLinks(links);
+    }
+
+    @Then("^it will \\*not\\* have the following links$")
+    public void it_will_not_have_the_following_links(List<String> links)
+            throws Throwable {
+        ryvrResponse.get(5, TimeUnit.SECONDS).assertDoesntHaveLinks(links);
+    }
 }

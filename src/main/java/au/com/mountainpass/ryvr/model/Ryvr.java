@@ -3,6 +3,8 @@ package au.com.mountainpass.ryvr.model;
 import static de.otto.edison.hal.Link.*;
 import static de.otto.edison.hal.Links.*;
 
+import de.otto.edison.hal.Embedded;
+
 public class Ryvr extends MutableHalRepresentation {
 
     private String title;
@@ -17,6 +19,16 @@ public class Ryvr extends MutableHalRepresentation {
 
     public String getTitle() {
         return title;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see de.otto.edison.hal.HalRepresentation#getEmbedded()
+     */
+    @Override
+    public Embedded getEmbedded() {
+        return super.getEmbedded();
     }
 
 }

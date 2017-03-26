@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 
 public class MutableHalRepresentation extends HalRepresentation {
@@ -26,6 +27,10 @@ public class MutableHalRepresentation extends HalRepresentation {
 
     public void clear() {
         super.withEmbedded("item", Collections.EMPTY_LIST);
+    }
+
+    public void add(Link link) {
+        super.withLinks(link);
     }
 
 }

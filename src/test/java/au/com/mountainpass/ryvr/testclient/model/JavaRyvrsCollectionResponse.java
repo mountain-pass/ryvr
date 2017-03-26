@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import au.com.mountainpass.ryvr.model.Ryvr;
@@ -35,6 +36,17 @@ public class JavaRyvrsCollectionResponse implements RyvrsCollectionResponse {
                 .getItemsBy("item", Ryvr.class).stream()
                 .map(item -> item.getTitle()).collect(Collectors.toList());
         assertThat(titles, containsInAnyOrder(names.toArray()));
+    }
+
+    @Override
+    public CompletableFuture<RyvrResponse> followEmbeddedRyvrLink(String name) {
+        return CompletableFuture.supplyAsync(() -> {
+            Ryvr ryvr = ryvrsCollection.getEmbedded()
+                    .getItemsBy("item", Ryvr.class).stream()
+                    .filter(item -> name.equals(item.getTitle())).findAny()
+                    .get();
+            return new JavaRyvrResponse(ryvr);
+        });
     }
 
 }
