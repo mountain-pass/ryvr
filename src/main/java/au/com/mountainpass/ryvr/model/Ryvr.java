@@ -13,7 +13,8 @@ public class Ryvr extends MutableHalRepresentation {
     }
 
     public Ryvr(String title) {
-        super(linkingTo(linkBuilder("self", "/").withTitle("Ryvr").build()));
+        super(linkingTo(linkBuilder("self", "/ryvrs/" + title).withTitle(title)
+                .withName(title).build()));
         this.title = title;
     }
 
@@ -29,6 +30,10 @@ public class Ryvr extends MutableHalRepresentation {
     @Override
     public Embedded getEmbedded() {
         return super.getEmbedded();
+    }
+
+    public void refresh() {
+
     }
 
 }

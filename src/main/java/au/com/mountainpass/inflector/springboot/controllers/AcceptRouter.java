@@ -59,4 +59,12 @@ public class AcceptRouter implements RyvrController {
                 .getRoot(request);
     }
 
+    @Override
+    public CompletableFuture<ResponseEntity<?>> getRyvr(RequestContext request,
+            String ryvrName, String xRequestId, String accept,
+            String cacheControl) {
+        return findContentController(request.getAcceptableMediaTypes())
+                .getRyvr(request, ryvrName, xRequestId, accept, cacheControl);
+    }
+
 }

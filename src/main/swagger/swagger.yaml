@@ -108,6 +108,70 @@ paths:
           $ref: '#/responses/503'
         '504':
           $ref: '#/responses/504'
+  /ryvrs/{ryvrName}:
+    parameters:
+      - name: ryvrName
+        description: The unique name of the ryvr
+        in: path
+        required: true
+        type: string
+    get:
+      tags:
+        - ryvrs
+      description: The current page of the feed
+      operationId: getRvyr
+      parameters:
+        - $ref: "#/parameters/X-Request-Id"
+        - $ref: '#/parameters/Accept'
+        - $ref: '#/parameters/Cache-Control'
+      responses:
+        '200':
+          description: A page of ryvrs
+          schema:
+              $ref: '#/definitions/page'
+          headers:
+            ETag:
+              description: |
+                The entity tag for the page.
+
+                The ID of the most recent record in the page is used as the ETag as this is quick to generate and will change as new records are added to the page. The service implementation version is also included in the ETag as changes in the service version may result in different page output as well.
+
+              type: string
+              pattern: '([wW]/)?"([^"]|\\")*"'
+            X-Request-Id:
+              type: string
+              pattern: '^[0-9+\/=\-]{20,200}$'
+              description: "Logging correlation ID for this request"
+            Vary:
+              type: string
+              description: |
+                The Vary field value indicates the set of request-header fields that fully determines, while the response is fresh, whether a cache is permitted to use the response to reply to a subsequent request without revalidation. For uncacheable or stale responses, the Vary field value advises the user agent about the criteria that were used to select the representation.
+            Cache-Control:
+              description: |
+                Caching directives for the response
+              type: string
+        '307':
+          description: Redirection to current page
+          headers:
+            Location:
+              type: string
+              format: uri
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '406':
+          $ref: '#/responses/406'
+        '501':
+          $ref: '#/responses/501'
+        '502':
+          $ref: '#/responses/502'
+        '503':
+          $ref: '#/responses/503'
+        '504':
+          $ref: '#/responses/504'
   '/api-docs':
     get:
       tags:

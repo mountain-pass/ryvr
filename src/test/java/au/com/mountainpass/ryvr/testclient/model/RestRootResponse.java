@@ -3,29 +3,22 @@ package au.com.mountainpass.ryvr.testclient.model;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-import java.net.URI;
-import java.util.Optional;
+import java.net.URL;
 import java.util.concurrent.CompletableFuture;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.AsyncRestTemplate;
-
-import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
-import au.com.mountainpass.ryvr.testclient.FutureConverter;
-import de.otto.edison.hal.Link;
+import de.otto.edison.hal.traverson.Traverson;
 
 public class RestRootResponse implements RootResponse {
 
-    private AsyncRestTemplate restTemplate;
     private Root root;
-    private RyvrConfiguration config;
+    private Traverson traverson;
+    private URL contextUrl;
 
-    public RestRootResponse(AsyncRestTemplate restTemplate,
-            RyvrConfiguration config, Root root) {
-        this.restTemplate = restTemplate;
-        this.config = config;
+    public RestRootResponse(Traverson traverson, URL contextUrl, Root root) {
+        this.traverson = traverson;
+        this.contextUrl = contextUrl;
         this.root = root;
     }
 
@@ -46,20 +39,14 @@ public class RestRootResponse implements RootResponse {
 
     @Override
     public CompletableFuture<RyvrsCollectionResponse> followRyvrsLink() {
-        Optional<Link> ryvrsCollectionLink = root.getLinks()
-                .getLinkBy("https://ryvr.io/rels/ryvrs-collection");
-
-        URI url = config.getBaseUri()
-                .resolve(ryvrsCollectionLink.get().getHref());
-        CompletableFuture<ResponseEntity<RyvrsCollection>> rval = FutureConverter
-                .convert(restTemplate.getForEntity(url, RyvrsCollection.class));
-
-        return rval.thenApply(ryvrsCollectionResponse -> {
-            RyvrsCollection body = ryvrsCollectionResponse.getBody();
-            return new RestRyvrsCollectionResponse(restTemplate, config,
-                    body);
+        return CompletableFuture.supplyAsync(() -> {
+            Traverson followed = traverson.startWith(contextUrl, root)
+                    .follow("https://ryvr.io/rels/ryvrs-collection");
+            RyvrsCollection ryvrsCollection = followed
+                    .getResourceAs(RyvrsCollection.class).get();
+            return new RestRyvrsCollectionResponse(traverson,
+                    followed.getCurrentContextUrl(), ryvrsCollection);
         });
-
     }
 
 }

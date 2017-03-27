@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import au.com.mountainpass.ryvr.SwaggerFetcher;
 import au.com.mountainpass.ryvr.model.Root;
+import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import io.swagger.config.FilterFactory;
 import io.swagger.core.filter.SwaggerSpecFilter;
@@ -97,6 +98,22 @@ public class JsonController implements RyvrContentController {
                             .valueOf("application/hal+json"))
                     .body(root);
         });
+    }
+
+    @Override
+    public CompletableFuture<ResponseEntity<?>> getRyvr(RequestContext request,
+            String ryvrName, String xRequestId, String accept,
+            String cacheControl) {
+
+        return CompletableFuture.supplyAsync(() -> {
+            Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
+            ryvr.refresh();
+            return ResponseEntity.status(HttpStatus.OK)
+                    .contentType(org.springframework.http.MediaType
+                            .valueOf("application/hal+json"))
+                    .body(ryvr);
+        });
+
     }
 
 }

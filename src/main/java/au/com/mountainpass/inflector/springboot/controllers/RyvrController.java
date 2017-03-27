@@ -17,4 +17,8 @@ public interface RyvrController {
 
     public CompletableFuture<ResponseEntity<?>> getRoot(RequestContext request);
 
+    public CompletableFuture<ResponseEntity<?>> getRyvr(RequestContext request,
+            String ryvrName, String xRequestId, String accept,
+            String cacheControl);
+
 }

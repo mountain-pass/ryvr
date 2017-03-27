@@ -164,7 +164,7 @@ public class StepDefs {
     public void a_ryvr_for_for_table(String name, String dbName, String table)
             throws Throwable {
         JdbcRyvr ryvr = new JdbcRyvr(name, jt, table);
-        ryvrsCollection.add(ryvr);
+        ryvrsCollection.addRyvr(ryvr);
     }
 
     @Then("^the ryvrs list will contain the following entries$")
@@ -192,7 +192,7 @@ public class StepDefs {
     @Then("^it will contain$")
     public void it_will_contain(List<Map<String, String>> events)
             throws Throwable {
-        ryvrResponse.get(5, TimeUnit.SECONDS).assertHasEmbedded(events);
+        ryvrResponse.get(300, TimeUnit.SECONDS).assertHasEmbedded(events);
     }
 
     @Then("^it will have the following links$")

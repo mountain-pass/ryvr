@@ -21,8 +21,9 @@ public class MutableHalRepresentation extends HalRepresentation {
         super.withEmbedded("item", embeddedItems);
     }
 
-    public void add(HalRepresentation embeddedItem) {
-        super.withEmbedded("item", Collections.singletonList(embeddedItem));
+    public void add(HalRepresentation item) {
+        super.withLinks(Link.copyOf(item.getLinks().getLinkBy("self").get())
+                .withRel("item").build());
     }
 
     public void clear() {

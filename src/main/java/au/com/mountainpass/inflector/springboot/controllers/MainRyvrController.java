@@ -48,6 +48,15 @@ public class MainRyvrController {
         return toResponseContext(result);
     }
 
+    public io.swagger.inflector.models.ResponseContext getRvyr(
+            io.swagger.inflector.models.RequestContext request, String ryvrName,
+            String xRequestId, String accept, String cacheControl)
+            throws InterruptedException, ExecutionException {
+        CompletableFuture<ResponseEntity<?>> result = router.getRyvr(request,
+                ryvrName, xRequestId, accept, cacheControl);
+        return toResponseContext(result);
+    }
+
     private ResponseContext toResponseContext(
             CompletableFuture<ResponseEntity<?>> result)
             throws InterruptedException, ExecutionException {

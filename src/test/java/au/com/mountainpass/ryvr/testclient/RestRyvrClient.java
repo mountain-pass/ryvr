@@ -30,10 +30,12 @@ import au.com.mountainpass.ryvr.testclient.model.JavaSwaggerResponse;
 import au.com.mountainpass.ryvr.testclient.model.RestRootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RestRyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
+import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 import de.otto.edison.hal.EmbeddedTypeInfo;
 import de.otto.edison.hal.Link;
+import de.otto.edison.hal.traverson.Traverson;
 import io.swagger.parser.SwaggerParser;
 
 public class RestRyvrClient implements RyvrTestClient {
@@ -69,9 +71,11 @@ public class RestRyvrClient implements RyvrTestClient {
         URI url = config.getBaseUri().resolve("/");
 
         return CompletableFuture.supplyAsync(() -> {
-            return new RestRootResponse(restTemplate, config,
-                    traverson(this::httpGet).startWith(url.toString())
-                            .getResourceAs(Root.class).get());
+            Traverson startedWith = traverson(this::httpGet)
+                    .startWith(url.toString());
+            return new RestRootResponse(traverson(this::httpGet),
+                    startedWith.getCurrentContextUrl(),
+                    startedWith.getResourceAs(Root.class).get());
         });
 
     }
@@ -131,14 +135,23 @@ public class RestRyvrClient implements RyvrTestClient {
         URI url = config.getBaseUri().resolve("/");
 
         return CompletableFuture.supplyAsync(() -> {
-            RyvrsCollection ryvrsCollection = traverson(this::httpGet)
+            Traverson followed = traverson(this::httpGet)
                     .startWith(url.toString())
-                    .follow(Root.RELS_RYVRS_COLLECTION)
+                    .follow(Root.RELS_RYVRS_COLLECTION);
+            RyvrsCollection ryvrsCollection = followed
                     .getResourceAs(RyvrsCollection.class,
                             EmbeddedTypeInfo.withEmbedded("item", Ryvr.class))
                     .get();
-            return new RestRyvrsCollectionResponse(restTemplate, config,
-                    ryvrsCollection);
+            return new RestRyvrsCollectionResponse(traverson(this::httpGet),
+                    followed.getCurrentContextUrl(), ryvrsCollection);
+        });
+    }
+
+    @Override
+    public CompletableFuture<RyvrResponse> getRyvr(String name) {
+
+        return getRyvrsCollection().thenCompose(ryvrsCollections -> {
+            return ryvrsCollections.followEmbeddedRyvrLink(name);
         });
     }
 }

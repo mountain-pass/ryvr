@@ -12,7 +12,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import au.com.mountainpass.ryvr.model.Entry;
 import au.com.mountainpass.ryvr.model.Ryvr;
-import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.HalRepresentation;
 
 public class JdbcRyvr extends Ryvr {
@@ -28,13 +27,8 @@ public class JdbcRyvr extends Ryvr {
         this.table = table;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see au.com.mountainpass.ryvr.model.Ryvr#getEmbedded()
-     */
     @Override
-    public Embedded getEmbedded() {
+    public void refresh() {
         CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<HttpResponse>();
         List<Map<String, Object>> result = jt
                 .queryForList("select * from \"" + table + "\"");
@@ -44,9 +38,6 @@ public class JdbcRyvr extends Ryvr {
             embeddedItems.add(new Entry(row));
         });
         withEmbedded("item", embeddedItems);
-
-        // TODO Auto-generated method stub
-        return super.getEmbedded();
     }
 
 }
