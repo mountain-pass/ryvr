@@ -41,9 +41,8 @@ public class RestRyvrsCollectionResponse implements RyvrsCollectionResponse {
     }
 
     @Override
-    public void assertHasEmbedded(List<String> names) {
-        List<Ryvr> items = ryvrsCollection.getEmbedded().getItemsBy("item",
-                Ryvr.class);
+    public void assertHasItem(List<String> names) {
+        List<Link> items = ryvrsCollection.getLinks().getLinksBy("item");
         List<String> titles = items.stream().map(item -> item.getTitle())
                 .collect(Collectors.toList());
         assertThat(titles, containsInAnyOrder(names.toArray()));

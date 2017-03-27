@@ -9,7 +9,7 @@ public interface RyvrsCollectionResponse {
 
     public void assertCount(int count);
 
-    public void assertHasEmbedded(List<String> names);
+    public void assertHasItem(List<String> names);
 
     public CompletableFuture<RyvrResponse> followEmbeddedRyvrLink(String name);
 

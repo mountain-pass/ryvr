@@ -31,7 +31,7 @@ public class HtmlRyvrsCollectionResponse implements RyvrsCollectionResponse {
     }
 
     @Override
-    public void assertHasEmbedded(List<String> names) {
+    public void assertHasItem(List<String> names) {
         List<WebElement> items = webDriver.findElement(By.id("items"))
                 .findElements(By.className("item"));
         List<String> itemNames = items.stream().map(item -> item.getText())

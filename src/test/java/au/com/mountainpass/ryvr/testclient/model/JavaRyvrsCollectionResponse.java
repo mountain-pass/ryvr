@@ -31,7 +31,7 @@ public class JavaRyvrsCollectionResponse implements RyvrsCollectionResponse {
     }
 
     @Override
-    public void assertHasEmbedded(List<String> names) {
+    public void assertHasItem(List<String> names) {
         List<String> titles = ryvrsCollection.getLinks().getLinksBy("item")
                 .stream().map(item -> item.getTitle())
                 .collect(Collectors.toList());

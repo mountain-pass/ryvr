@@ -171,7 +171,7 @@ public class StepDefs {
     public void the_ryvrs_list_will_contain_the_following_entries(
             List<String> names) throws Throwable {
         ryvrsCollectionResponse.get(5, TimeUnit.SECONDS)
-                .assertHasEmbedded(names);
+                .assertHasItem(names);
     }
 
     @Then("^the ryvrs list will be empty$")
