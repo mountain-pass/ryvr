@@ -19,7 +19,8 @@ public class JavaRyvrResponse implements RyvrResponse {
     }
 
     @Override
-    public void assertHasEmbedded(List<Map<String, String>> events) {
+    public void assertHasItem(List<Map<String, String>> events) {
+        ryvr.refresh();
         Embedded embedded = ryvr.getEmbedded();
         List<Entry> items = embedded.getItemsBy("item", Entry.class);
         for (int i = 0; i < items.size(); ++i) {

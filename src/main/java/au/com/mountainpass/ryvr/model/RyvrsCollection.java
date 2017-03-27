@@ -31,7 +31,7 @@ public class RyvrsCollection extends MutableHalRepresentation {
     }
 
     public int getCount() {
-        return super.getEmbedded().getItemsBy("item").size();
+        return ryvrs.size();
     }
 
     public String getTitle() {
@@ -41,6 +41,17 @@ public class RyvrsCollection extends MutableHalRepresentation {
     @JsonIgnore
     public Ryvr getRyvr(String ryvrName) {
         return ryvrs.get(ryvrName);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see au.com.mountainpass.ryvr.model.MutableHalRepresentation#clear()
+     */
+    @Override
+    public void clear() {
+        ryvrs.clear();
+        super.clear();
     }
 
 }

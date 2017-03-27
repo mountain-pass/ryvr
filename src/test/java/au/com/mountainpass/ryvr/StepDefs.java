@@ -192,7 +192,7 @@ public class StepDefs {
     @Then("^it will contain$")
     public void it_will_contain(List<Map<String, String>> events)
             throws Throwable {
-        ryvrResponse.get(300, TimeUnit.SECONDS).assertHasEmbedded(events);
+        ryvrResponse.get(300, TimeUnit.SECONDS).assertHasItem(events);
     }
 
     @Then("^it will have the following links$")

@@ -32,19 +32,16 @@ public class JavaRyvrsCollectionResponse implements RyvrsCollectionResponse {
 
     @Override
     public void assertHasEmbedded(List<String> names) {
-        List<String> titles = ryvrsCollection.getEmbedded()
-                .getItemsBy("item", Ryvr.class).stream()
-                .map(item -> item.getTitle()).collect(Collectors.toList());
+        List<String> titles = ryvrsCollection.getLinks().getLinksBy("item")
+                .stream().map(item -> item.getTitle())
+                .collect(Collectors.toList());
         assertThat(titles, containsInAnyOrder(names.toArray()));
     }
 
     @Override
     public CompletableFuture<RyvrResponse> followEmbeddedRyvrLink(String name) {
         return CompletableFuture.supplyAsync(() -> {
-            Ryvr ryvr = ryvrsCollection.getEmbedded()
-                    .getItemsBy("item", Ryvr.class).stream()
-                    .filter(item -> name.equals(item.getTitle())).findAny()
-                    .get();
+            Ryvr ryvr = ryvrsCollection.getRyvr(name);
             return new JavaRyvrResponse(ryvr);
         });
     }

@@ -5,7 +5,7 @@ import java.util.Map;
 
 public interface RyvrResponse {
 
-    void assertHasEmbedded(List<Map<String, String>> events);
+    void assertHasItem(List<Map<String, String>> events);
 
     void assertHasLinks(List<String> links);
 
