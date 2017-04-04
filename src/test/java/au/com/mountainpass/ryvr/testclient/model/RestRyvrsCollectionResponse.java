@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -49,18 +48,14 @@ public class RestRyvrsCollectionResponse implements RyvrsCollectionResponse {
     }
 
     @Override
-    public CompletableFuture<RyvrResponse> followEmbeddedRyvrLink(String name) {
-        return CompletableFuture.supplyAsync(() -> {
-            Traverson followed = traverson
-                    .startWith(contextUrl, ryvrsCollection)
-                    .follow("item", hasName(name));
-            EmbeddedTypeInfo embeddedTypeInfo = EmbeddedTypeInfo
-                    .withEmbedded("item", Entry.class);
-            Ryvr ryvr = followed.getResourceAs(Ryvr.class, embeddedTypeInfo)
-                    .get();
-            return new RestRyvrResponse(traverson,
-                    followed.getCurrentContextUrl(), ryvr);
-        });
+    public RyvrResponse followEmbeddedRyvrLink(String name) {
+        Traverson followed = traverson.startWith(contextUrl, ryvrsCollection)
+                .follow("item", hasName(name));
+        EmbeddedTypeInfo embeddedTypeInfo = EmbeddedTypeInfo
+                .withEmbedded("item", Entry.class);
+        Ryvr ryvr = followed.getResourceAs(Ryvr.class, embeddedTypeInfo).get();
+        return new RestRyvrResponse(traverson, followed.getCurrentContextUrl(),
+                ryvr);
     }
 
     private Predicate<Link> hasName(String name) {

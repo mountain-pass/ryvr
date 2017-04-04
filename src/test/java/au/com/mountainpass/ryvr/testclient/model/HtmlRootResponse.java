@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
@@ -52,17 +51,14 @@ public class HtmlRootResponse implements RootResponse {
     }
 
     @Override
-    public CompletableFuture<RyvrsCollectionResponse> followRyvrsLink() {
-        return CompletableFuture.supplyAsync(() -> {
-            List<WebElement> links = webDriver.findElement(By.id("links"))
-                    .findElements(By.tagName("a"));
-            Optional<WebElement> link = links.stream()
-                    .filter(element -> "Ryvrs".equals(element.getText()))
-                    .findAny();
-            link.get().click();
-            HtmlRyvrClient.waitTillLoaded(webDriver, 5);
-            return new HtmlRyvrsCollectionResponse(webDriver);
-        });
+    public RyvrsCollectionResponse followRyvrsLink() {
+        List<WebElement> links = webDriver.findElement(By.id("links"))
+                .findElements(By.tagName("a"));
+        Optional<WebElement> link = links.stream()
+                .filter(element -> "Ryvrs".equals(element.getText())).findAny();
+        link.get().click();
+        HtmlRyvrClient.waitTillLoaded(webDriver, 5);
+        return new HtmlRyvrsCollectionResponse(webDriver);
     }
 
 }

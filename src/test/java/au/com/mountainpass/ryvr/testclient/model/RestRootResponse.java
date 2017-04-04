@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.net.URL;
-import java.util.concurrent.CompletableFuture;
 
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
@@ -38,15 +37,13 @@ public class RestRootResponse implements RootResponse {
     }
 
     @Override
-    public CompletableFuture<RyvrsCollectionResponse> followRyvrsLink() {
-        return CompletableFuture.supplyAsync(() -> {
-            Traverson followed = traverson.startWith(contextUrl, root)
-                    .follow("https://ryvr.io/rels/ryvrs-collection");
-            RyvrsCollection ryvrsCollection = followed
-                    .getResourceAs(RyvrsCollection.class).get();
-            return new RestRyvrsCollectionResponse(traverson,
-                    followed.getCurrentContextUrl(), ryvrsCollection);
-        });
+    public RyvrsCollectionResponse followRyvrsLink() {
+        Traverson followed = traverson.startWith(contextUrl, root)
+                .follow("https://ryvr.io/rels/ryvrs-collection");
+        RyvrsCollection ryvrsCollection = followed
+                .getResourceAs(RyvrsCollection.class).get();
+        return new RestRyvrsCollectionResponse(traverson,
+                followed.getCurrentContextUrl(), ryvrsCollection);
     }
 
 }

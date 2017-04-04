@@ -8,7 +8,6 @@ import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.core.MediaType;
 
@@ -42,14 +41,11 @@ public class HtmlController implements RyvrContentController {
     ObjectMapper om;
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getApiDocs(
-            RequestContext request, String group) {
-        return CompletableFuture.supplyAsync(() -> {
-            return ResponseEntity.status(HttpStatus.SEE_OTHER)
-                    .location(URI
-                            .create("/system/webjars/swagger-ui/2.2.10/index.html?url=/api-docs"))
-                    .build();
-        });
+    public ResponseEntity<?> getApiDocs(RequestContext request, String group) {
+        return ResponseEntity.status(HttpStatus.SEE_OTHER)
+                .location(URI
+                        .create("/system/webjars/swagger-ui/2.2.10/index.html?url=/api-docs"))
+                .build();
     }
 
     @Override
@@ -63,26 +59,23 @@ public class HtmlController implements RyvrContentController {
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRvyrsCollection(
-            RequestContext request, Long page, String xRequestId, String accept,
-            String cacheControl) {
-        Root root = (Root) jsonController.getRoot(request).join().getBody();
+    public ResponseEntity<?> getRvyrsCollection(RequestContext request,
+            Long page, String xRequestId, String accept, String cacheControl) {
+        Root root = (Root) jsonController.getRoot(request).getBody();
         RyvrsCollection collection = (RyvrsCollection) jsonController
                 .getRvyrsCollection(request, page, xRequestId, accept,
                         cacheControl)
-                .join().getBody();
+                .getBody();
         return getIndex(root, collection);
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRoot(
-            RequestContext request) {
-        Root root = (Root) jsonController.getRoot(request).join().getBody();
+    public ResponseEntity<?> getRoot(RequestContext request) {
+        Root root = (Root) jsonController.getRoot(request).getBody();
         return getIndex(root, root);
     }
 
-    private CompletableFuture<ResponseEntity<?>> getIndex(Root root,
-            Object resource) {
+    private ResponseEntity<?> getIndex(Root root, Object resource) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ClassPathResource index = new ClassPathResource("static/index.html");
         try {
@@ -95,23 +88,20 @@ public class HtmlController implements RyvrContentController {
             OutputStreamWriter writer = new OutputStreamWriter(baos);
             mustache.execute(writer, scope).flush();
             writer.flush();
-            return CompletableFuture.supplyAsync(() -> {
-                return ResponseEntity
-                        .ok(new ByteArrayInputStream(baos.toByteArray()));
-            });
+            return ResponseEntity
+                    .ok(new ByteArrayInputStream(baos.toByteArray()));
         } catch (IOException e) {
             throw new NotImplementedException(e);
         }
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRyvr(RequestContext request,
-            String ryvrName, String xRequestId, String accept,
-            String cacheControl) {
-        Root root = (Root) jsonController.getRoot(request).join().getBody();
+    public ResponseEntity<?> getRyvr(RequestContext request, String ryvrName,
+            String xRequestId, String accept, String cacheControl) {
+        Root root = (Root) jsonController.getRoot(request).getBody();
         Ryvr ryvr = (Ryvr) jsonController
                 .getRyvr(request, ryvrName, xRequestId, accept, cacheControl)
-                .join().getBody();
+                .getBody();
         return getIndex(root, ryvr);
     }
 

@@ -2,7 +2,6 @@ package au.com.mountainpass.inflector.springboot.controllers;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.core.MediaType;
 
@@ -24,7 +23,7 @@ public class AcceptRouter implements RyvrController {
     NotAcceptableController notAcceptableController = new NotAcceptableController();
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getApiDocs(
+    public ResponseEntity<?> getApiDocs(
             io.swagger.inflector.models.RequestContext request, String group) {
         return findContentController(request.getAcceptableMediaTypes())
                 .getApiDocs(request, group);
@@ -44,25 +43,22 @@ public class AcceptRouter implements RyvrController {
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRvyrsCollection(
-            RequestContext request, Long page, String xRequestId, String accept,
-            String cacheControl) {
+    public ResponseEntity<?> getRvyrsCollection(RequestContext request,
+            Long page, String xRequestId, String accept, String cacheControl) {
         return findContentController(request.getAcceptableMediaTypes())
                 .getRvyrsCollection(request, page, xRequestId, accept,
                         cacheControl);
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRoot(
-            RequestContext request) {
+    public ResponseEntity<?> getRoot(RequestContext request) {
         return findContentController(request.getAcceptableMediaTypes())
                 .getRoot(request);
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRyvr(RequestContext request,
-            String ryvrName, String xRequestId, String accept,
-            String cacheControl) {
+    public ResponseEntity<?> getRyvr(RequestContext request, String ryvrName,
+            String xRequestId, String accept, String cacheControl) {
         return findContentController(request.getAcceptableMediaTypes())
                 .getRyvr(request, ryvrName, xRequestId, accept, cacheControl);
     }

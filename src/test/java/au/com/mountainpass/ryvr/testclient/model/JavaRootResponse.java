@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.core.MediaType;
 
@@ -39,16 +38,12 @@ public class JavaRootResponse implements RootResponse {
     }
 
     @Override
-    public CompletableFuture<RyvrsCollectionResponse> followRyvrsLink() {
+    public RyvrsCollectionResponse followRyvrsLink() {
         RequestContext request = new RequestContext();
         request.setAcceptableMediaTypes(
                 Collections.singletonList(MediaType.APPLICATION_JSON_TYPE));
-        return router.getRvyrsCollection(request, null, null, null, null)
-                .thenApply(response -> {
-                    return new JavaRyvrsCollectionResponse(
-                            (RyvrsCollection) response.getBody());
-                });
-
+        return new JavaRyvrsCollectionResponse((RyvrsCollection) router
+                .getRvyrsCollection(request, null, null, null, null).getBody());
     }
 
 }

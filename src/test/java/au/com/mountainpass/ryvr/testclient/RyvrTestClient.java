@@ -1,6 +1,6 @@
 package au.com.mountainpass.ryvr.testclient;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
@@ -10,13 +10,14 @@ import cucumber.api.Scenario;
 
 public interface RyvrTestClient {
 
-    public CompletableFuture<SwaggerResponse> getApiDocs();
+    public SwaggerResponse getApiDocs()
+            throws InterruptedException, ExecutionException;
 
-    public CompletableFuture<RootResponse> getRoot();
+    public RootResponse getRoot();
 
-    public CompletableFuture<RyvrsCollectionResponse> getRyvrsCollection();
+    public RyvrsCollectionResponse getRyvrsCollection();
 
-    public CompletableFuture<RyvrResponse> getRyvr(String name);
+    public RyvrResponse getRyvr(String name);
 
     public void after(Scenario scenario);
 

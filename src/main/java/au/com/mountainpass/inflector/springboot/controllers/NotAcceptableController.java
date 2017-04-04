@@ -1,7 +1,5 @@
 package au.com.mountainpass.inflector.springboot.controllers;
 
-import java.util.concurrent.CompletableFuture;
-
 import javax.ws.rs.core.MediaType;
 
 import org.springframework.core.Ordered;
@@ -13,8 +11,7 @@ import io.swagger.inflector.models.RequestContext;
 public class NotAcceptableController implements RyvrContentController {
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getApiDocs(
-            RequestContext request, String group) {
+    public ResponseEntity<?> getApiDocs(RequestContext request, String group) {
         return notAcceptable();
     }
 
@@ -29,28 +26,23 @@ public class NotAcceptableController implements RyvrContentController {
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRvyrsCollection(
-            RequestContext request, Long page, String xRequestId, String accept,
-            String cacheControl) {
+    public ResponseEntity<?> getRvyrsCollection(RequestContext request,
+            Long page, String xRequestId, String accept, String cacheControl) {
         return notAcceptable();
     }
 
-    private CompletableFuture<ResponseEntity<?>> notAcceptable() {
-        return CompletableFuture.supplyAsync(() -> {
-            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
-        });
+    private ResponseEntity<?> notAcceptable() {
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).build();
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRoot(
-            RequestContext request) {
+    public ResponseEntity<?> getRoot(RequestContext request) {
         return notAcceptable();
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRyvr(RequestContext request,
-            String ryvrName, String xRequestId, String accept,
-            String cacheControl) {
+    public ResponseEntity<?> getRyvr(RequestContext request, String ryvrName,
+            String xRequestId, String accept, String cacheControl) {
         return notAcceptable();
     }
 

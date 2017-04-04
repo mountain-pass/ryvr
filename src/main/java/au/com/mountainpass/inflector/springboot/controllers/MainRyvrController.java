@@ -2,7 +2,6 @@ package au.com.mountainpass.inflector.springboot.controllers;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -29,22 +28,21 @@ public class MainRyvrController {
     public ResponseContext getApiDocs(
             io.swagger.inflector.models.RequestContext request, String group)
             throws InterruptedException, ExecutionException {
-        CompletableFuture<ResponseEntity<?>> result = router.getApiDocs(request,
-                group);
+        ResponseEntity<?> result = router.getApiDocs(request, group);
         return toResponseContext(result);
     }
 
     public ResponseContext getRvyrsCollection(RequestContext request, Long page,
             String xRequestId, String accept, String cacheControl)
             throws InterruptedException, ExecutionException {
-        CompletableFuture<ResponseEntity<?>> result = router.getRvyrsCollection(
-                request, page, xRequestId, accept, cacheControl);
+        ResponseEntity<?> result = router.getRvyrsCollection(request, page,
+                xRequestId, accept, cacheControl);
         return toResponseContext(result);
     }
 
     public ResponseContext getRoot(RequestContext request)
             throws InterruptedException, ExecutionException {
-        CompletableFuture<ResponseEntity<?>> result = router.getRoot(request);
+        ResponseEntity<?> result = router.getRoot(request);
         return toResponseContext(result);
     }
 
@@ -52,15 +50,13 @@ public class MainRyvrController {
             io.swagger.inflector.models.RequestContext request, String ryvrName,
             String xRequestId, String accept, String cacheControl)
             throws InterruptedException, ExecutionException {
-        CompletableFuture<ResponseEntity<?>> result = router.getRyvr(request,
-                ryvrName, xRequestId, accept, cacheControl);
+        ResponseEntity<?> result = router.getRyvr(request, ryvrName, xRequestId,
+                accept, cacheControl);
         return toResponseContext(result);
     }
 
-    private ResponseContext toResponseContext(
-            CompletableFuture<ResponseEntity<?>> result)
+    private ResponseContext toResponseContext(ResponseEntity<?> response)
             throws InterruptedException, ExecutionException {
-        ResponseEntity<?> response = result.get();
         ResponseContext rval = new ResponseContext();
         rval.setStatus(response.getStatusCodeValue());
         MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();

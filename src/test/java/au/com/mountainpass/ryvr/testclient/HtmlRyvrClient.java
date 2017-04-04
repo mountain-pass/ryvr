@@ -1,7 +1,6 @@
 package au.com.mountainpass.ryvr.testclient;
 
 import java.net.URI;
-import java.util.concurrent.CompletableFuture;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
@@ -29,23 +28,19 @@ public class HtmlRyvrClient implements RyvrTestClient {
     RyvrConfiguration config;
 
     @Override
-    public CompletableFuture<SwaggerResponse> getApiDocs() {
-        return CompletableFuture.supplyAsync(() -> {
-            URI url = config.getBaseUri().resolve("/api-docs");
-            webDriver.get(url.toString());
-            waitTillLoaded(webDriver, 5, By.id("api_info"));
-            return new HtmlSwaggerResponse(webDriver);
-        });
+    public SwaggerResponse getApiDocs() {
+        URI url = config.getBaseUri().resolve("/api-docs");
+        webDriver.get(url.toString());
+        waitTillLoaded(webDriver, 5, By.id("api_info"));
+        return new HtmlSwaggerResponse(webDriver);
     }
 
     @Override
-    public CompletableFuture<RootResponse> getRoot() {
+    public RootResponse getRoot() {
         URI url = config.getBaseUri().resolve("/");
         webDriver.get(url.toString());
         waitTillLoaded(webDriver, 5);
-        return CompletableFuture.supplyAsync(() -> {
-            return new HtmlRootResponse(webDriver);
-        });
+        return new HtmlRootResponse(webDriver);
     }
 
     public static void waitTillLoaded(WebDriver webDriver,
@@ -60,15 +55,13 @@ public class HtmlRyvrClient implements RyvrTestClient {
     }
 
     @Override
-    public CompletableFuture<RyvrsCollectionResponse> getRyvrsCollection() {
-        return getRoot()
-                .thenCompose(rootResponse -> rootResponse.followRyvrsLink());
+    public RyvrsCollectionResponse getRyvrsCollection() {
+        return getRoot().followRyvrsLink();
     }
 
     @Override
-    public CompletableFuture<RyvrResponse> getRyvr(String name) {
-        return getRyvrsCollection()
-                .thenCompose(response -> response.followEmbeddedRyvrLink(name));
+    public RyvrResponse getRyvr(String name) {
+        return getRyvrsCollection().followEmbeddedRyvrLink(name);
 
     }
 

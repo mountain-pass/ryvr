@@ -1,7 +1,6 @@
 package au.com.mountainpass.ryvr.testclient.model;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public interface RyvrsCollectionResponse {
 
@@ -11,6 +10,6 @@ public interface RyvrsCollectionResponse {
 
     public void assertHasItem(List<String> names);
 
-    public CompletableFuture<RyvrResponse> followEmbeddedRyvrLink(String name);
+    public RyvrResponse followEmbeddedRyvrLink(String name);
 
 }

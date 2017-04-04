@@ -2,7 +2,6 @@ package au.com.mountainpass.inflector.springboot.controllers;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -43,24 +42,21 @@ public class JsonController implements RyvrContentController {
     private RyvrsCollection ryvrsCollection;
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getApiDocs(
-            RequestContext request, String group) {
+    public ResponseEntity<?> getApiDocs(RequestContext request, String group) {
 
-        return CompletableFuture.supplyAsync(() -> {
-            Swagger swagger = swaggerFetcher.getSwagger();
-            SwaggerSpecFilter filter = FilterFactory.getFilter();
-            if (filter != null) {
-                Map<String, String> cookies = new HashMap<String, String>();
-                MultivaluedMap<String, String> headers = request.getHeaders();
+        Swagger swagger = swaggerFetcher.getSwagger();
+        SwaggerSpecFilter filter = FilterFactory.getFilter();
+        if (filter != null) {
+            Map<String, String> cookies = new HashMap<String, String>();
+            MultivaluedMap<String, String> headers = request.getHeaders();
 
-                swagger = new VendorSpecFilter().filter(swagger, filter, null,
-                        cookies, headers);
-            }
-            return ResponseEntity.status(HttpStatus.OK)
-                    .contentType(
-                            org.springframework.http.MediaType.APPLICATION_JSON)
-                    .body(swagger);
-        });
+            swagger = new VendorSpecFilter().filter(swagger, filter, null,
+                    cookies, headers);
+        }
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(
+                        org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(swagger);
     }
 
     @Override
@@ -76,43 +72,33 @@ public class JsonController implements RyvrContentController {
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRvyrsCollection(
-            RequestContext request, Long page, String xRequestId, String accept,
-            String cacheControl) {
-        return CompletableFuture.supplyAsync(() -> {
-            return ResponseEntity.status(HttpStatus.OK)
-                    .contentType(org.springframework.http.MediaType
-                            .valueOf("application/hal+json"))
-                    .body(ryvrsCollection);
-        });
-
+    public ResponseEntity<?> getRvyrsCollection(RequestContext request,
+            Long page, String xRequestId, String accept, String cacheControl) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(org.springframework.http.MediaType
+                        .valueOf("application/hal+json"))
+                .body(ryvrsCollection);
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRoot(
-            RequestContext request) {
-        return CompletableFuture.supplyAsync(() -> {
-            Root root = new Root(applicationName);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .contentType(org.springframework.http.MediaType
-                            .valueOf("application/hal+json"))
-                    .body(root);
-        });
+    public ResponseEntity<?> getRoot(RequestContext request) {
+        Root root = new Root(applicationName);
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(org.springframework.http.MediaType
+                        .valueOf("application/hal+json"))
+                .body(root);
     }
 
     @Override
-    public CompletableFuture<ResponseEntity<?>> getRyvr(RequestContext request,
-            String ryvrName, String xRequestId, String accept,
-            String cacheControl) {
+    public ResponseEntity<?> getRyvr(RequestContext request, String ryvrName,
+            String xRequestId, String accept, String cacheControl) {
 
-        return CompletableFuture.supplyAsync(() -> {
-            Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
-            ryvr.refresh();
-            return ResponseEntity.status(HttpStatus.OK)
-                    .contentType(org.springframework.http.MediaType
-                            .valueOf("application/hal+json"))
-                    .body(ryvr);
-        });
+        Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
+        ryvr.refresh();
+        return ResponseEntity.status(HttpStatus.OK)
+                .contentType(org.springframework.http.MediaType
+                        .valueOf("application/hal+json"))
+                .body(ryvr);
 
     }
 

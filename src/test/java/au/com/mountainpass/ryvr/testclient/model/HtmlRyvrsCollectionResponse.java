@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
@@ -43,19 +42,15 @@ public class HtmlRyvrsCollectionResponse implements RyvrsCollectionResponse {
     }
 
     @Override
-    public CompletableFuture<RyvrResponse> followEmbeddedRyvrLink(
-            final String name) {
-        return CompletableFuture.supplyAsync(() -> {
-            List<WebElement> items = webDriver.findElement(By.id("linkedItems"))
-                    .findElements(By.className("linkedItem"));
-            assertThat(items, not(empty()));
-            WebElement link = items.stream()
-                    .filter(item -> name.equals(item.getText())).findAny()
-                    .get();
-            link.click();
-            HtmlRyvrClient.waitTillLoaded(webDriver, 5);
-            return new HtmlRyvrResponse(webDriver);
-        });
+    public RyvrResponse followEmbeddedRyvrLink(final String name) {
+        List<WebElement> items = webDriver.findElement(By.id("linkedItems"))
+                .findElements(By.className("linkedItem"));
+        assertThat(items, not(empty()));
+        WebElement link = items.stream()
+                .filter(item -> name.equals(item.getText())).findAny().get();
+        link.click();
+        HtmlRyvrClient.waitTillLoaded(webDriver, 5);
+        return new HtmlRyvrResponse(webDriver);
     }
 
 }

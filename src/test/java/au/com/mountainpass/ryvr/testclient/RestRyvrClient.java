@@ -53,7 +53,8 @@ public class RestRyvrClient implements RyvrTestClient {
     SwaggerParser swaggerParser = new SwaggerParser();
 
     @Override
-    public CompletableFuture<SwaggerResponse> getApiDocs() {
+    public SwaggerResponse getApiDocs()
+            throws InterruptedException, ExecutionException {
         URI url = config.getBaseUri().resolve("/api-docs");
 
         HttpHeaders headers = new HttpHeaders();
@@ -63,24 +64,19 @@ public class RestRyvrClient implements RyvrTestClient {
         CompletableFuture<ResponseEntity<ObjectNode>> rval = FutureConverter
                 .convert(restTemplate.exchange(url, HttpMethod.GET,
                         requestEntity, ObjectNode.class));
-        return rval.thenApply(response -> {
-            return new JavaSwaggerResponse(
-                    swaggerParser.parse(response.getBody().toString()));
-        });
+        return new JavaSwaggerResponse(
+                swaggerParser.parse(rval.get().getBody().toString()));
     }
 
     @Override
-    public CompletableFuture<RootResponse> getRoot() {
+    public RootResponse getRoot() {
         URI url = config.getBaseUri().resolve("/");
 
-        return CompletableFuture.supplyAsync(() -> {
-            Traverson startedWith = traverson(this::httpGet)
-                    .startWith(url.toString());
-            return new RestRootResponse(traverson(this::httpGet),
-                    startedWith.getCurrentContextUrl(),
-                    startedWith.getResourceAs(Root.class).get());
-        });
-
+        Traverson startedWith = traverson(this::httpGet)
+                .startWith(url.toString());
+        return new RestRootResponse(traverson(this::httpGet),
+                startedWith.getCurrentContextUrl(),
+                startedWith.getResourceAs(Root.class).get());
     }
 
     @Autowired
@@ -136,28 +132,23 @@ public class RestRyvrClient implements RyvrTestClient {
     }
 
     @Override
-    public CompletableFuture<RyvrsCollectionResponse> getRyvrsCollection() {
+    public RyvrsCollectionResponse getRyvrsCollection() {
         URI url = config.getBaseUri().resolve("/");
 
-        return CompletableFuture.supplyAsync(() -> {
-            Traverson followed = traverson(this::httpGet)
-                    .startWith(url.toString())
-                    .follow(Root.RELS_RYVRS_COLLECTION);
-            RyvrsCollection ryvrsCollection = followed
-                    .getResourceAs(RyvrsCollection.class,
-                            EmbeddedTypeInfo.withEmbedded("item", Ryvr.class))
-                    .get();
-            return new RestRyvrsCollectionResponse(traverson(this::httpGet),
-                    followed.getCurrentContextUrl(), ryvrsCollection);
-        });
+        Traverson followed = traverson(this::httpGet).startWith(url.toString())
+                .follow(Root.RELS_RYVRS_COLLECTION);
+        RyvrsCollection ryvrsCollection = followed
+                .getResourceAs(RyvrsCollection.class,
+                        EmbeddedTypeInfo.withEmbedded("item", Ryvr.class))
+                .get();
+        return new RestRyvrsCollectionResponse(traverson(this::httpGet),
+                followed.getCurrentContextUrl(), ryvrsCollection);
     }
 
     @Override
-    public CompletableFuture<RyvrResponse> getRyvr(String name) {
+    public RyvrResponse getRyvr(String name) {
 
-        return getRyvrsCollection().thenCompose(ryvrsCollections -> {
-            return ryvrsCollections.followEmbeddedRyvrLink(name);
-        });
+        return getRyvrsCollection().followEmbeddedRyvrLink(name);
     }
 
     @Override

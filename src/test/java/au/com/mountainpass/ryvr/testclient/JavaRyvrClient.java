@@ -1,7 +1,6 @@
 package au.com.mountainpass.ryvr.testclient;
 
 import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
 
 import javax.ws.rs.core.MediaType;
 
@@ -25,35 +24,31 @@ public class JavaRyvrClient implements RyvrTestClient {
     AcceptRouter router;
 
     @Override
-    public CompletableFuture<SwaggerResponse> getApiDocs() {
+    public SwaggerResponse getApiDocs() {
         RequestContext request = new RequestContext();
         request.setAcceptableMediaTypes(
                 Collections.singletonList(MediaType.APPLICATION_JSON_TYPE));
-        return router.getApiDocs(request, "").thenApply(response -> {
-            return new JavaSwaggerResponse((Swagger) response.getBody());
-        });
+        return new JavaSwaggerResponse(
+                (Swagger) router.getApiDocs(request, "").getBody());
     }
 
     @Override
-    public CompletableFuture<RootResponse> getRoot() {
+    public RootResponse getRoot() {
         RequestContext request = new RequestContext();
         request.setAcceptableMediaTypes(
                 Collections.singletonList(MediaType.APPLICATION_JSON_TYPE));
-        return router.getRoot(request).thenApply(response -> {
-            return new JavaRootResponse((Root) response.getBody(), router);
-        });
+        return new JavaRootResponse((Root) router.getRoot(request).getBody(),
+                router);
     }
 
     @Override
-    public CompletableFuture<RyvrsCollectionResponse> getRyvrsCollection() {
-        return getRoot()
-                .thenCompose(rootResponse -> rootResponse.followRyvrsLink());
+    public RyvrsCollectionResponse getRyvrsCollection() {
+        return getRoot().followRyvrsLink();
     }
 
     @Override
-    public CompletableFuture<RyvrResponse> getRyvr(String name) {
-        return getRyvrsCollection()
-                .thenCompose(response -> response.followEmbeddedRyvrLink(name));
+    public RyvrResponse getRyvr(String name) {
+        return getRyvrsCollection().followEmbeddedRyvrLink(name);
     }
 
     @Override
