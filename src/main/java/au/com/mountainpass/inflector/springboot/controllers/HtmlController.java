@@ -25,6 +25,7 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 
 import au.com.mountainpass.ryvr.model.Root;
+import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import io.swagger.inflector.models.RequestContext;
 
@@ -101,6 +102,17 @@ public class HtmlController implements RyvrContentController {
         } catch (IOException e) {
             throw new NotImplementedException(e);
         }
+    }
+
+    @Override
+    public CompletableFuture<ResponseEntity<?>> getRyvr(RequestContext request,
+            String ryvrName, String xRequestId, String accept,
+            String cacheControl) {
+        Root root = (Root) jsonController.getRoot(request).join().getBody();
+        Ryvr ryvr = (Ryvr) jsonController
+                .getRyvr(request, ryvrName, xRequestId, accept, cacheControl)
+                .join().getBody();
+        return getIndex(root, ryvr);
     }
 
 }

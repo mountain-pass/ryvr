@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import au.com.mountainpass.ryvr.model.Entry;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Link;
 
 public class JdbcRyvr extends Ryvr {
 
@@ -21,8 +22,6 @@ public class JdbcRyvr extends Ryvr {
 
     public JdbcRyvr(String title, JdbcTemplate jt, String table) {
         super(title);
-        super.add(linkBuilder("current", "/").withTitle("Current").build());
-        super.add(linkBuilder("last", "/").withTitle("Last").build());
         this.jt = jt;
         this.table = table;
     }
@@ -33,11 +32,18 @@ public class JdbcRyvr extends Ryvr {
         List<Map<String, Object>> result = jt
                 .queryForList("select * from \"" + table + "\"");
         List<HalRepresentation> embeddedItems = new ArrayList<>();
+        List<Link> linkedItems = new ArrayList<>();
 
         result.parallelStream().forEach(row -> {
-            embeddedItems.add(new Entry(row));
+            Entry entry = new Entry(this.getLinks().getLinkBy("self").get(),
+                    row);
+            embeddedItems.add(entry);
+            Link selfLink = entry.getLinks().getLinkBy("self").get();
+            linkedItems.add(linkBuilder("item", selfLink.getHref())
+                    .withTitle(selfLink.getTitle()).build());
         });
         withEmbedded("item", embeddedItems);
+        withLinks(linkedItems);
     }
 
 }

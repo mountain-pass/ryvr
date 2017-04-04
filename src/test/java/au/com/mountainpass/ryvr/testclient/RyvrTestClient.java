@@ -6,6 +6,7 @@ import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
+import cucumber.api.Scenario;
 
 public interface RyvrTestClient {
 
@@ -16,5 +17,7 @@ public interface RyvrTestClient {
     public CompletableFuture<RyvrsCollectionResponse> getRyvrsCollection();
 
     public CompletableFuture<RyvrResponse> getRyvr(String name);
+
+    public void after(Scenario scenario);
 
 }

@@ -33,6 +33,7 @@ import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
+import cucumber.api.Scenario;
 import de.otto.edison.hal.EmbeddedTypeInfo;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.traverson.Traverson;
@@ -46,6 +47,8 @@ public class RestRyvrClient implements RyvrTestClient {
 
     @Autowired
     RyvrConfiguration config;
+
+    String lastResponse;
 
     SwaggerParser swaggerParser = new SwaggerParser();
 
@@ -119,9 +122,11 @@ public class RestRyvrClient implements RyvrTestClient {
                     rval = EntityUtils.toString(response.getEntity());
                     // httpAsyncClient.close();
                 } catch (Exception e) {
+                    lastResponse = e.getMessage();
                     logger.error(e.getMessage(), e);
                     throw new RuntimeException(e.getMessage(), e);
                 }
+                lastResponse = rval;
                 return rval;
             }).get();
         } catch (InterruptedException | ExecutionException e) {
@@ -153,5 +158,12 @@ public class RestRyvrClient implements RyvrTestClient {
         return getRyvrsCollection().thenCompose(ryvrsCollections -> {
             return ryvrsCollections.followEmbeddedRyvrLink(name);
         });
+    }
+
+    @Override
+    public void after(Scenario scenario) {
+        if (lastResponse != null) {
+            scenario.embed(lastResponse.getBytes(), "application/json");
+        }
     }
 }

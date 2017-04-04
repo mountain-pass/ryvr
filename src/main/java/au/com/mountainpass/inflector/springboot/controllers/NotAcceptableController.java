@@ -47,4 +47,11 @@ public class NotAcceptableController implements RyvrContentController {
         return notAcceptable();
     }
 
+    @Override
+    public CompletableFuture<ResponseEntity<?>> getRyvr(RequestContext request,
+            String ryvrName, String xRequestId, String accept,
+            String cacheControl) {
+        return notAcceptable();
+    }
+
 }

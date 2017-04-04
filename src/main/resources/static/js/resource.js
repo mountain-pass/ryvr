@@ -201,7 +201,7 @@ app.controller('ResourceController', function($scope, $http, $location, $window,
     }
 
     controller.initResource = function() {
-        controller.resource = JSON.parse(document.getElementById("init-resource").textContent);        
+        controller.resource = JSON.parse(document.getElementById("init-resource").textContent);
     }
 
     console.log("initial load", new Date());
@@ -284,6 +284,44 @@ app.controller('ResourceController', function($scope, $http, $location, $window,
 
     $scope.resourceHasProperties = function() {
         return Object.keys($scope.resourceProperties()).length != 0;
+    }
+    
+    controller.itemHeadings = function() {
+        var keys = [];
+        controller.resource._embedded.item.forEach(function(embeddedItem) {
+            console.log("embeddedItem: ", embeddedItem.properties);
+            console.log("embeddedItem Keys: ", Object.keys(embeddedItem.properties));
+            keys = keys.concat(Object.keys(embeddedItem.properties));
+        });
+        console.log("headings", keys);
+        keys =  Array.from(new Set(keys));
+        console.log("unique headings", keys);
+        return keys;
+    }
+    
+    controller.linkedItem = function(item) {
+        console.log("looking for embedded with self == " + item.href)
+        var filtered = controller.resource._embedded.item.filter(function(embeddedItem) {
+           console.log("embedded == " +  embeddedItem._links.self.href);
+           console.log("embeddedItem._links.self.href == item.href == " +  (embeddedItem._links.self.href == item.href));
+           return embeddedItem._links.self.href == item.href;
+        });
+        return filtered.length > 0 ? filtered[0] : item;
+    }
+    
+    controller.itemNavLinks = function(_links) {
+        var itemRels = [ "first", "prev", "next", "last", "current" ];
+        var rval = {};
+        Object.keys(_links).filter(function(key) {
+            return itemRels.includes(key);            
+        }).forEach(function(key) {
+            rval[key] = _links[key];
+        });
+        return rval;
+    }
+    
+    controller.typeOf = function(value) {
+        return typeof value;
     }
 
     // credit to http://stackoverflow.com/a/7220510/269221

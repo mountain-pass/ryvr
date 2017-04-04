@@ -28,8 +28,10 @@ Scenario: Get Ryvr
       | 0  | 7786543 | ATM Withdrawal | -200.00 | 
     And it will have the following links
       | self    |
-      | current |
-      | last    |
     And it will *not* have the following links
       | prev    |
       | next    |
+      | current |
+      | first   |
+      | last    |
+      

@@ -30,6 +30,7 @@ import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
+import cucumber.api.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
@@ -57,7 +58,8 @@ public class StepDefs {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown(Scenario scenario) {
+        client.after(scenario);
         if (db != null) {
             db.shutdown();
         }
@@ -170,8 +172,7 @@ public class StepDefs {
     @Then("^the ryvrs list will contain the following entries$")
     public void the_ryvrs_list_will_contain_the_following_entries(
             List<String> names) throws Throwable {
-        ryvrsCollectionResponse.get(5, TimeUnit.SECONDS)
-                .assertHasItem(names);
+        ryvrsCollectionResponse.get(5, TimeUnit.SECONDS).assertHasItem(names);
     }
 
     @Then("^the ryvrs list will be empty$")

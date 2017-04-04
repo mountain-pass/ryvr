@@ -15,6 +15,7 @@ import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
+import cucumber.api.Scenario;
 import io.swagger.inflector.models.RequestContext;
 import io.swagger.models.Swagger;
 
@@ -53,6 +54,11 @@ public class JavaRyvrClient implements RyvrTestClient {
     public CompletableFuture<RyvrResponse> getRyvr(String name) {
         return getRyvrsCollection()
                 .thenCompose(response -> response.followEmbeddedRyvrLink(name));
+    }
+
+    @Override
+    public void after(Scenario s) {
+        // TODO, embed java response here
     }
 
 }

@@ -75,7 +75,7 @@
     <!-- Main component for a primary marketing message or call to action -->
     <div class="jumbotron">
       <h1 ng-if="controller.resource._links.hasOwnProperty('self')" class="title">
-        <a href="{{controller.resource._links['self'].href}}">{{controller.resource.title}}</a>
+        <a href="{{controller.resource._links['self'].href}}" rel="self">{{controller.resource.title}}</a>
       </h1>
       <h1 ng-if="!controller.resource._links.hasOwnProperty('self')" class="title">{{controller.resource.title}}</h1>
       <!-- p>This example is a quick exercise to illustrate how the default, static navbar and fixed to top navbar work.
@@ -98,26 +98,56 @@
     </div>
     <!-- /properties -->
 
-    <div id="items" ng-if="controller.resource.hasOwnProperty('_embedded') && controller.resource._embedded.hasOwnProperty('item') && controller.resource._embedded['item'].length > 0">
+    <div id="linkedItems"
+      ng-if="controller.resource.hasOwnProperty('_links') && controller.resource._links.hasOwnProperty('item') && 
+        controller.resource._links.item !== null && (!Array.isArray(controller.resource._links.item) || controller.resource._links.item.length > 0)">
       <h2>Items</h2>
-      <ul>
-        <li ng-repeat="item in controller.resource._embedded['item']" class="item">{{item.title}}</li>
-      </ul>
-    </div> 
+      <table class="table">
+        <thead>
+          <tr>
+            <th></th>
+            <th ng-repeat="heading in controller.itemHeadings()" class="linkedItemHeading">{{heading}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="item in [].concat(controller.resource._links.item)" id="item:row:{{item.href}}"
+            class="linkedItemRow">
+            <th><a href="{{item.href}}" rel="item" class="linkedItem" id="item:link:{{item.href}}">{{item.title}}</a></th>
+            <td ng-repeat="heading in controller.itemHeadings()"><a href="{{item.href}}"
+              class="{{controller.typeOf(controller.linkedItem(item).properties[heading])}}"
+              id="item:data:{{item.href}}:{{heading}}">{{controller.linkedItem(item).properties[heading]}}</a></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="btn-group" role="group" aria-label="navigation" id="itemNavLinks">        
+        <button type="button" class="btn btn-default" ng-repeat="(rel, link) in controller.itemNavLinks(controller.resource._links)" ng-class="{active: isActive(link.href)}">
+        <a href="{{link.href}}" rel="{{rel}}">{{link.title ? link.title : rel }}</a>
+        </button>
+      </div>
+    </div>
+
 
     <div id="rawjson" ng-if="controller.debug">
       <h2>Debug Json</h2>
       <h3>Resource</h3>
-      <pre><code class="json" ng->{{controller.pretty(controller.resource)}}</code></pre>
+      <pre>
+        <code class="json">{{controller.pretty(controller.resource)}}</code>
+      </pre>
       <h3>Root</h3>
-      <pre><code class="json">{{controller.pretty(controller.root)}}</code></pre>
+      <pre>
+        <code class="json">{{controller.pretty(controller.root)}}</code>
+      </pre>
     </div>
-    <div id="initjson" ng-class="{hide: controller.debug}">
+    <div id="initjson" ng-class="{hide: !controller.debug}">
       <h2>Init Json</h2>
       <h3>Resource</h3>
-      <pre><code class="json" id="init-resource"><%resource%></code></pre>
+      <pre>
+        <code class="json" id="init-resource"><%resource%></code>
+      </pre>
       <h3>Root</h3>
-      <pre><code class="json" id="init-root"><%root%></code></pre>
+      <pre>
+        <code class="json" id="init-root"><%root%></code>
+      </pre>
     </div>
   </div>
   <!-- /container -->
