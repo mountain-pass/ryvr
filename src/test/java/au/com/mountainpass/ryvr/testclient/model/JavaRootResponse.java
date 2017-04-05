@@ -43,7 +43,8 @@ public class JavaRootResponse implements RootResponse {
         request.setAcceptableMediaTypes(
                 Collections.singletonList(MediaType.APPLICATION_JSON_TYPE));
         return new JavaRyvrsCollectionResponse((RyvrsCollection) router
-                .getRvyrsCollection(request, null, null, null, null).getBody());
+                .getRyvrsCollection(request, null, null, null, null)
+                .getEntity());
     }
 
 }

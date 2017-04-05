@@ -2,7 +2,6 @@ package au.com.mountainpass.inflector.springboot.controllers;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
@@ -17,7 +16,7 @@ import io.swagger.inflector.models.RequestContext;
 import io.swagger.inflector.models.ResponseContext;
 
 @Component
-public class MainRyvrController {
+public class MainRyvrController implements RyvrController {
     private Logger logger = LoggerFactory.getLogger(MainRyvrController.class);
 
     @Autowired
@@ -25,38 +24,34 @@ public class MainRyvrController {
 
     NotAcceptableController notAcceptableController = new NotAcceptableController();
 
+    @Override
     public ResponseContext getApiDocs(
-            io.swagger.inflector.models.RequestContext request, String group)
-            throws InterruptedException, ExecutionException {
-        ResponseEntity<?> result = router.getApiDocs(request, group);
-        return toResponseContext(result);
+            io.swagger.inflector.models.RequestContext request, String group) {
+        return router.getApiDocs(request, group);
     }
 
-    public ResponseContext getRvyrsCollection(RequestContext request, Long page,
-            String xRequestId, String accept, String cacheControl)
-            throws InterruptedException, ExecutionException {
-        ResponseEntity<?> result = router.getRvyrsCollection(request, page,
-                xRequestId, accept, cacheControl);
-        return toResponseContext(result);
+    @Override
+    public ResponseContext getRyvrsCollection(RequestContext request, Long page,
+            String xRequestId, String accept, String cacheControl) {
+        return router.getRyvrsCollection(request, page, xRequestId, accept,
+                cacheControl);
     }
 
-    public ResponseContext getRoot(RequestContext request)
-            throws InterruptedException, ExecutionException {
-        ResponseEntity<?> result = router.getRoot(request);
-        return toResponseContext(result);
+    @Override
+    public ResponseContext getRoot(RequestContext request) {
+        return router.getRoot(request);
     }
 
-    public io.swagger.inflector.models.ResponseContext getRvyr(
+    @Override
+    public io.swagger.inflector.models.ResponseContext getRyvr(
             io.swagger.inflector.models.RequestContext request, String ryvrName,
-            String xRequestId, String accept, String cacheControl)
-            throws InterruptedException, ExecutionException {
-        ResponseEntity<?> result = router.getRyvr(request, ryvrName, xRequestId,
-                accept, cacheControl);
-        return toResponseContext(result);
+            String xRequestId, String accept, String cacheControl) {
+        return router.getRyvr(request, ryvrName, xRequestId, accept,
+                cacheControl);
     }
 
-    private ResponseContext toResponseContext(ResponseEntity<?> response)
-            throws InterruptedException, ExecutionException {
+    public static ResponseContext toResponseContext(
+            ResponseEntity<?> response) {
         ResponseContext rval = new ResponseContext();
         rval.setStatus(response.getStatusCodeValue());
         MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();

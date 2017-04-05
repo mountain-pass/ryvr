@@ -27,6 +27,7 @@ import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import io.swagger.inflector.models.RequestContext;
+import io.swagger.inflector.models.ResponseContext;
 
 @Component()
 public class HtmlController implements RyvrContentController {
@@ -41,11 +42,12 @@ public class HtmlController implements RyvrContentController {
     ObjectMapper om;
 
     @Override
-    public ResponseEntity<?> getApiDocs(RequestContext request, String group) {
-        return ResponseEntity.status(HttpStatus.SEE_OTHER)
-                .location(URI
-                        .create("/system/webjars/swagger-ui/2.2.10/index.html?url=/api-docs"))
-                .build();
+    public ResponseContext getApiDocs(RequestContext request, String group) {
+        return MainRyvrController
+                .toResponseContext(ResponseEntity.status(HttpStatus.SEE_OTHER)
+                        .location(URI
+                                .create("/system/webjars/swagger-ui/2.2.10/index.html?url=/api-docs"))
+                        .build());
     }
 
     @Override
@@ -59,23 +61,23 @@ public class HtmlController implements RyvrContentController {
     }
 
     @Override
-    public ResponseEntity<?> getRvyrsCollection(RequestContext request,
-            Long page, String xRequestId, String accept, String cacheControl) {
-        Root root = (Root) jsonController.getRoot(request).getBody();
+    public ResponseContext getRyvrsCollection(RequestContext request, Long page,
+            String xRequestId, String accept, String cacheControl) {
+        Root root = (Root) jsonController.getRoot(request).getEntity();
         RyvrsCollection collection = (RyvrsCollection) jsonController
-                .getRvyrsCollection(request, page, xRequestId, accept,
+                .getRyvrsCollection(request, page, xRequestId, accept,
                         cacheControl)
-                .getBody();
+                .getEntity();
         return getIndex(root, collection);
     }
 
     @Override
-    public ResponseEntity<?> getRoot(RequestContext request) {
-        Root root = (Root) jsonController.getRoot(request).getBody();
+    public ResponseContext getRoot(RequestContext request) {
+        Root root = (Root) jsonController.getRoot(request).getEntity();
         return getIndex(root, root);
     }
 
-    private ResponseEntity<?> getIndex(Root root, Object resource) {
+    private ResponseContext getIndex(Root root, Object resource) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ClassPathResource index = new ClassPathResource("static/index.html");
         try {
@@ -88,20 +90,20 @@ public class HtmlController implements RyvrContentController {
             OutputStreamWriter writer = new OutputStreamWriter(baos);
             mustache.execute(writer, scope).flush();
             writer.flush();
-            return ResponseEntity
-                    .ok(new ByteArrayInputStream(baos.toByteArray()));
+            return MainRyvrController.toResponseContext(ResponseEntity
+                    .ok(new ByteArrayInputStream(baos.toByteArray())));
         } catch (IOException e) {
             throw new NotImplementedException(e);
         }
     }
 
     @Override
-    public ResponseEntity<?> getRyvr(RequestContext request, String ryvrName,
+    public ResponseContext getRyvr(RequestContext request, String ryvrName,
             String xRequestId, String accept, String cacheControl) {
-        Root root = (Root) jsonController.getRoot(request).getBody();
+        Root root = (Root) jsonController.getRoot(request).getEntity();
         Ryvr ryvr = (Ryvr) jsonController
                 .getRyvr(request, ryvrName, xRequestId, accept, cacheControl)
-                .getBody();
+                .getEntity();
         return getIndex(root, ryvr);
     }
 

@@ -59,7 +59,7 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
     compile('org.springframework.boot:spring-boot-starter-data-rest')
     compile('com.github.spullara.mustache.java:compiler:0.9.2')
-    runtime('com.h2database:h2')
+    runtime('com.h2database:h2')    
 
     // Devtools can't be used, because swagger inflector uses the
     // wrong class loader

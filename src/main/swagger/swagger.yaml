@@ -50,7 +50,7 @@ paths:
       tags:
         - ryvrs
       description: The current page of the feed
-      operationId: getRvyrsCollection
+      operationId: getRyvrsCollection
       parameters:
         - name: page
           description: which page to fetch
@@ -119,7 +119,7 @@ paths:
       tags:
         - ryvrs
       description: The current page of the feed
-      operationId: getRvyr
+      operationId: getRyvr
       parameters:
         - $ref: "#/parameters/X-Request-Id"
         - $ref: '#/parameters/Accept'

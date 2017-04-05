@@ -20,6 +20,7 @@ import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import io.swagger.config.FilterFactory;
 import io.swagger.core.filter.SwaggerSpecFilter;
 import io.swagger.inflector.models.RequestContext;
+import io.swagger.inflector.models.ResponseContext;
 import io.swagger.inflector.utils.VendorSpecFilter;
 import io.swagger.models.Swagger;
 
@@ -42,7 +43,7 @@ public class JsonController implements RyvrContentController {
     private RyvrsCollection ryvrsCollection;
 
     @Override
-    public ResponseEntity<?> getApiDocs(RequestContext request, String group) {
+    public ResponseContext getApiDocs(RequestContext request, String group) {
 
         Swagger swagger = swaggerFetcher.getSwagger();
         SwaggerSpecFilter filter = FilterFactory.getFilter();
@@ -53,10 +54,11 @@ public class JsonController implements RyvrContentController {
             swagger = new VendorSpecFilter().filter(swagger, filter, null,
                     cookies, headers);
         }
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(
-                        org.springframework.http.MediaType.APPLICATION_JSON)
-                .body(swagger);
+        return MainRyvrController
+                .toResponseContext(ResponseEntity.status(HttpStatus.OK)
+                        .contentType(
+                                org.springframework.http.MediaType.APPLICATION_JSON)
+                        .body(swagger));
     }
 
     @Override
@@ -72,33 +74,38 @@ public class JsonController implements RyvrContentController {
     }
 
     @Override
-    public ResponseEntity<?> getRvyrsCollection(RequestContext request,
-            Long page, String xRequestId, String accept, String cacheControl) {
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(org.springframework.http.MediaType
-                        .valueOf("application/hal+json"))
-                .body(ryvrsCollection);
+    public ResponseContext getRyvrsCollection(RequestContext request, Long page,
+            String xRequestId, String accept, String cacheControl) {
+        return MainRyvrController
+                .toResponseContext(ResponseEntity.status(HttpStatus.OK)
+                        .contentType(org.springframework.http.MediaType
+                                .valueOf("application/hal+json"))
+                        .body(ryvrsCollection));
     }
 
     @Override
-    public ResponseEntity<?> getRoot(RequestContext request) {
+    public ResponseContext getRoot(RequestContext request) {
         Root root = new Root(applicationName);
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(org.springframework.http.MediaType
-                        .valueOf("application/hal+json"))
-                .body(root);
+        return MainRyvrController
+                .toResponseContext(
+                        ResponseEntity.status(HttpStatus.OK)
+                                .contentType(org.springframework.http.MediaType
+                                        .valueOf("application/hal+json"))
+                                .body(root));
     }
 
     @Override
-    public ResponseEntity<?> getRyvr(RequestContext request, String ryvrName,
+    public ResponseContext getRyvr(RequestContext request, String ryvrName,
             String xRequestId, String accept, String cacheControl) {
 
         Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
         ryvr.refresh();
-        return ResponseEntity.status(HttpStatus.OK)
-                .contentType(org.springframework.http.MediaType
-                        .valueOf("application/hal+json"))
-                .body(ryvr);
+        return MainRyvrController
+                .toResponseContext(
+                        ResponseEntity.status(HttpStatus.OK)
+                                .contentType(org.springframework.http.MediaType
+                                        .valueOf("application/hal+json"))
+                                .body(ryvr));
 
     }
 

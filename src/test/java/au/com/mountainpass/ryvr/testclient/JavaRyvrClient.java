@@ -29,7 +29,7 @@ public class JavaRyvrClient implements RyvrTestClient {
         request.setAcceptableMediaTypes(
                 Collections.singletonList(MediaType.APPLICATION_JSON_TYPE));
         return new JavaSwaggerResponse(
-                (Swagger) router.getApiDocs(request, "").getBody());
+                (Swagger) router.getApiDocs(request, "").getEntity());
     }
 
     @Override
@@ -37,7 +37,7 @@ public class JavaRyvrClient implements RyvrTestClient {
         RequestContext request = new RequestContext();
         request.setAcceptableMediaTypes(
                 Collections.singletonList(MediaType.APPLICATION_JSON_TYPE));
-        return new JavaRootResponse((Root) router.getRoot(request).getBody(),
+        return new JavaRootResponse((Root) router.getRoot(request).getEntity(),
                 router);
     }
 
