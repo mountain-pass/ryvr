@@ -261,13 +261,14 @@ public class TestConfiguration implements
     @Autowired(required = false)
     private WebDriverFactory webDriverFactory;
 
-    @Bean(destroyMethod = "quit")
+    @Bean
     @Profile("uiTest")
     public WebDriver webDriver()
             throws ClassNotFoundException, NoSuchMethodException,
             SecurityException, InstantiationException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException {
-        return webDriverFactory.createWebDriver();
+        WebDriver webDriver = webDriverFactory.createWebDriver();
+        return webDriver;
     }
 
     @Override
