@@ -3,6 +3,7 @@ package au.com.mountainpass.ryvr.testclient;
 import static de.otto.edison.hal.traverson.Traverson.*;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -14,13 +15,6 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.AsyncRestTemplate;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.model.Root;
@@ -35,15 +29,13 @@ import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 import cucumber.api.Scenario;
 import de.otto.edison.hal.EmbeddedTypeInfo;
+import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.traverson.Traverson;
 import io.swagger.parser.SwaggerParser;
 
 public class RestRyvrClient implements RyvrTestClient {
     private Logger logger = LoggerFactory.getLogger(RestRyvrClient.class);
-
-    @Autowired
-    AsyncRestTemplate restTemplate;
 
     @Autowired
     RyvrConfiguration config;
@@ -53,30 +45,34 @@ public class RestRyvrClient implements RyvrTestClient {
     SwaggerParser swaggerParser = new SwaggerParser();
 
     @Override
-    public SwaggerResponse getApiDocs()
-            throws InterruptedException, ExecutionException {
-        URI url = config.getBaseUri().resolve("/api-docs");
+    public SwaggerResponse getApiDocs() throws InterruptedException,
+            ExecutionException, URISyntaxException {
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.ACCEPT,
-                "application/hal+json;q=1,application/json;q=0.8,*/*;q=0.1");
-        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-        CompletableFuture<ResponseEntity<ObjectNode>> rval = FutureConverter
-                .convert(restTemplate.exchange(url, HttpMethod.GET,
-                        requestEntity, ObjectNode.class));
-        return new JavaSwaggerResponse(
-                swaggerParser.parse(rval.get().getBody().toString()));
+        Traverson traverson = getTraverson();
+        HalRepresentation root = traverson.getResource().get();
+        String docsHref = root.getLinks().getLinkBy("describedby").get()
+                .getHref();
+        Link docsLink = Link.link("describedby", traverson
+                .getCurrentContextUrl().toURI().resolve(docsHref).toString());
+        String swagger = httpGet(docsLink);
+
+        return new JavaSwaggerResponse(swaggerParser.parse(swagger));
     }
 
     @Override
     public RootResponse getRoot() {
+        Traverson startedWith = getTraverson();
+        return new RestRootResponse(traverson(this::httpGet),
+                startedWith.getCurrentContextUrl(),
+                startedWith.getResourceAs(Root.class).get());
+    }
+
+    private Traverson getTraverson() {
         URI url = config.getBaseUri().resolve("/");
 
         Traverson startedWith = traverson(this::httpGet)
                 .startWith(url.toString());
-        return new RestRootResponse(traverson(this::httpGet),
-                startedWith.getCurrentContextUrl(),
-                startedWith.getResourceAs(Root.class).get());
+        return startedWith;
     }
 
     @Autowired

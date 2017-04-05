@@ -1,5 +1,6 @@
 package au.com.mountainpass.ryvr.testclient;
 
+import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
@@ -11,7 +12,7 @@ import cucumber.api.Scenario;
 public interface RyvrTestClient {
 
     public SwaggerResponse getApiDocs()
-            throws InterruptedException, ExecutionException;
+            throws InterruptedException, ExecutionException, URISyntaxException;
 
     public RootResponse getRoot();
 

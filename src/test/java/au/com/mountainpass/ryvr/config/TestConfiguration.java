@@ -2,7 +2,6 @@ package au.com.mountainpass.ryvr.config;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.catalina.startup.Tomcat;
@@ -34,14 +33,11 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.client.AsyncClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsAsyncClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
-import org.springframework.web.client.AsyncRestTemplate;
-import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -238,21 +234,6 @@ public class TestConfiguration implements
     }
 
     @Bean
-    public RestTemplate restTemplate() throws Exception {
-        RestTemplate restTemplate = new RestTemplate(httpClientFactory());
-        List<HttpMessageConverter<?>> messageConverters = restTemplate
-                .getMessageConverters();
-        for (int i = 0; i < messageConverters.size(); ++i) {
-            if (messageConverters
-                    .get(i) instanceof MappingJackson2HttpMessageConverter) {
-                messageConverters.set(i, mappingJacksonHttpMessageConverter());
-            }
-        }
-        restTemplate.setMessageConverters(messageConverters);
-        return restTemplate;
-    }
-
-    @Bean
     AsyncClientHttpRequestFactory asyncHttpClientFactory() throws Exception {
         HttpComponentsAsyncClientHttpRequestFactory factory = new HttpComponentsAsyncClientHttpRequestFactory(
                 httpClient(), asyncHttpClient());
@@ -275,22 +256,6 @@ public class TestConfiguration implements
                 .setConnectionManagerShared(true)
                 .setDefaultRequestConfig(config)
                 .setSSLContext(infelctorApplication.sslContext());
-    }
-
-    @Bean
-    public AsyncRestTemplate asyncRestTemplate() throws Exception {
-        AsyncRestTemplate asyncRestTemplate = new AsyncRestTemplate(
-                asyncHttpClientFactory(), restTemplate());
-        List<HttpMessageConverter<?>> messageConverters = asyncRestTemplate
-                .getMessageConverters();
-        for (int i = 0; i < messageConverters.size(); ++i) {
-            if (messageConverters
-                    .get(i) instanceof MappingJackson2HttpMessageConverter) {
-                messageConverters.set(i, mappingJacksonHttpMessageConverter());
-            }
-        }
-        asyncRestTemplate.setMessageConverters(messageConverters);
-        return asyncRestTemplate;
     }
 
     @Autowired(required = false)
