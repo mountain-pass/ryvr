@@ -22,10 +22,15 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-<body>
-  <div class="container" ng-hide="!controller.loaded">Loading...</div>
+<body ng-class="{loaded: controller.loaded, loading: controller.loading}">
 
-  <div class="container" ng-show="!controller.loaded">
+  <div id="overlay" >
+    <div class="container">
+        <div id="loader"></div>
+        Loading...
+    </div>
+  </div>
+  <div class="container main-content" style="visibility: hidden">
 
     <!-- Static navbar -->
     <nav class="navbar navbar-default">
@@ -54,11 +59,6 @@
                 <li><a href="#">Separated link</a></li>
                 <li><a href="#">One more separated link</a></li>
               </ul></li-->
-          </ul>
-
-          <ul class="nav navbar-nav navbar-right">
-            <li ng-hide="!controller.loading" class="" id="loading"><a href="#">Loading...</a></li>
-            <li ng-show="!controller.loading" class="ng-hide" id="loaded"><a href="#">Loaded</a></li>
           </ul>
 
           <!-- ul class="nav navbar-nav navbar-right">

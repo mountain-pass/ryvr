@@ -6,6 +6,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,8 @@ public class HtmlRyvrClient implements RyvrTestClient {
     public SwaggerResponse getApiDocs() {
         URI url = config.getBaseUri().resolve("/api-docs");
         webDriver.get(url.toString());
-        waitTillLoaded(webDriver, 5, By.id("api_info"));
+        waitTillLoaded(webDriver, 5, ExpectedConditions
+                .visibilityOfElementLocated(By.id("api_info")));
         return new HtmlSwaggerResponse(webDriver);
     }
 
@@ -45,13 +47,14 @@ public class HtmlRyvrClient implements RyvrTestClient {
 
     public static void waitTillLoaded(WebDriver webDriver,
             long timeoutInSeconds) {
-        waitTillLoaded(webDriver, timeoutInSeconds, By.id("loaded"));
+        waitTillLoaded(webDriver, timeoutInSeconds, ExpectedConditions
+                .invisibilityOfElementLocated(By.id("loader")));
     }
 
     public static void waitTillLoaded(WebDriver webDriver,
-            long timeoutInSeconds, By by) {
+            long timeoutInSeconds, ExpectedCondition<?> expectedCondition) {
         (new WebDriverWait(webDriver, timeoutInSeconds))
-                .until(ExpectedConditions.visibilityOfElementLocated(by));
+                .until(expectedCondition);
     }
 
     @Override

@@ -73,10 +73,10 @@ function getLocation(href) {
     return location;
 };
 
-app.controller('ResourceController', function($scope, $http, $location, $window, $document) {
+app.controller('ResourceController', function($scope, $http, $location, $window, $timeout) {
     var controller = this;
-    var loaded = true;
-    var loading = true;
+    controller.loaded = false;
+    controller.loading = false;
     var init = true;
     controller.actionValues = {};
     controller.error = {};
@@ -207,6 +207,7 @@ app.controller('ResourceController', function($scope, $http, $location, $window,
     console.log("initial load", new Date());
     controller.initRoot();
     controller.initResource();
+    controller.loaded = true;    
     console.log("initial requested", new Date());
 
     controller.processForm = function(form) {
