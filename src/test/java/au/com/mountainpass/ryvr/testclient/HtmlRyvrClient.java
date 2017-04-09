@@ -1,5 +1,8 @@
 package au.com.mountainpass.ryvr.testclient;
 
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+
 import java.net.URI;
 import java.util.List;
 
@@ -82,14 +85,18 @@ public class HtmlRyvrClient implements RyvrTestClient {
     }
 
     static public List<WebElement> getLinks(WebDriver webDriver) {
-        List<WebElement> needsClick = webDriver
+        List<WebElement> menuButton = webDriver
                 .findElements(By.cssSelector("button.navbar-toggle.collapsed"));
-        if (!needsClick.isEmpty()) {
-            needsClick.forEach(button -> button.click());
-            (new WebDriverWait(webDriver, 5)).until(ExpectedConditions
-                    .visibilityOfElementLocated(By.id("links")));
-        }
-    
+        assertThat(menuButton.size(), lessThanOrEqualTo(1));
+        menuButton.forEach(button -> {
+            if (button.isDisplayed()) {
+                button.click();
+                String target = button.getAttribute("data-target");
+                (new WebDriverWait(webDriver, 5)).until(ExpectedConditions
+                        .visibilityOfElementLocated(By.cssSelector(target)));
+            }
+        });
+
         WebElement links = webDriver.findElement(By.id("links"));
         List<WebElement> linksList = links.findElements(By.tagName("a"));
         return linksList;
