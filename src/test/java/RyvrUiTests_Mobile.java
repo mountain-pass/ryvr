@@ -10,6 +10,6 @@ import cucumber.api.CucumberOptions;
         "src/test/resources/features/" }, strict = false, glue = {
                 "au.com.mountainpass.ryvr" }, tags = {})
 @ActiveProfiles({ "uiTest", "mobile" })
-public class RyvrMobileUiTests {
+public class RyvrUiTests_Mobile {
 
 }

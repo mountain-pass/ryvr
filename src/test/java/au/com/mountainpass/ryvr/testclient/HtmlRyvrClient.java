@@ -1,11 +1,13 @@
 package au.com.mountainpass.ryvr.testclient;
 
 import java.net.URI;
+import java.util.List;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -77,6 +79,20 @@ public class HtmlRyvrClient implements RyvrTestClient {
         } else {
             scenario.embed(webDriver.getPageSource().getBytes(), "text/html");
         }
+    }
+
+    static public List<WebElement> getLinks(WebDriver webDriver) {
+        List<WebElement> needsClick = webDriver
+                .findElements(By.cssSelector("button.navbar-toggle.collapsed"));
+        if (!needsClick.isEmpty()) {
+            needsClick.forEach(button -> button.click());
+            (new WebDriverWait(webDriver, 5)).until(ExpectedConditions
+                    .visibilityOfElementLocated(By.id("links")));
+        }
+    
+        WebElement links = webDriver.findElement(By.id("links"));
+        List<WebElement> linksList = links.findElements(By.tagName("a"));
+        return linksList;
     }
 
 }
