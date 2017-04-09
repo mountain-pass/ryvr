@@ -127,6 +127,15 @@ task uiTest(type: Test, dependsOn : systemTest) {
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
 }
 
+task mobileUiTest(type: Test, dependsOn : uiTest) {
+    testClassesDir = sourceSets.test.output.classesDir
+    classpath = sourceSets.test.runtimeClasspath
+    ext.outputDir = "${buildDir}/test-results-mobile-ui"
+    outputs.dir file(outputDir)
+    include 'RyvrUiTests_Mobile.class'
+    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+}
+
 test.dependsOn {
     tasks.findAll { task ->  task.name.endsWith('Test') }
 }
