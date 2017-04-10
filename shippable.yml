@@ -3,11 +3,21 @@ language: java
 jdk:
    - oraclejdk8
 
+addons:
+  firefox: "29.0"
+
+services:
+  - selenium
+
 build:
   ci:
     - mkdir -p shippable/testresults
     - mkdir -p shippable/codecoverage
     - echo 'CI Running'
     - ./gradlew assemble
-    - ./gradlew unitTest -PtestOutputDir=shippable/testresults
+    - ./gradlew test -PtestOutputDir=shippable/testresults
     - ./gradlew systemTest -PtestOutputDir=shippable/testresults
+    - export DISPLAY=:99.0
+    - xvfb-run --server-args="-ac" ./gradlew uiTest -PtestOutputDir=shippable/testresults
+     
+    
