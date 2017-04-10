@@ -1,0 +1,17 @@
+jobs:
+  - name: unitTest
+    type: runSh
+    steps:
+     - IN: source-code
+     - TASK: 
+       - script: ./gradlew unitTest
+     - OUT: unit-test-report
+
+  - name: systemTest
+    type: runSh
+    steps:
+     - IN: source-code
+     - TASK: 
+       - script: ./gradlew systemTest
+     - OUT: system-test-resport
+

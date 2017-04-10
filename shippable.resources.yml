@@ -1,0 +1,17 @@
+resources:
+  - name: source-code
+    type: gitRepo
+    integration: GitHub
+    pointer:
+      sourceName: mountain-pass/ryvr
+
+  - name: unit-test-report
+    type: file
+    pointer:
+      sourceName: build/test-results-ut
+
+  - name: system-test-report
+    type: file
+    pointer:
+      sourceName: build/test-results-st
+ 
