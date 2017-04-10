@@ -18,4 +18,12 @@ build:
     - script:
         name: run gradle
         code: |
-          ./gradlew --full-stacktrace -q --project-cache-dir=$WERCKER_CACHE_DIR build -x uiTest -x mobileUiTest
+          ./gradlew --full-stacktrace -q --project-cache-dir=$WERCKER_CACHE_DIR build -x test
+    - script:
+        name: unit test
+        code: |
+          ./gradlew --full-stacktrace -q --project-cache-dir=$WERCKER_CACHE_DIR unitTest
+    - script:
+        name: system test
+        code: |
+          ./gradlew --full-stacktrace -q --project-cache-dir=$WERCKER_CACHE_DIR systemTest
