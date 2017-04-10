@@ -5,6 +5,9 @@ jdk:
 
 build:
   ci:
+    - mkdir -p shippable/testresults
+    - mkdir -p shippable/codecoverage
     - echo 'CI Running'
-    - export IMAGE_NAME=shippablesamples/samplepipelinesdemo
-    - ./gradlew unitTest
+    - ./gradlew assemble
+    - ./gradlew unitTest -PtestOutputDir=shippable/testresults
+    - ./gradlew systemTest -PtestOutputDir=shippable/testresults

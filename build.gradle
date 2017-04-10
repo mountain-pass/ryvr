@@ -85,7 +85,7 @@ dependencies {
     testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
     testCompile ('org.seleniumhq.selenium:selenium-java:3.0.1') { exclude(module: 'commons-logging') }
     testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.0.1'
-
+    testCompile 'com.saucelabs:sauce_junit:2.1.20'
 
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
@@ -98,11 +98,12 @@ dependencies {
 
 test { exclude '**' }
 
+def testOutputDir = project.getProperties().get("testOutputDir") ?: "${buildDir}"
 
 task unitTest(type: Test) {
     testClassesDir = sourceSets.test.output.classesDir
     classpath = sourceSets.test.runtimeClasspath
-    ext.outputDir = "${buildDir}/test-results-ut"
+    ext.outputDir = "${testOutputDir}/test-results-ut"
     outputs.dir file(outputDir)
     include 'RyvrUnitTests.class'
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
@@ -112,7 +113,7 @@ task unitTest(type: Test) {
 task systemTest(type: Test, dependsOn : unitTest) {
     testClassesDir = sourceSets.test.output.classesDir
     classpath = sourceSets.test.runtimeClasspath
-    ext.outputDir = "${buildDir}/test-results-st"
+    ext.outputDir = "${testOutputDir}/test-results-st"
     outputs.dir file(outputDir)
     include 'RyvrSystemTests.class'
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
@@ -121,7 +122,7 @@ task systemTest(type: Test, dependsOn : unitTest) {
 task uiTest(type: Test, dependsOn : systemTest) {
     testClassesDir = sourceSets.test.output.classesDir
     classpath = sourceSets.test.runtimeClasspath
-    ext.outputDir = "${buildDir}/test-results-ui"
+    ext.outputDir = "${testOutputDir}/test-results-ui"
     outputs.dir file(outputDir)
     include 'RyvrUiTests.class'
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
@@ -130,7 +131,7 @@ task uiTest(type: Test, dependsOn : systemTest) {
 task mobileUiTest(type: Test, dependsOn : uiTest) {
     testClassesDir = sourceSets.test.output.classesDir
     classpath = sourceSets.test.runtimeClasspath
-    ext.outputDir = "${buildDir}/test-results-mobile-ui"
+    ext.outputDir = "${testOutputDir}/test-results-mobile-ui"
     outputs.dir file(outputDir)
     include 'RyvrUiTests_Mobile.class'
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
