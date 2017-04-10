@@ -1,0 +1,13 @@
+language: java
+
+jdk:
+   - openjdk7
+   - oraclejdk7
+   - openjdk6
+   - oraclejdk8
+
+build:
+  ci:
+    - echo 'CI Running'
+    - export IMAGE_NAME=shippablesamples/samplepipelinesdemo
+    - ./gradlew unitTest
