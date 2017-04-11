@@ -101,6 +101,7 @@ test { exclude '**' }
 def testOutputDir = project.getProperties().get("testOutputDir") ?: "${buildDir}"
 def SAUCE_LABS_USERNAME = project.getProperties().get("SAUCE_LABS_USERNAME") ?: ""
 def SAUCE_LABS_KEY = project.getProperties().get("SAUCE_LABS_KEY") ?: ""
+Boolean withSauce = project.getProperties().get("withSauce") ?: true
 
 task unitTest(type: Test) {
     testClassesDir = sourceSets.test.output.classesDir
@@ -128,6 +129,13 @@ task uiTest(type: Test, dependsOn : systemTest) {
     outputs.dir file(outputDir)
     include 'RyvrUiTests.class'
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+    println "with sauce?"
+    if(withSauce) {
+        println "yes, with sauce"
+        systemProperty 'spring.profiles.active',  "sauceLabs"
+        systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
+        systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
+    }
 }
 
 task mobileUiTest(type: Test, dependsOn : uiTest) {
@@ -137,17 +145,11 @@ task mobileUiTest(type: Test, dependsOn : uiTest) {
     outputs.dir file(outputDir)
     include 'RyvrUiTests_Mobile.class'
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
-}
-
-task slUiTest(type: Test, dependsOn : systemTest) {
-    testClassesDir = sourceSets.test.output.classesDir
-    classpath = sourceSets.test.runtimeClasspath
-    ext.outputDir = "${testOutputDir}/test-results-sl-ui"
-    outputs.dir file(outputDir)
-    include 'RyvrUiTests_SauceLabs.class'
-    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
-    systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
-    systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
+    if(withSauce) {
+        systemProperty 'spring.profiles.active',  "sauceLabs"
+        systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
+        systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
+    }
 }
 
 test.dependsOn {

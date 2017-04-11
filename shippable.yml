@@ -13,7 +13,8 @@ build:
     - ./gradlew assemble --info
     - ./gradlew unitTest -PtestOutputDir=shippable/testresults --info
     - ./gradlew systemTest -PtestOutputDir=shippable/testresults -x unitTest --info
-    - ./gradlew slUiTest -PtestOutputDir=shippable/testresults -x unitTest -x systemTest --info -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY
+    - ./gradlew uiTest -PtestOutputDir=shippable/testresults -x unitTest -x systemTest --info -PwithSauce=true -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY
+    - ./gradlew mobileUiTest -PtestOutputDir=shippable/testresults -x unitTest -x systemTest -x uiTest --info -PwithSauce=true -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY
 
      
     
