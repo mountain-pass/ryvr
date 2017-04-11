@@ -101,7 +101,7 @@ test { exclude '**' }
 def testOutputDir = project.getProperties().get("testOutputDir") ?: "${buildDir}"
 def SAUCE_LABS_USERNAME = project.getProperties().get("SAUCE_LABS_USERNAME") ?: ""
 def SAUCE_LABS_KEY = project.getProperties().get("SAUCE_LABS_KEY") ?: ""
-Boolean withSauce = project.getProperties().get("withSauce") ?: true
+Boolean withSauce = project.getProperties().get("withSauce") ?: false
 
 task unitTest(type: Test) {
     testClassesDir = sourceSets.test.output.classesDir
