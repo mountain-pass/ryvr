@@ -15,6 +15,6 @@ build:
     - ./gradlew systemTest -PtestOutputDir=shippable/testresults -x unitTest --info
     - ./gradlew uiTest -PtestOutputDir=shippable/testresults -x unitTest -x systemTest --info -PwithSauce=true -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY
     - ./gradlew mobileUiTest -PtestOutputDir=shippable/testresults -x unitTest -x systemTest -x uiTest --info -PwithSauce=true -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY
-    
+    - cp -r build shippable/codecoverage    
      
     
