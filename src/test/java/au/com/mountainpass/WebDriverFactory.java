@@ -26,12 +26,6 @@ import org.springframework.stereotype.Component;
 public class WebDriverFactory implements DisposableBean {
     private Logger logger = LoggerFactory.getLogger(WebDriverFactory.class);
 
-    @Value(value = "${webdriver.driver:org.openqa.selenium.chrome.ChromeDriver}")
-    String driverClassName;
-
-    @Value(value = "${webdriver.remote.url:}")
-    URL remoteUrl;
-
     @Value(value = "${webdriver.browser.type:chrome}")
     String browserName;
 
@@ -72,6 +66,9 @@ public class WebDriverFactory implements DisposableBean {
 
     private WebDriver createDriver(DesiredCapabilities cap) throws IOException {
         if (sauceLabsTunnel != null) {
+            URL remoteUrl = new URL("https://" + sauceUsername + ':'
+                    + sauceAccessKey + "@ondemand.saucelabs.com:443/wd/hub");
+
             return new RemoteWebDriver(remoteUrl, cap);
         } else {
             switch (cap.getBrowserName()) {

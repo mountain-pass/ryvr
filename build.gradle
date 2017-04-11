@@ -16,6 +16,8 @@ apply plugin: 'idea'
 apply plugin: 'maven'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'announce'
+apply plugin: 'jacoco'
+
 
 
 group = 'au.com.mountainpass'
@@ -24,12 +26,28 @@ project.version = '1.0.0-SNAPSHOT'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-
+compileJava.options.compilerArgs.add '-parameters'
+compileTestJava.options.compilerArgs.add '-parameters'
 
 repositories {
     mavenLocal()
     jcenter()
 }
+
+eclipseProject {
+    doLast {
+      // https://discuss.gradle.org/t/how-to-write-properties-to-3rd-party-eclipse-settings-files/6499/2
+
+      def props = new Properties()
+      file(".settings/org.eclipse.jdt.core.prefs").withInputStream { stream ->
+        props.load(stream)
+      }
+      props.setProperty("org.eclipse.jdt.core.compiler.codegen.methodParameters", "generate")
+      file(".settings/org.eclipse.jdt.core.prefs").withOutputStream { stream ->
+        props.store(stream, null)
+      }
+    }
+  }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
 
 springBoot  { buildInfo() }
 
@@ -99,6 +117,7 @@ dependencies {
 test { exclude '**' }
 
 def testOutputDir = project.getProperties().get("testOutputDir") ?: "${buildDir}"
+def coverageOutputDir = project.getProperties().get("coverageOutputDir") ?: "${buildDir}"
 def SAUCE_LABS_USERNAME = project.getProperties().get("SAUCE_LABS_USERNAME") ?: ""
 def SAUCE_LABS_KEY = project.getProperties().get("SAUCE_LABS_KEY") ?: ""
 Boolean withSauce = project.getProperties().get("withSauce") ?: false
@@ -106,10 +125,15 @@ Boolean withSauce = project.getProperties().get("withSauce") ?: false
 task unitTest(type: Test) {
     testClassesDir = sourceSets.test.output.classesDir
     classpath = sourceSets.test.runtimeClasspath
-    ext.outputDir = "${testOutputDir}/test-results-ut"
-    outputs.dir file(outputDir)
     include 'RyvrUnitTests.class'
+    ext.outputDir = "${testOutputDir}/test-results-ut"
+    ext.coverageOutputDir = "${testOutputDir}/test-results-ut"
+    outputs.dir { file(outputDir), file(coverageOutputDir) }
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+    jacoco {
+      append = false
+      destinationFile = file("${coverageOutputDir}/coverage-results-ut/jacoco/${name}.exec")
+    }
 }
 
 
