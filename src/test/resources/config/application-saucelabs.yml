@@ -1,0 +1,2 @@
+webdriver.driver: org.openqa.selenium.remote.RemoteWebDriver
+webdriver.remote.url: https://${webdriver.sauce.labs.username}:${webdriver.sauce.labs.key}@ondemand.saucelabs.com:443/wd/hub

@@ -86,7 +86,7 @@ dependencies {
     testCompile ('org.seleniumhq.selenium:selenium-java:3.0.1') { exclude(module: 'commons-logging') }
     testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.0.1'
     testCompile 'com.saucelabs:sauce_junit:2.1.20'
-
+    testCompile 'com.saucelabs:ci-sauce:1.123'
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile 'org.bouncycastle:bcpkix-jdk15on:1.53'
@@ -135,6 +135,17 @@ task mobileUiTest(type: Test, dependsOn : uiTest) {
     outputs.dir file(outputDir)
     include 'RyvrUiTests_Mobile.class'
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+}
+
+task slUiTest(type: Test, dependsOn : systemTest) {
+    testClassesDir = sourceSets.test.output.classesDir
+    classpath = sourceSets.test.runtimeClasspath
+    ext.outputDir = "${testOutputDir}/test-results-sl-ui"
+    outputs.dir file(outputDir)
+    include 'RyvrUiTests_SauceLabs.class'
+    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+    systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
+    systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
 }
 
 test.dependsOn {

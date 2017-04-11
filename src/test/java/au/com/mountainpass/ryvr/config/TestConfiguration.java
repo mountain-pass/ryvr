@@ -1,5 +1,6 @@
 package au.com.mountainpass.ryvr.config;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.Set;
@@ -266,7 +267,7 @@ public class TestConfiguration implements
     public WebDriver webDriver()
             throws ClassNotFoundException, NoSuchMethodException,
             SecurityException, InstantiationException, IllegalAccessException,
-            IllegalArgumentException, InvocationTargetException {
+            IllegalArgumentException, InvocationTargetException, IOException {
         WebDriver webDriver = webDriverFactory.createWebDriver();
         return webDriver;
     }

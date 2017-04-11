@@ -3,20 +3,17 @@ language: java
 jdk:
    - oraclejdk8
 
-addons:
-  firefox: "29.0"
+env:
+  - secure: IUepaGbgd6OXrE9DdV54NFivOazkm8fb9qhyLrz0L7SPEioHSSp98MNbzhrbKWmmELkhjLAM7DURanrXqWfNFt7QL2wttCSUHzOyBFwSyX+G7UvGooT3efW5v6o9aFbQt5adnnxhfxSqscQ/8bRdYyCCJ19pHErUqM4U4lEjE6FknFZ32JmuyXHahdtXdAblYA44cbF8cMWbuG1r6vWtpckTK3buxG//9qELe1wTj/qrE+iip+pRuAzifYinYRLuNrGt19CCbL9i2dmgfcXmzhLLM6TwWHlHKbsMj4phxSnYRs2sHzx0zI+4a63rJ4ny/bG6WXp8gnCK0HNLDnrSyg==
 
 build:
   ci:
     - mkdir -p shippable/testresults
     - mkdir -p shippable/codecoverage
-    - echo 'CI Running'
-    - ./gradlew assemble
-    - ./gradlew test -PtestOutputDir=shippable/testresults
-    - ./gradlew systemTest -PtestOutputDir=shippable/testresults
-    - export DISPLAY=:99.0
-    - sudo apt-get install unzip;
-    - wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/2.29/chromedriver_linux64.zip && sudo unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/;
-    - xvfb-run --server-args="-ac" ./gradlew uiTest -PtestOutputDir=shippable/testresults
+    - ./gradlew assemble --info
+    - ./gradlew unitTest -PtestOutputDir=shippable/testresults --info
+    - ./gradlew systemTest -PtestOutputDir=shippable/testresults -x unitTest --info
+    - ./gradlew slUiTest -PtestOutputDir=shippable/testresults -x unitTest -x systemTest --info -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY
+
      
     
