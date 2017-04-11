@@ -4,7 +4,7 @@ jdk:
    - oraclejdk8
 
 env:
-  - secure: IUepaGbgd6OXrE9DdV54NFivOazkm8fb9qhyLrz0L7SPEioHSSp98MNbzhrbKWmmELkhjLAM7DURanrXqWfNFt7QL2wttCSUHzOyBFwSyX+G7UvGooT3efW5v6o9aFbQt5adnnxhfxSqscQ/8bRdYyCCJ19pHErUqM4U4lEjE6FknFZ32JmuyXHahdtXdAblYA44cbF8cMWbuG1r6vWtpckTK3buxG//9qELe1wTj/qrE+iip+pRuAzifYinYRLuNrGt19CCbL9i2dmgfcXmzhLLM6TwWHlHKbsMj4phxSnYRs2sHzx0zI+4a63rJ4ny/bG6WXp8gnCK0HNLDnrSyg==
+  - secure: PW2beKkKfM0MhO6LQjjYceihoN9t/4kzhxm68KiXY+sYJEjE+YRbRH5rHdKrC/KS4/NZAVRqGEJtaV7mi4fvasJMHURBnyuJ/dQC8YulbZBlLkJyuaQc4NiKJ/BKlF8HsIIzWWMG4F4He5SxuJ0rC82zUzThEgdm9VzyF/uHDepn8pK3/JUBNReWZrwTMqpXUEl17l+sDt/3g/L6+ujCGejRzZfySQ9vNYxK287CsZtY3X4pIb2NG0F+kRRZXZkd1YQLqe5YW/j+0pv/+/lUX3Hzf4Son6gBc+z5BagU1rE+GrM8Tk4FaO6eQD9Mp1ykfczUMNEBSh4aDML4pv5xQQ==
 
 build:
   ci:
