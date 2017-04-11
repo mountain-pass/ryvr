@@ -160,9 +160,7 @@ task uiTest(type: Test, dependsOn : systemTest) {
     outputs.dir file(outputDir)
     include 'RyvrUiTests.class'
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
-    println "with sauce?"
     if(withSauce) {
-        println "yes, with sauce"
         systemProperty 'spring.profiles.active',  "sauceLabs"
         systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
         systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
@@ -268,7 +266,7 @@ ext{
   }
 
 
-check.dependsOn jacocoTestReport
+unitTest.finalizedBy jacocoTestReport
 
 
 gradle.taskGraph.afterTask { Task task, TaskState state ->
