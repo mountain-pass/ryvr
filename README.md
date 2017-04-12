@@ -3,17 +3,19 @@
 [![Run Status](https://api.shippable.com/projects/58eb44005a50220700d2d0c1/badge?branch=master)](https://app.shippable.com/github/mountain-pass/ryvr)
 [![Coverage Badge](https://api.shippable.com/projects/58eb44005a50220700d2d0c1/coverageBadge?branch=master)](https://app.shippable.com/github/mountain-pass/ryvr)
 [![Dependency Status](https://www.versioneye.com/user/projects/58ee953c0f9f35004e5c4bf2/badge.svg?style=flat-round)](https://www.versioneye.com/user/projects/58ee953c0f9f35004e5c4bf2)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7785f1049bd045dda89fcfff65bff3da)](https://www.codacy.com/app/mountain-pass/ryvr?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mountain-pass/ryvr&amp;utm_campaign=Badge_Grade)
 
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/tompahoward.svg)](https://saucelabs.com/u/tompahoward)
 
 Provides extremely fast access to your data, in fine precise slices
 
 The project uses [Gradle](https://gradle.org/) for its build system and you can build the project by running:
 
-	./gradlew build
+    ./gradlew build
 
 You can also run the app using the [Spring Boot Gradle Plugin](http://docs.spring.io/spring-boot/docs/current/reference/html/build-tool-plugins-gradle-plugin.html) like so: 
 
-	./gradlew bootRun
+    ./gradlew bootRun
 
 The swagger definition will be available at the following URI:
 
