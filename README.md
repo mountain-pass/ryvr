@@ -1,6 +1,8 @@
 ## Ryvr
 
-[![Run Status](https://api.shippable.com/projects/58eb44005a50220700d2d0c1/badge?branch=master)](https://app.shippable.com/github/mountain-pass/ryvr) [![Coverage Badge](https://api.shippable.com/projects/58eb44005a50220700d2d0c1/coverageBadge?branch=master)](https://app.shippable.com/github/mountain-pass/ryvr)
+[![Run Status](https://api.shippable.com/projects/58eb44005a50220700d2d0c1/badge?branch=master)](https://app.shippable.com/github/mountain-pass/ryvr)
+[![Coverage Badge](https://api.shippable.com/projects/58eb44005a50220700d2d0c1/coverageBadge?branch=master)](https://app.shippable.com/github/mountain-pass/ryvr)
+[![Dependency Status](https://www.versioneye.com/user/projects/58ee953c0f9f35004e5c4bf2/badge.svg?style=flat-round)](https://www.versioneye.com/user/projects/58ee953c0f9f35004e5c4bf2)
 
 
 Provides extremely fast access to your data, in fine precise slices
