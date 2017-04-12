@@ -299,7 +299,7 @@ uiTest.finalizedBy jacocoTestReport
 mobileUiTest.finalizedBy jacocoTestReport
 
 
-task uploadCoverageToCodacy(type: JavaExec, dependsOn : test) {
+task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
     main = "com.codacy.CodacyCoverageReporter"
     classpath = configurations.codacy
     args = [
@@ -310,9 +310,6 @@ task uploadCoverageToCodacy(type: JavaExec, dependsOn : test) {
     ]
 }
 
-if( System.getenv('CI') ) {
-    jacocoTestReport.finalizedBy uploadCoverageToCodacy
-}
 
 gradle.taskGraph.afterTask { Task task, TaskState state ->
     if (state.failure) {
