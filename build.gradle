@@ -134,8 +134,8 @@ task unitTest(type: Test) {
     classpath = sourceSets.test.runtimeClasspath
     include 'RyvrUnitTests.class'
     ext.outputDir = "${testOutputDir}/test-results-ut"
-    ext.coverageDir = "${coverageOutputDir}/coverage-results-ut"
     outputs.dir file(outputDir)
+    ext.coverageDir = "${coverageOutputDir}/coverage-results-ut"
     outputs.dir file(coverageDir)
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
     jacoco {
@@ -150,8 +150,14 @@ task systemTest(type: Test, dependsOn : unitTest) {
     classpath = sourceSets.test.runtimeClasspath
     ext.outputDir = "${testOutputDir}/test-results-st"
     outputs.dir file(outputDir)
+    ext.coverageDir = "${coverageOutputDir}/coverage-results-st"
+    outputs.dir file(coverageDir)
     include 'RyvrSystemTests.class'
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+    jacoco {
+        append = false
+        destinationFile = file("${coverageDir}/jacoco/${name}.exec")
+    }
 }
 
 task uiTest(type: Test, dependsOn : systemTest) {
@@ -159,12 +165,18 @@ task uiTest(type: Test, dependsOn : systemTest) {
     classpath = sourceSets.test.runtimeClasspath
     ext.outputDir = "${testOutputDir}/test-results-ui"
     outputs.dir file(outputDir)
+    ext.coverageDir = "${coverageOutputDir}/coverage-results-ui"
+    outputs.dir file(coverageDir)
     include 'RyvrUiTests.class'
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
     if(withSauce) {
         systemProperty 'spring.profiles.active',  "sauceLabs"
         systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
         systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
+    }
+    jacoco {
+        append = false
+        destinationFile = file("${coverageDir}/jacoco/${name}.exec")
     }
 }
 
@@ -173,12 +185,18 @@ task mobileUiTest(type: Test, dependsOn : uiTest) {
     classpath = sourceSets.test.runtimeClasspath
     ext.outputDir = "${testOutputDir}/test-results-mobile-ui"
     outputs.dir file(outputDir)
+    ext.coverageDir = "${coverageOutputDir}/coverage-results-mobile-ui"
+    outputs.dir file(coverageDir)
     include 'RyvrUiTests_Mobile.class'
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
     if(withSauce) {
         systemProperty 'spring.profiles.active',  "sauceLabs"
         systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
         systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
+    }
+    jacoco {
+        append = false
+        destinationFile = file("${coverageDir}/jacoco/${name}.exec")
     }
 }
 
@@ -268,6 +286,9 @@ ext{
 
 
 unitTest.finalizedBy jacocoTestReport
+systemTest.finalizedBy jacocoTestReport
+uiTest.finalizedBy jacocoTestReport
+mobileUiTest.finalizedBy jacocoTestReport
 
 
 gradle.taskGraph.afterTask { Task task, TaskState state ->
