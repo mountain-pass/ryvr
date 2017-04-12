@@ -26,17 +26,17 @@ import org.springframework.stereotype.Component;
 public class WebDriverFactory implements DisposableBean {
     private Logger logger = LoggerFactory.getLogger(WebDriverFactory.class);
 
-    @Value(value = "${webdriver.browser.type:chrome}")
-    String browserName;
+    @Value(value = "${webdriver.browserType:chrome}")
+    private String browserType;
 
-    @Value(value = "${webdriver.browser.type:}")
-    String browserVersion;
+    @Value(value = "${webdriver.browserVersion:}")
+    private String browserVersion;
 
     @Value(value = "${webdriver.window.width:1024}")
-    int width;
+    private int width;
 
     @Value(value = "${webdriver.window.height:768}")
-    int height;
+    private int height;
 
     @Autowired
     private AbstractApplicationContext context;
@@ -53,6 +53,24 @@ public class WebDriverFactory implements DisposableBean {
     @Value(value = "${SHIPPABLE_REPO_SLUG:}")
     private String repoSlug;
 
+    @Value(value = "${webdriver.appiumVersion:}")
+    private String appiumVersion;
+
+    @Value(value = "${webdriver.deviceName:}")
+    private String deviceName;
+
+    @Value(value = "${webdriver.deviceOrientation:}")
+    private String deviceOrientation;
+
+    @Value(value = "${webdriver.platformVersion:}")
+    private String platformVersion;
+
+    @Value(value = "${webdriver.platformName:}")
+    private String platformName;
+
+    @Value(value = "${webdriver.browserName:}")
+    private String browserName;
+
     @Autowired(required = false)
     SauceLabsTunnel sauceLabsTunnel;
 
@@ -60,22 +78,36 @@ public class WebDriverFactory implements DisposableBean {
             throws ClassNotFoundException, NoSuchMethodException,
             SecurityException, InstantiationException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException, IOException {
-        DesiredCapabilities cap = new DesiredCapabilities();
-        cap.setBrowserName(browserName);
-        if (browserVersion != null && !browserVersion.isEmpty()) {
-            cap.setCapability(CapabilityType.VERSION, browserVersion);
-        }
+        DesiredCapabilities cap = (DesiredCapabilities) DesiredCapabilities.class
+                .getMethod(browserType).invoke(null);
+
+        setCapabilityIfSet(cap, CapabilityType.VERSION, browserVersion);
+
         cap.setCapability("name", repoSlug + " - "
                 + System.getProperty("spring.profiles.active"));
         cap.setCapability("tags", System.getProperty("spring.profiles.active"));
         // BUILD_URL
-        if (buildNumber != null && !buildNumber.isEmpty()) {
-            cap.setCapability("build", buildNumber);
-        }
+        setCapabilityIfSet(cap, "build", buildNumber);
+
+        setCapabilityIfSet(cap, "appiumVersion", appiumVersion);
+        setCapabilityIfSet(cap, "deviceName", deviceName);
+        setCapabilityIfSet(cap, "deviceOrientation", deviceOrientation);
+        setCapabilityIfSet(cap, "platformVersion", platformVersion);
+        setCapabilityIfSet(cap, "platformName", platformName);
+        setCapabilityIfSet(cap, "browserName", browserName);
 
         WebDriver driver = createDriver(cap);
-        driver.manage().window().setSize(new Dimension(width, height));
+        if (width != 0 && height != 0) {
+            driver.manage().window().setSize(new Dimension(width, height));
+        }
         return driver;
+    }
+
+    public void setCapabilityIfSet(DesiredCapabilities cap, String setting,
+            String value) {
+        if (value != null && !value.isEmpty()) {
+            cap.setCapability(setting, value);
+        }
     }
 
     private WebDriver createDriver(DesiredCapabilities cap) throws IOException {
@@ -90,7 +122,7 @@ public class WebDriverFactory implements DisposableBean {
                 return new ChromeDriver(cap);
             default:
                 throw new NotImplementedException(
-                        "Browser Type: " + browserName);
+                        "Browser Type: " + browserType);
             }
         }
     }

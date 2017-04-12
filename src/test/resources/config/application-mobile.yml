@@ -1,2 +1,11 @@
-webdriver.window.width: 375
-webdriver.window.height: 667
+webdriver.window.width: 0
+webdriver.window.height: 0
+
+webdriver:
+  browserType: iphone
+  appiumVersion: 1.6.4
+  deviceName: iPhone Simulator
+  deviceOrientation: portrait
+  platformVersion: 10.2
+  platformName: iOS
+  browserName: Safari
