@@ -64,6 +64,12 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 artifacts { archives sourcesJar //    archives javadocJar
 }
 
+configurations {
+    providedRuntime
+    codacy
+}
+
+
 dependencies {
     compile('io.swagger:swagger-inflector:1.0.10')
     compile('com.github.javafaker:javafaker:0.11') { exclude group: 'com.github.bmoliveira' }
@@ -109,6 +115,8 @@ dependencies {
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile 'org.bouncycastle:bcpkix-jdk15on:1.53'
 
+
+    codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.10'
 
 
 }
@@ -272,17 +280,17 @@ jacocoTestReport {
     }
 }
 
-ext{
+ext {
     // TODO: Increase these
     limits = [
-      'instruction': 0,
-      'branch'     : 0,
-      'line'       : 0,
-      'complexity' : 0,
-      'method'     : 0,
-      'class'      : 0
+        'instruction': 0,
+        'branch'     : 0,
+        'line'       : 0,
+        'complexity' : 0,
+        'method'     : 0,
+        'class'      : 0
     ]
-  }
+}
 
 
 unitTest.finalizedBy jacocoTestReport
@@ -290,6 +298,21 @@ systemTest.finalizedBy jacocoTestReport
 uiTest.finalizedBy jacocoTestReport
 mobileUiTest.finalizedBy jacocoTestReport
 
+
+task uploadCoverageToCodacy(type: JavaExec, dependsOn : test) {
+    main = "com.codacy.CodacyCoverageReporter"
+    classpath = configurations.codacy
+    args = [
+        "-l",
+        "Java",
+        "-r",
+        "${coverageOutputDir}/coverage-results/jacoco/${archivesBaseName}.xml"
+    ]
+}
+
+if( System.getenv('CI') ) {
+    jacocoTestReport.finalizedBy uploadCoverageToCodacy
+}
 
 gradle.taskGraph.afterTask { Task task, TaskState state ->
     if (state.failure) {
