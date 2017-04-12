@@ -134,12 +134,13 @@ task unitTest(type: Test) {
     classpath = sourceSets.test.runtimeClasspath
     include 'RyvrUnitTests.class'
     ext.outputDir = "${testOutputDir}/test-results-ut"
-    ext.coverageOutputDir = "${testOutputDir}/test-results-ut"
+    ext.coverageDir = "${coverageOutputDir}/coverage-results-ut"
     outputs.dir file(outputDir)
+    outputs.dir file(coverageDir)
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
     jacoco {
         append = false
-        destinationFile = file("${coverageOutputDir}/coverage-results-ut/jacoco/${name}.exec")
+        destinationFile = file("${coverageDir}/jacoco/${name}.exec")
     }
 }
 
