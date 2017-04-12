@@ -32,6 +32,9 @@ compileTestJava.options.compilerArgs.add '-parameters'
 repositories {
     mavenLocal()
     jcenter()
+    // codacy uses com.typesafe.netty:netty-http-pipelining, which
+    // can be found here
+    maven { url "http://dl.bintray.com/typesafe/maven-releases" }
 }
 
 eclipseProject {
