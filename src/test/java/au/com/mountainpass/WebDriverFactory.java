@@ -41,11 +41,17 @@ public class WebDriverFactory implements DisposableBean {
     @Autowired
     private AbstractApplicationContext context;
 
-    @Value(value = "${webdriver.sauce.labs.username:null}")
+    @Value(value = "${webdriver.sauce.labs.username:}")
     private String sauceUsername;
 
-    @Value(value = "${webdriver.sauce.labs.key:null}")
+    @Value(value = "${webdriver.sauce.labs.key:}")
     private String sauceAccessKey;
+
+    @Value(value = "${BUILD_NUMBER:}")
+    private String buildNumber;
+
+    @Value(value = "${SHIPPABLE_REPO_SLUG:}")
+    private String repoSlug;
 
     @Autowired(required = false)
     SauceLabsTunnel sauceLabsTunnel;
@@ -59,6 +65,14 @@ public class WebDriverFactory implements DisposableBean {
         if (browserVersion != null && !browserVersion.isEmpty()) {
             cap.setCapability(CapabilityType.VERSION, browserVersion);
         }
+        cap.setCapability("name", repoSlug + " - "
+                + System.getProperty("spring.profiles.active"));
+        cap.setCapability("tags", System.getProperty("spring.profiles.active"));
+        // BUILD_URL
+        if (buildNumber != null && !buildNumber.isEmpty()) {
+            cap.setCapability("build", buildNumber);
+        }
+
         WebDriver driver = createDriver(cap);
         driver.manage().window().setSize(new Dimension(width, height));
         return driver;
