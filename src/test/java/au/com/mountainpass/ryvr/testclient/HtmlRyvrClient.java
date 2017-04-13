@@ -6,7 +6,9 @@ import static org.junit.Assert.*;
 import java.net.URI;
 import java.util.List;
 
+import org.junit.runner.Result;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -100,6 +102,15 @@ public class HtmlRyvrClient implements RyvrTestClient {
         WebElement links = webDriver.findElement(By.id("links"));
         List<WebElement> linksList = links.findElements(By.tagName("a"));
         return linksList;
+    }
+
+    @Override
+    public void afterSuite(Result result) {
+        String textResult = result.wasSuccessful() ? "passed" : "failed";
+
+        ((JavascriptExecutor) webDriver)
+                .executeScript("sauce:job-result=" + textResult);
+
     }
 
 }
