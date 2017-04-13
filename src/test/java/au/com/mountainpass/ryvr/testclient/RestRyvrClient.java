@@ -12,7 +12,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.util.EntityUtils;
-import org.junit.runner.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,7 +155,7 @@ public class RestRyvrClient implements RyvrTestClient {
     }
 
     @Override
-    public void afterSuite(Result result) {
+    public void before(Scenario scenario) {
         // nothing
     }
 }

@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.runner.Result;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,7 +19,6 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import au.com.mountainpass.AfterSuite;
 import au.com.mountainpass.inflector.springboot.InflectorApplication;
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.jdbc.JdbcRyvr;
@@ -139,7 +137,8 @@ public class StepDefs {
     }
 
     @Before
-    public void setUp() {
+    public void setUp(final Scenario scenario) {
+        client.before(scenario);
         ryvrsCollection.clear();
     }
 
@@ -149,11 +148,6 @@ public class StepDefs {
         if (db != null) {
             db.shutdown();
         }
-    }
-
-    @AfterSuite
-    public void runearDown(final Result result) {
-        client.afterSuite(result);
     }
 
     @Then("^the API Docs will contain an operation for getting the API Docs$")

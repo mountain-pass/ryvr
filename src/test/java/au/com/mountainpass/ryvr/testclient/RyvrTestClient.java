@@ -3,8 +3,6 @@ package au.com.mountainpass.ryvr.testclient;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 
-import org.junit.runner.Result;
-
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
@@ -24,6 +22,6 @@ public interface RyvrTestClient {
 
     public void after(Scenario scenario);
 
-    public void afterSuite(Result result);
+    public void before(Scenario scenario);
 
 }

@@ -50,7 +50,7 @@ public class WebDriverFactory implements DisposableBean {
     @Value(value = "${BUILD_NUMBER:}")
     private String buildNumber;
 
-    @Value(value = "${SHIPPABLE_REPO_SLUG:}")
+    @Value(value = "${SHIPPABLE_REPO_SLUG:mountain-pass/ryvr}")
     private String repoSlug;
 
     @Value(value = "${webdriver.appiumVersion:}")
@@ -83,8 +83,7 @@ public class WebDriverFactory implements DisposableBean {
 
         setCapabilityIfSet(cap, CapabilityType.VERSION, browserVersion);
 
-        cap.setCapability("name", repoSlug + " - "
-                + System.getProperty("spring.profiles.active"));
+        cap.setCapability("name", repoSlug);
         cap.setCapability("tags", System.getProperty("spring.profiles.active"));
         // BUILD_URL
         setCapabilityIfSet(cap, "build", buildNumber);

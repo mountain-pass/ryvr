@@ -6,7 +6,6 @@ import static org.junit.Assert.*;
 import java.net.URI;
 import java.util.List;
 
-import org.junit.runner.Result;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
@@ -18,6 +17,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import au.com.mountainpass.SauceLabsTunnel;
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.testclient.model.HtmlRootResponse;
 import au.com.mountainpass.ryvr.testclient.model.HtmlSwaggerResponse;
@@ -32,8 +32,13 @@ public class HtmlRyvrClient implements RyvrTestClient {
     @Autowired
     private WebDriver webDriver;
 
+    @Autowired(required = false)
+    SauceLabsTunnel sauceLabsTunnel;
+
     @Autowired
-    RyvrConfiguration config;
+    private RyvrConfiguration config;
+
+    private boolean failed = false;
 
     @Override
     public SwaggerResponse getApiDocs() {
@@ -84,6 +89,27 @@ public class HtmlRyvrClient implements RyvrTestClient {
         } else {
             scenario.embed(webDriver.getPageSource().getBytes(), "text/html");
         }
+        String status = scenario.getStatus();
+        if (sauceLabsTunnel != null) {
+            ((JavascriptExecutor) webDriver).executeScript(
+                    "sauce:context=" + scenario.getName() + ":" + status);
+        }
+
+        if (!failed) {
+            switch (status) {
+            case "failed":
+                failed = true;
+                // pass down
+            case "passed":
+                if (sauceLabsTunnel != null) {
+                    ((JavascriptExecutor) webDriver)
+                            .executeScript("sauce:job-result=" + status);
+                }
+                break;
+            default:
+                // no nothing
+            }
+        }
     }
 
     static public List<WebElement> getLinks(WebDriver webDriver) {
@@ -105,11 +131,11 @@ public class HtmlRyvrClient implements RyvrTestClient {
     }
 
     @Override
-    public void afterSuite(Result result) {
-        String textResult = result.wasSuccessful() ? "passed" : "failed";
-
-        ((JavascriptExecutor) webDriver)
-                .executeScript("sauce:job-result=" + textResult);
+    public void before(Scenario scenario) {
+        if (sauceLabsTunnel != null) {
+            ((JavascriptExecutor) webDriver).executeScript(
+                    "sauce:context=" + scenario.getName() + ":started");
+        }
 
     }
 

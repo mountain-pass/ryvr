@@ -4,7 +4,6 @@ import java.util.Collections;
 
 import javax.ws.rs.core.MediaType;
 
-import org.junit.runner.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import au.com.mountainpass.inflector.springboot.controllers.AcceptRouter;
@@ -58,8 +57,7 @@ public class JavaRyvrClient implements RyvrTestClient {
     }
 
     @Override
-    public void afterSuite(Result result) {
+    public void before(Scenario scenario) {
         // nothing
     }
-
 }
