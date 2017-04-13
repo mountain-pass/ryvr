@@ -1,3 +1,5 @@
+ /*global angular */
+
 var app = angular.module('ryvr', []);
 
 app.config(function($locationProvider, $httpProvider) {
