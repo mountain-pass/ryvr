@@ -56,75 +56,177 @@ public class TestConfiguration implements
         ApplicationListener<EmbeddedServletContainerInitializedEvent> {
 
     @Autowired
-    InflectorApplication infelctorApplication;
+    private InflectorConfig config;
 
-    @Bean
-    @Profile(value = { "systemTest" })
-    RyvrTestClient restClient() {
-        return new RestRyvrClient();
-    }
+    @Autowired
+    private InflectorApplication infelctorApplication;
 
-    @Bean
-    @Profile(value = { "uiTest" })
-    RyvrTestClient uiClient() {
-        return new HtmlRyvrClient();
-    }
+    @Value("${server.ssl.key-alias}")
+    private String keyAlias;
 
-    @Bean
-    @Profile(value = { "unitTest" })
-    RyvrTestClient javaClient() {
-        return new JavaRyvrClient();
-    }
+    @Value("${server.ssl.key-password}")
+    private String keyPassword;
+
+    @Value("${server.ssl.key-store}")
+    private String keyStore;
+
+    @Value("${server.ssl.key-store-password}")
+    private String keyStorePassword;
+
+    public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+
+    @Value("${security.user.name:user}")
+    private String name;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Value("${security.user.password:password}")
+    private String password;
 
     private int port;
 
-    @Value("${server.ssl.key-store}")
-    String keyStore;
+    @Value("${au.com.windyroad.service-gateway.proxy.max.connections.route:20}")
+    private int proxyMaxConnectionsRoute;
 
-    @Value("${server.ssl.key-store-password}")
-    String keyStorePassword;
+    @Value("${au.com.windyroad.service-gateway.proxy.max.connections.total:100}")
+    private int proxyMaxConnectionsTotal;
 
-    @Value("${server.ssl.key-password}")
-    String keyPassword;
-
-    @Value("${server.ssl.key-alias}")
-    String keyAlias;
+    @Value("${au.com.windyroad.service-gateway.proxy.read.timeout.ms:60000}")
+    private int proxyReadTimeoutMs;
 
     @Value("${au.com.windyroad.service-gateway.ssl.hostname}")
-    String sslHostname;
+    private String sslHostname;
 
     @Value("${javax.net.ssl.trustStore:build/truststore.jks}")
     private String trustStoreFile;
 
-    public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
-    @Autowired
-    InflectorConfig config;
+    @Autowired(required = false)
+    private WebDriverFactory webDriverFactory;
 
     @Bean
-    Object swaggerJsonHandler() {
-        Set<Resource> resources = config.getResources();
-        for (Resource r : resources) {
-            if ("/swagger.json/".equals(r.getPath())) {
-                Set<Object> instances = r.getHandlerInstances();
-                return instances;
-            }
-        }
-        return null;
+    public CloseableHttpAsyncClient asyncHttpClient() throws Exception {
+        return asyncHttpClientBuilder().build();
     }
 
     @Bean
-    public TomcatEmbeddedServletContainerFactory tomcatFactory()
-            throws Exception {
-        serviceGatewayKeyStoreManager();
-        return new TomcatEmbeddedServletContainerFactory() {
+    public HttpAsyncClientBuilder asyncHttpClientBuilder() throws Exception {
+        final NHttpClientConnectionManager connectionManager = infelctorApplication
+                .nHttpClientConntectionManager();
+        final RequestConfig config = httpClientRequestConfig();
+        return HttpAsyncClientBuilder.create()
+                .setConnectionManager(connectionManager)
+                .setConnectionManagerShared(true)
+                .setDefaultRequestConfig(config)
+                .setSSLContext(infelctorApplication.sslContext());
+    }
 
-            @Override
-            protected TomcatEmbeddedServletContainer getTomcatEmbeddedServletContainer(
-                    Tomcat tomcat) {
-                return super.getTomcatEmbeddedServletContainer(tomcat);
-            }
-        };
+    @Bean
+    public AsyncClientHttpRequestFactory asyncHttpClientFactory()
+            throws Exception {
+        final HttpComponentsAsyncClientHttpRequestFactory factory = new HttpComponentsAsyncClientHttpRequestFactory(
+                httpClient(), asyncHttpClient());
+        factory.setReadTimeout(200000);
+        return factory;
+    }
+
+    @Bean
+    public EmbeddedDatabase db() {
+        return new EmbeddedDatabaseBuilder().setName("TEST_DB")
+                .setType(EmbeddedDatabaseType.H2).setScriptEncoding("UTF-8")
+                .ignoreFailedDrops(true).addScript("initH2.sql").build();
+
+    }
+
+    public URI getBaseUri() {
+        return URI.create("https://" + sslHostname + ":" + getPort());
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    @Bean
+    public CloseableHttpClient httpClient() throws Exception {
+        return httpClientBuilder().build();
+    }
+
+    @Bean
+    public HttpClientBuilder httpClientBuilder() throws Exception {
+        final HttpClientConnectionManager connectionManager = httpClientConnectionManager();
+        final RequestConfig config = httpClientRequestConfig();
+        return HttpClientBuilder.create()
+                .setConnectionManager(connectionManager)
+                .setDefaultRequestConfig(config)
+                .setSSLSocketFactory(infelctorApplication.sslSocketFactory())
+                .setSslcontext(infelctorApplication.sslContext())
+                .disableRedirectHandling();
+    }
+
+    @Bean
+    public HttpClientConnectionManager httpClientConnectionManager()
+            throws Exception {
+        final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
+                httpConnectionSocketFactoryRegistry());
+        connectionManager.setMaxTotal(proxyMaxConnectionsTotal);
+        connectionManager.setDefaultMaxPerRoute(proxyMaxConnectionsRoute);
+        return connectionManager;
+    }
+
+    @Bean
+    public HttpComponentsClientHttpRequestFactory httpClientFactory()
+            throws Exception {
+        final HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(
+                httpClient());
+        factory.setReadTimeout(200000);
+        return factory;
+    }
+
+    @Bean
+    public RequestConfig httpClientRequestConfig() {
+        final RequestConfig config = RequestConfig.custom()
+                .setConnectTimeout(proxyReadTimeoutMs).build();
+        return config;
+    }
+
+    @Bean
+    public Registry<ConnectionSocketFactory> httpConnectionSocketFactoryRegistry()
+            throws Exception {
+        return RegistryBuilder.<ConnectionSocketFactory> create()
+                .register("http",
+                        PlainConnectionSocketFactory.getSocketFactory())
+                .register("https", infelctorApplication.sslSocketFactory())
+                .build();
+    }
+
+    @Bean
+    @Profile(value = { "unitTest" })
+    public RyvrTestClient javaClient() {
+        return new JavaRyvrClient();
+    }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate() {
+        return new JdbcTemplate(db());
+    }
+
+    @Bean
+    public MappingJackson2HttpMessageConverter mappingJacksonHttpMessageConverter() {
+        final MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(
+                objectMapper);
+        return converter;
+    }
+
+    @Override
+    public void onApplicationEvent(
+            final EmbeddedServletContainerInitializedEvent event) {
+        this.port = event.getEmbeddedServletContainer().getPort();
+    }
+
+    @Bean
+    @Profile(value = { "systemTest" })
+    public RyvrTestClient restClient() {
+        return new RestRyvrClient();
     }
 
     @Bean
@@ -145,122 +247,41 @@ public class TestConfiguration implements
                 infelctorApplication.getTrustStoreType());
     }
 
-    public void setPort(int port) {
+    public void setPort(final int port) {
         this.port = port;
     }
 
-    public int getPort() {
-        return port;
-    }
-
-    public URI getBaseUri() {
-        return URI.create("https://" + sslHostname + ":" + getPort());
-    }
-
-    @Value("${au.com.windyroad.service-gateway.proxy.max.connections.total:100}")
-    private int proxyMaxConnectionsTotal;
-
-    @Value("${au.com.windyroad.service-gateway.proxy.max.connections.route:20}")
-    private int proxyMaxConnectionsRoute;
-
-    @Value("${au.com.windyroad.service-gateway.proxy.read.timeout.ms:60000}")
-    private int proxyReadTimeoutMs;
-
     @Bean
-    public HttpClientBuilder httpClientBuilder() throws Exception {
-        HttpClientConnectionManager connectionManager = httpClientConnectionManager();
-        RequestConfig config = httpClientRequestConfig();
-        return HttpClientBuilder.create()
-                .setConnectionManager(connectionManager)
-                .setDefaultRequestConfig(config)
-                .setSSLSocketFactory(infelctorApplication.sslSocketFactory())
-                .setSslcontext(infelctorApplication.sslContext())
-                .disableRedirectHandling();
+    public Object swaggerJsonHandler() {
+        final Set<Resource> resources = config.getResources();
+        for (final Resource r : resources) {
+            if ("/swagger.json/".equals(r.getPath())) {
+                final Set<Object> instances = r.getHandlerInstances();
+                return instances;
+            }
+        }
+        return null;
     }
 
     @Bean
-    RequestConfig httpClientRequestConfig() {
-        RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(proxyReadTimeoutMs).build();
-        return config;
-    }
-
-    @Bean
-    Registry<ConnectionSocketFactory> httpConnectionSocketFactoryRegistry()
+    public TomcatEmbeddedServletContainerFactory tomcatFactory()
             throws Exception {
-        return RegistryBuilder.<ConnectionSocketFactory> create()
-                .register("http",
-                        PlainConnectionSocketFactory.getSocketFactory())
-                .register("https", infelctorApplication.sslSocketFactory())
-                .build();
+        serviceGatewayKeyStoreManager();
+        return new TomcatEmbeddedServletContainerFactory() {
+
+            @Override
+            protected TomcatEmbeddedServletContainer getTomcatEmbeddedServletContainer(
+                    final Tomcat tomcat) {
+                return super.getTomcatEmbeddedServletContainer(tomcat);
+            }
+        };
     }
 
     @Bean
-    HttpClientConnectionManager httpClientConnectionManager() throws Exception {
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
-                httpConnectionSocketFactoryRegistry());
-        connectionManager.setMaxTotal(proxyMaxConnectionsTotal);
-        connectionManager.setDefaultMaxPerRoute(proxyMaxConnectionsRoute);
-        return connectionManager;
+    @Profile(value = { "uiTest" })
+    public RyvrTestClient uiClient() {
+        return new HtmlRyvrClient();
     }
-
-    @Bean
-    public CloseableHttpClient httpClient() throws Exception {
-        return httpClientBuilder().build();
-    }
-
-    @Bean
-    public HttpComponentsClientHttpRequestFactory httpClientFactory()
-            throws Exception {
-        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(
-                httpClient());
-        factory.setReadTimeout(200000);
-        return factory;
-    }
-
-    @Value("${security.user.name:user}")
-    String name;
-
-    @Value("${security.user.password:password}")
-    String password;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Bean
-    public MappingJackson2HttpMessageConverter mappingJacksonHttpMessageConverter() {
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(
-                objectMapper);
-        return converter;
-    }
-
-    @Bean
-    AsyncClientHttpRequestFactory asyncHttpClientFactory() throws Exception {
-        HttpComponentsAsyncClientHttpRequestFactory factory = new HttpComponentsAsyncClientHttpRequestFactory(
-                httpClient(), asyncHttpClient());
-        factory.setReadTimeout(200000);
-        return factory;
-    }
-
-    @Bean
-    CloseableHttpAsyncClient asyncHttpClient() throws Exception {
-        return asyncHttpClientBuilder().build();
-    }
-
-    @Bean
-    HttpAsyncClientBuilder asyncHttpClientBuilder() throws Exception {
-        NHttpClientConnectionManager connectionManager = infelctorApplication
-                .nHttpClientConntectionManager();
-        RequestConfig config = httpClientRequestConfig();
-        return HttpAsyncClientBuilder.create()
-                .setConnectionManager(connectionManager)
-                .setConnectionManagerShared(true)
-                .setDefaultRequestConfig(config)
-                .setSSLContext(infelctorApplication.sslContext());
-    }
-
-    @Autowired(required = false)
-    private WebDriverFactory webDriverFactory;
 
     @Bean
     @Profile("uiTest")
@@ -268,27 +289,8 @@ public class TestConfiguration implements
             throws ClassNotFoundException, NoSuchMethodException,
             SecurityException, InstantiationException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException, IOException {
-        WebDriver webDriver = webDriverFactory.createWebDriver();
+        final WebDriver webDriver = webDriverFactory.createWebDriver();
         return webDriver;
-    }
-
-    @Override
-    public void onApplicationEvent(
-            EmbeddedServletContainerInitializedEvent event) {
-        this.port = event.getEmbeddedServletContainer().getPort();
-    }
-
-    @Bean
-    EmbeddedDatabase db() {
-        return new EmbeddedDatabaseBuilder().setName("TEST_DB")
-                .setType(EmbeddedDatabaseType.H2).setScriptEncoding("UTF-8")
-                .ignoreFailedDrops(true).addScript("initH2.sql").build();
-
-    }
-
-    @Bean
-    JdbcTemplate jdbcTemplate() {
-        return new JdbcTemplate(db());
     }
 
 }
