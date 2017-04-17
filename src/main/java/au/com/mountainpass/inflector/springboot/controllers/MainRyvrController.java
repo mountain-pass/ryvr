@@ -1,5 +1,6 @@
 package au.com.mountainpass.inflector.springboot.controllers;
 
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +46,8 @@ public class MainRyvrController implements RyvrController {
     @Override
     public io.swagger.inflector.models.ResponseContext getRyvr(
             io.swagger.inflector.models.RequestContext request, String ryvrName,
-            String xRequestId, String accept, String cacheControl) {
+            String xRequestId, String accept, String cacheControl)
+            throws URISyntaxException {
         return router.getRyvr(request, ryvrName, xRequestId, accept,
                 cacheControl);
     }

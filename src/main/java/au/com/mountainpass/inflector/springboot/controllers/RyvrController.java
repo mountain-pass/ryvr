@@ -1,5 +1,7 @@
 package au.com.mountainpass.inflector.springboot.controllers;
 
+import java.net.URISyntaxException;
+
 import io.swagger.inflector.models.RequestContext;
 import io.swagger.inflector.models.ResponseContext;
 
@@ -13,6 +15,7 @@ public interface RyvrController {
     public ResponseContext getRoot(RequestContext request);
 
     public ResponseContext getRyvr(RequestContext request, String ryvrName,
-            String xRequestId, String accept, String cacheControl);
+            String xRequestId, String accept, String cacheControl)
+            throws URISyntaxException;
 
 }

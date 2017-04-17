@@ -1,5 +1,6 @@
 package au.com.mountainpass.inflector.springboot.controllers;
 
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -96,7 +97,8 @@ public class JsonController implements RyvrContentController {
 
     @Override
     public ResponseContext getRyvr(RequestContext request, String ryvrName,
-            String xRequestId, String accept, String cacheControl) {
+            String xRequestId, String accept, String cacheControl)
+            throws URISyntaxException {
 
         Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
         ryvr.refresh();

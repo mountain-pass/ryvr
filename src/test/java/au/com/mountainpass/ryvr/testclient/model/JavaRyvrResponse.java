@@ -3,6 +3,7 @@ package au.com.mountainpass.ryvr.testclient.model;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +20,8 @@ public class JavaRyvrResponse implements RyvrResponse {
     }
 
     @Override
-    public void assertHasItem(List<Map<String, String>> events) {
+    public void assertHasItem(List<Map<String, String>> events)
+            throws URISyntaxException {
         ryvr.refresh();
         Embedded embedded = ryvr.getEmbedded();
         List<Entry> items = embedded.getItemsBy("item", Entry.class);

@@ -1,5 +1,6 @@
 package au.com.mountainpass.inflector.springboot.controllers;
 
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,7 +59,8 @@ public class AcceptRouter implements RyvrController {
 
     @Override
     public ResponseContext getRyvr(RequestContext request, String ryvrName,
-            String xRequestId, String accept, String cacheControl) {
+            String xRequestId, String accept, String cacheControl)
+            throws URISyntaxException {
         return findContentController(request.getAcceptableMediaTypes())
                 .getRyvr(request, ryvrName, xRequestId, accept, cacheControl);
     }
