@@ -4,12 +4,14 @@ import static de.otto.edison.hal.Link.*;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import au.com.mountainpass.ryvr.model.Entry;
 import au.com.mountainpass.ryvr.model.Ryvr;
@@ -35,23 +37,33 @@ public class JdbcRyvr extends Ryvr {
     public void refresh() throws URISyntaxException {
         Integer count = jt.queryForObject(
                 "select count(*) from \"" + table + "\"", Integer.class);
-        List<Map<String, Object>> result = jt.queryForList("select * from \""
-                + table + "\" ORDER BY \"" + orderedBy + "\" ASC");
-        jt.setMaxRows(PAGE_SIZE);
+        jt.setFetchSize(PAGE_SIZE);
+        SqlRowSet result = jt.queryForRowSet("select * from \"" + table
+                + "\" ORDER BY \"" + orderedBy + "\" ASC");
+        int page = (count - 1) / PAGE_SIZE;
+        result.absolute(page * PAGE_SIZE + 1);
+
         List<HalRepresentation> embeddedItems = new ArrayList<>();
         List<Link> linkedItems = new ArrayList<>();
 
-        result.stream().forEach(row -> {
-            Entry entry = new Entry(this.getLinks().getLinkBy("self").get(),
-                    row);
-            embeddedItems.add(entry);
-            Link selfLink = entry.getLinks().getLinkBy("self").get();
-            linkedItems.add(linkBuilder("item", selfLink.getHref())
-                    .withTitle(selfLink.getTitle()).build());
-        });
+        String[] keyArray = result.getMetaData().getColumnNames();
 
         Optional<Link> selfLinkOptional = super.getLinks().getLinkBy("self");
         if (selfLinkOptional.isPresent()) {
+
+            do {
+                Map<String, Object> row = new HashMap<>();
+                for (String key : keyArray) {
+                    row.put(key, result.getObject(key));
+                }
+                Entry entry = new Entry(selfLinkOptional.get(), row, orderedBy);
+                embeddedItems.add(entry);
+                Link embeddedSelfLink = entry.getLinks().getLinkBy("self")
+                        .get();
+                linkedItems.add(linkBuilder("item", embeddedSelfLink.getHref())
+                        .withTitle(embeddedSelfLink.getTitle()).build());
+            } while (result.next());
+
             String selfHref = selfLinkOptional.get().getHref();
 
             linkedItems.add(linkBuilder("current", selfHref)
@@ -59,6 +71,10 @@ public class JdbcRyvr extends Ryvr {
             addPageLink(linkedItems, selfHref, 1, "first", "First");
             addPageLink(linkedItems, selfHref, (count / PAGE_SIZE) + 1, "last",
                     "Last");
+            if (page > 0) {
+                addPageLink(linkedItems, selfHref, page - 1, "prev",
+                        "Previous");
+            }
 
         }
         withEmbedded("item", embeddedItems);

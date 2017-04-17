@@ -14,9 +14,9 @@ public class Entry extends MutableHalRepresentation {
     private Entry() {
     }
 
-    public Entry(Link link, Map<String, Object> row) {
+    public Entry(Link link, Map<String, Object> row, String orderedBy) {
         properties = row;
-        String id = row.get("ID").toString();
+        String id = row.get(orderedBy).toString();
         super.add(linkBuilder("self", link.getHref() + "/" + id).withTitle(id)
                 .build());
     }
