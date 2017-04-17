@@ -15,22 +15,16 @@ app.config(function($locationProvider, $httpProvider) {
                 // app.controller.loading = true;
                 // config.headers.get['Accept'] =
                 config.headers['Accept'] = 'application/hal+json;q=1,application/json;q=0.8,*/*;q=0.1';
-                console.log('request', new Date());
-                console.log(config);
                 return config;
             },
 
             'requestError' : function(rejection) {
                 angular.element(document.getElementById('controller')).scope().controller.loading = false;
-                console.log('requestError', new Date());
-                console.log(rejection);
                 return $q.reject(rejection);
             },
 
             'response' : function(response) {
                 angular.element(document.getElementById('controller')).scope().controller.loading = false;
-                console.log('response', new Date());
-                console.log(response);
                 if (response.headers('Content-Type') !== 'application/hal+json') {
                     window.location.href = response.config.url;
                 }
@@ -39,8 +33,6 @@ app.config(function($locationProvider, $httpProvider) {
 
             'responseError' : function(rejection) {
                 angular.element(document.getElementById('controller')).scope().controller.loading = false;
-                console.log('responseError', new Date());
-                console.log(rejection);
                 return $q.reject(rejection);
             }
         };
@@ -48,7 +40,6 @@ app.config(function($locationProvider, $httpProvider) {
 });
 
 function getLocation(href) {
-    console.log('getLocation(' + href + ')');
     var location = document.createElement('a');
     location.href = href;
     // IE doesn't populate all link properties when setting .href with a
@@ -89,7 +80,6 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
         } else if (response.status === 204) {
             var href = $window.location.href;
             href = href.substring(0, href.lastIndexOf('/'));
-            console.log('reloading:', href);
             controller.load(href);
 
         } else {
@@ -98,7 +88,6 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
     };
 
     controller.errorCallback = function(response) {
-        console.log('error response', response);
         var error = response;
         var errors = [];
         if (response.data && response.data.errors) {
@@ -111,14 +100,11 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
                 error,
                 errors
             };
-            console.log(errors);
-            console.log(controller.lastForm.action.fields);
             // todo iterate over errors and
             // update form accordingly
             Object.keys(errors).forEach(function(key, index) {
                 controller.lastForm.action.fields[key].error = response.data.errors[key];
             });
-            console.log(controller.lastForm.action.fields);
             controller.lastForm = null;
         } else {
             alert('TODO: handle error', error);
@@ -146,19 +132,10 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
     }
 
     controller.load = function(href) {
-        console.log('setting location', href.href, new Date());
         var currLoc = getLocation($location.absUrl());
-        console.log('currLoc.protocol', currLoc.protocol, new Date());
-        console.log('currLoc.host', currLoc.host, new Date());
-        console.log('href.protocol', href.protocol, new Date());
-        console.log('href.host', href.host, new Date());
-        console.log('href.host', href.host, new Date());
-        console.log('href.protocol == currLoc.protocol', href.protocol == currLoc.protocol, new Date());
-        console.log('href.host == currLoc.host', href.host == currLoc.host, new Date());
 
         if (href.protocol == currLoc.protocol && href.host == currLoc.host) {
             var relativeHref = href.pathname + href.search + href.hash;
-            console.log('relativeHref', relativeHref, new Date());
             $location.url(relativeHref);
         } else {
 
@@ -167,11 +144,9 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
     }
 
     $scope.$on('$locationChangeStart', function(event, newUrl, oldUrl) {
-        console.log('$locationChangeStart:', oldUrl, ' -> ', newUrl, new Date());
     });
 
     $scope.$on('$locationChangeSuccess', function(event, newUrl, oldUrl) {
-        console.log('$locationChangeSuccess:', oldUrl, ' -> ', newUrl, new Date());
         if (newUrl != null && oldUrl != newUrl) {
             controller.doLoad(newUrl);
         }
@@ -185,25 +160,18 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
         controller.resource = JSON.parse(document.getElementById('init-resource').textContent);
     }
 
-    console.log('initial load', new Date());
     controller.initRoot();
     controller.initResource();
     controller.loaded = true;    
-    console.log('initial requested', new Date());
 
     controller.processForm = function(form) {
         controller.loading = true;
-        console.log('processForm');
-        console.log(form);
         var action = form.action;
         var href = $(location).attr('href');
 
         var method = action.method || 'GET';
-        console.log(method);
-        console.log(method == 'GET');
 
         var values = controller.actionValues[action.name];
-        console.log(values);
         var requestData = null;
         var requestParams = null;
         if (values != null) {
@@ -228,10 +196,8 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
             if (values != null) {
                 href = href + '?' + $.param(values);
             }
-            console.log('starting GET request', href, new Date());
             controller.load(getLocation(href));
         } else {
-            console.log('starting ' + method + ' request', request, new Date());
             $http(request).then(controller.successCallback, controller.errorCallback);
         }
         return false;
@@ -271,21 +237,14 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
     controller.itemHeadings = function() {
         var keys = [];
         controller.resource._embedded.item.forEach(function(embeddedItem) {
-            console.log('embeddedItem: ', embeddedItem.properties);
-            console.log('embeddedItem Keys: ', Object.keys(embeddedItem.properties));
             keys = keys.concat(Object.keys(embeddedItem.properties));
         });
-        console.log('headings', keys);
         keys =  Array.from(new Set(keys));
-        console.log('unique headings', keys);
         return keys;
     }
     
     controller.linkedItem = function(item) {
-        console.log('looking for embedded with self == ' + item.href)
         var filtered = controller.resource._embedded.item.filter(function(embeddedItem) {
-           console.log('embedded == ' +  embeddedItem._links.self.href);
-           console.log('embeddedItem._links.self.href == item.href == ' +  (embeddedItem._links.self.href == item.href));
            return embeddedItem._links.self.href == item.href;
         });
         return filtered.length > 0 ? filtered[0] : item;
