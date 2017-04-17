@@ -1,26 +1,13 @@
- /*global angular */
+ /* global angular */
+ /* global document */
+ /* global console */
+ /* global window */
+ /* global window */
 
 var app = angular.module('ryvr', []);
 
 app.config(function($locationProvider, $httpProvider) {
     $locationProvider.html5Mode(true);
-    // $httpProvider.defaults.cache=false;
-    // $httpProvider.defaults.headers.common.Accept =
-    // 'application/vnd.siren+json';
-    // //initialize get if not there
-    // if (!$httpProvider.defaults.headers.get) {
-    // $httpProvider.defaults.headers.get = {};
-    // }
-    //
-    // // Answer edited to include suggestions from comments
-    // // because previous version of code introduced browser-related errors
-    //
-    // //disable IE ajax request caching
-    // $httpProvider.defaults.headers.get['If-Modified-Since'] = 'Mon, 26 Jul
-    // 1997 05:00:00 GMT';
-    // // extra
-    // $httpProvider.defaults.headers.get['Pragma'] = 'no-cache';
-
     $httpProvider.interceptors.push(function($q) {
         return {
             'request' : function(config) {
@@ -73,13 +60,12 @@ function getLocation(href) {
         location.href = location.href;
     }
     return location;
-};
+}
 
-app.controller('ResourceController', function($scope, $http, $location, $window, $timeout) {
+app.controller('ResourceController', function($scope, $http, $location, $window) {
     var controller = this;
     controller.loaded = false;
     controller.loading = false;
-    var init = true;
     controller.actionValues = {};
     controller.error = {};
     controller.lastForm = null;
@@ -88,13 +74,6 @@ app.controller('ResourceController', function($scope, $http, $location, $window,
 
     controller.processNavClick = function(event) {
         return false;
-        // console.log("processNavClick");
-        // console.log(event);
-        // $http.get(event.target.href, {
-        // cache: false
-        // }).success(function(data) {
-        // controller.resource = data;
-        // });
     };
 
     controller.successCallback = function(response) {
@@ -217,7 +196,7 @@ app.controller('ResourceController', function($scope, $http, $location, $window,
         console.log("processForm");
         console.log(form);
         var action = form.action;
-        href = $(location).attr('href');
+        var href = $(location).attr('href');
 
         var method = action.method || "GET";
         console.log(method);
