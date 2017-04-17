@@ -76,10 +76,11 @@ public class StepDefs {
         rootResponseFuture = client.getRoot();
     }
 
-    @Given("^a \"([^\"]*)\" ryvr for \"([^\"]*)\" for table \"([^\"]*)\"$")
-    public void a_ryvr_for_for_table(final String name, final String dbName,
-            final String table) throws Throwable {
-        final JdbcRyvr ryvr = new JdbcRyvr(name, jt, table);
+    @Given("^a \"([^\"]*)\" ryvr for \"([^\"]*)\" for table \"([^\"]*)\" ordered by \"([^\"]*)\"$")
+    public void a_ryvr_for_for_table_ordered_by(final String name,
+            final String dbName, final String table, String orderedBy)
+            throws Throwable {
+        final JdbcRyvr ryvr = new JdbcRyvr(name, jt, table, orderedBy);
         ryvrsCollection.addRyvr(ryvr);
     }
 

@@ -21,24 +21,27 @@ public class JdbcRyvr extends Ryvr {
     private static final int PAGE_SIZE = 10;
     private String table;
     private JdbcTemplate jt;
+    private String orderedBy;
 
-    public JdbcRyvr(String title, JdbcTemplate jt, String table) {
+    public JdbcRyvr(String title, JdbcTemplate jt, String table,
+            String orderedBy) {
         super(title);
         this.jt = jt;
         this.table = table;
+        this.orderedBy = orderedBy;
     }
 
     @Override
     public void refresh() throws URISyntaxException {
         Integer count = jt.queryForObject(
                 "select count(*) from \"" + table + "\"", Integer.class);
-        List<Map<String, Object>> result = jt
-                .queryForList("select * from \"" + table + "\"");
+        List<Map<String, Object>> result = jt.queryForList("select * from \""
+                + table + "\" ORDER BY \"" + orderedBy + "\" ASC");
         jt.setMaxRows(PAGE_SIZE);
         List<HalRepresentation> embeddedItems = new ArrayList<>();
         List<Link> linkedItems = new ArrayList<>();
 
-        result.parallelStream().forEach(row -> {
+        result.stream().forEach(row -> {
             Entry entry = new Entry(this.getLinks().getLinkBy("self").get(),
                     row);
             embeddedItems.add(entry);
