@@ -16,19 +16,19 @@ public class RyvrConfiguration implements
     private int port;
 
     @Value("${server.ssl.key-store}")
-    String keyStore;
+    private String keyStore;
 
     @Value("${server.ssl.key-store-password}")
-    String keyStorePassword;
+    private String keyStorePassword;
 
     @Value("${server.ssl.key-password}")
-    String keyPassword;
+    private String keyPassword;
 
     @Value("${server.ssl.key-alias}")
-    String keyAlias;
+    private String keyAlias;
 
     @Value("${au.com.windyroad.service-gateway.ssl.hostname}")
-    String sslHostname;
+    private String sslHostname;
 
     @Value("${javax.net.ssl.trustStore:build/truststore.jks}")
     private String trustStoreFile;
