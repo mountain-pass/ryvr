@@ -109,7 +109,7 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
         } else {
             alert('TODO: handle error', error);
         }
-    }
+    };
 
     controller.doLoad = function(href) {
         controller.href = href;
@@ -120,7 +120,7 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
             controller.lastForm = null;
         }, controller.errorCallback);
 
-    }
+    };
 
     controller.doLoadRoot = function(href) {
         $http.get(href, {
@@ -129,36 +129,36 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
             controller.root = response.data;
         }, controller.errorCallback);
 
-    }
+    };
 
     controller.load = function(href) {
         var currLoc = getLocation($location.absUrl());
 
-        if (href.protocol == currLoc.protocol && href.host == currLoc.host) {
+        if (href.protocol === currLoc.protocol && href.host === currLoc.host) {
             var relativeHref = href.pathname + href.search + href.hash;
             $location.url(relativeHref);
         } else {
 
             $window.location.href = href;
         }
-    }
+    };
 
     $scope.$on('$locationChangeStart', function(event, newUrl, oldUrl) {
     });
 
     $scope.$on('$locationChangeSuccess', function(event, newUrl, oldUrl) {
-        if (newUrl != null && oldUrl != newUrl) {
+        if (newUrl !== null && oldUrl !== newUrl) {
             controller.doLoad(newUrl);
         }
     });
 
     controller.initRoot = function() {
         controller.root = JSON.parse(document.getElementById('init-root').textContent);
-    }
+    };
 
     controller.initResource = function() {
         controller.resource = JSON.parse(document.getElementById('init-resource').textContent);
-    }
+    };
 
     controller.initRoot();
     controller.initResource();
@@ -174,8 +174,8 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
         var values = controller.actionValues[action.name];
         var requestData = null;
         var requestParams = null;
-        if (values != null) {
-            if (method == 'GET') {
+        if (values !== null) {
+            if (method === 'GET') {
                 requestParams = values;
             } else {
                 requestData = $.param(values);
@@ -192,8 +192,8 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
         };
         controller.lastForm = form;
 
-        if (method == 'GET') {
-            if (values != null) {
+        if (method === 'GET') {
+            if (values !== null) {
                 href = href + '?' + $.param(values);
             }
             controller.load(getLocation(href));
@@ -206,7 +206,7 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
     // credit to http://stackoverflow.com/a/12592693/269221
     $scope.isActive = function(path) {
         if ($location.path().substr(0, path.length) == path) {
-            if (path == '/' && $location.path() == '/') {
+            if (path === '/' && $location.path() === '/') {
                 return true;
             } else if (path == '/') {
                 return false;
@@ -215,24 +215,24 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
         } else {
             return false;
         }
-    }
+    };
 
     $scope.resourceProperties = function() {
         var rval = {};
         if (controller.hasOwnProperty('resource')) {
             var keys = Object.keys(controller.resource);
             keys.forEach(function(key) {
-                if (key != 'title' && key[0] != '_') {
+                if (key !== 'title' && key[0] !== '_') {
                     rval[key] = controller.resource[key];
                 }
             });
         }
         return rval;
-    }
+    };
 
     $scope.resourceHasProperties = function() {
-        return Object.keys($scope.resourceProperties()).length != 0;
-    }
+        return Object.keys($scope.resourceProperties()).length !== 0;
+    };
     
     controller.itemHeadings = function() {
         var keys = [];
@@ -241,14 +241,14 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
         });
         keys =  Array.from(new Set(keys));
         return keys;
-    }
+    };
     
     controller.linkedItem = function(item) {
         var filtered = controller.resource._embedded.item.filter(function(embeddedItem) {
-           return embeddedItem._links.self.href == item.href;
+           return embeddedItem._links.self.href === item.href;
         });
         return filtered.length > 0 ? filtered[0] : item;
-    }
+    };
     
     controller.itemNavLinks = function(_links) {
         var itemRels = [ 'first', 'prev', 'next', 'last', 'current' ];
@@ -259,14 +259,14 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
             rval[key] = _links[key];
         });
         return rval;
-    }
+    };
     
     controller.typeOf = function(value) {
         return typeof value;
-    }
+    };
 
     // credit to http://stackoverflow.com/a/7220510/269221
     controller.pretty = function(json) {
         return JSON.stringify(json, null, 2);
-    }
+    };
 });
