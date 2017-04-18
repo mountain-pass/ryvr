@@ -215,4 +215,9 @@ public class StepDefs {
     public void the_first_page_is_requested() throws Throwable {
         ryvrResponse = ryvrResponse.followLink("first");
     }
+
+    @When("^the current page is requested$")
+    public void the_current_page_is_requested() throws Throwable {
+        ryvrResponse = ryvrResponse.followLink("current");
+    }
 }

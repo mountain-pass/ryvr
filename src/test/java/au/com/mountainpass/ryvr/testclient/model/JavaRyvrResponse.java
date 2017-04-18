@@ -70,16 +70,19 @@ public class JavaRyvrResponse implements RyvrResponse {
     @Override
     public RyvrResponse followLink(String rel) throws URISyntaxException {
         ryvr.refresh(page);
-        Optional<Link> prev = ryvr.getLinks().getLinkBy(rel);
-        assertTrue(prev.isPresent());
-        URI prevUri = URI.create(prev.get().getHref());
-        List<NameValuePair> params = URLEncodedUtils.parse(prevUri,
+        Optional<Link> link = ryvr.getLinks().getLinkBy(rel);
+        assertTrue(link.isPresent());
+        URI linkUri = URI.create(link.get().getHref());
+        List<NameValuePair> params = URLEncodedUtils.parse(linkUri,
                 StandardCharsets.UTF_8);
         Optional<NameValuePair> pageNvp = params.stream()
                 .filter(nvp -> "page".equals(nvp.getName())).findAny();
-        assertTrue(pageNvp.isPresent());
-        return new JavaRyvrResponse(ryvr, new Long(pageNvp.get().getValue()));
-
+        if (pageNvp.isPresent()) {
+            return new JavaRyvrResponse(ryvr,
+                    new Long(pageNvp.get().getValue()));
+        } else {
+            return new JavaRyvrResponse(ryvr);
+        }
     }
 
     public Ryvr getRyvr() {
