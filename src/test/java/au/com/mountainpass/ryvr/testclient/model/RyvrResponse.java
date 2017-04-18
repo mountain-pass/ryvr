@@ -13,6 +13,6 @@ public interface RyvrResponse {
 
     public void assertDoesntHaveLinks(List<String> links);
 
-    public RyvrResponse followPrevLink() throws URISyntaxException;
+    public RyvrResponse followLink(String rel) throws URISyntaxException;
 
 }

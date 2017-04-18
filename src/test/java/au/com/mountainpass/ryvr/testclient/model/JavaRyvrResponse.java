@@ -68,9 +68,9 @@ public class JavaRyvrResponse implements RyvrResponse {
     }
 
     @Override
-    public RyvrResponse followPrevLink() throws URISyntaxException {
+    public RyvrResponse followLink(String rel) throws URISyntaxException {
         ryvr.refresh(page);
-        Optional<Link> prev = ryvr.getLinks().getLinkBy("prev");
+        Optional<Link> prev = ryvr.getLinks().getLinkBy(rel);
         assertTrue(prev.isPresent());
         URI prevUri = URI.create(prev.get().getHref());
         List<NameValuePair> params = URLEncodedUtils.parse(prevUri,

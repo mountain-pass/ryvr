@@ -23,9 +23,9 @@ public class RestRyvrResponse extends JavaRyvrResponse {
     }
 
     @Override
-    public RyvrResponse followPrevLink() throws URISyntaxException {
+    public RyvrResponse followLink(String rel) throws URISyntaxException {
         Traverson followed = traverson.startWith(contextUrl, getRyvr())
-                .follow("prev");
+                .follow(rel);
         EmbeddedTypeInfo embeddedTypeInfo = EmbeddedTypeInfo
                 .withEmbedded("item", Entry.class);
 
