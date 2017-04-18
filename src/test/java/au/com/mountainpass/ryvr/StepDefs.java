@@ -205,4 +205,9 @@ public class StepDefs {
     public void there_are_no_ryvrs_configured() throws Throwable {
         // do nothing
     }
+
+    @When("^the previous page is requested$")
+    public void the_previous_page_is_requested() throws Throwable {
+        ryvrResponse = ryvrResponse.followPrevLink();
+    }
 }

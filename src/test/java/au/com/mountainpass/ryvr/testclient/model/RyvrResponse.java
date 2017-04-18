@@ -6,11 +6,13 @@ import java.util.Map;
 
 public interface RyvrResponse {
 
-    void assertHasItem(List<Map<String, String>> events)
+    public void assertHasItem(List<Map<String, String>> events)
             throws URISyntaxException;
 
-    void assertHasLinks(List<String> links);
+    public void assertHasLinks(List<String> links);
 
-    void assertDoesntHaveLinks(List<String> links);
+    public void assertDoesntHaveLinks(List<String> links);
+
+    public RyvrResponse followPrevLink() throws URISyntaxException;
 
 }

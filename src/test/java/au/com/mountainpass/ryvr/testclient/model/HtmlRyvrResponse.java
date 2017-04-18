@@ -13,6 +13,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import cucumber.api.PendingException;
+
 public class HtmlRyvrResponse implements RyvrResponse {
 
     private WebDriver webDriver;
@@ -75,6 +77,11 @@ public class HtmlRyvrResponse implements RyvrResponse {
             assertThat(webDriver.findElements(
                     By.cssSelector("a[rel~='" + rel + "']")), empty());
         });
+    }
+
+    @Override
+    public RyvrResponse followPrevLink() {
+        throw new PendingException();
     }
 
 }

@@ -34,13 +34,14 @@ public class JdbcRyvr extends Ryvr {
     }
 
     @Override
-    public void refresh() throws URISyntaxException {
+    public void refresh(Integer requestedPage) throws URISyntaxException {
         Integer count = jt.queryForObject(
                 "select count(*) from \"" + table + "\"", Integer.class);
         jt.setFetchSize(PAGE_SIZE);
         SqlRowSet result = jt.queryForRowSet("select * from \"" + table
                 + "\" ORDER BY \"" + orderedBy + "\" ASC");
-        int page = (count - 1) / PAGE_SIZE;
+        int pages = (count - 1) / PAGE_SIZE;
+        int page = requestedPage == null ? pages : requestedPage;
         result.absolute(page * PAGE_SIZE + 1);
 
         List<HalRepresentation> embeddedItems = new ArrayList<>();
@@ -51,7 +52,7 @@ public class JdbcRyvr extends Ryvr {
         Optional<Link> selfLinkOptional = super.getLinks().getLinkBy("self");
         if (selfLinkOptional.isPresent()) {
 
-            do {
+            for (int i = 0; i < PAGE_SIZE; ++i) {
                 Map<String, Object> row = new HashMap<>();
                 for (String key : keyArray) {
                     row.put(key, result.getObject(key));
@@ -62,21 +63,28 @@ public class JdbcRyvr extends Ryvr {
                         .get();
                 linkedItems.add(linkBuilder("item", embeddedSelfLink.getHref())
                         .withTitle(embeddedSelfLink.getTitle()).build());
-            } while (result.next());
+                if (!result.next()) {
+                    break;
+                }
+            }
 
             String selfHref = selfLinkOptional.get().getHref();
 
             linkedItems.add(linkBuilder("current", selfHref)
                     .withTitle("Current").build());
             addPageLink(linkedItems, selfHref, 1, "first", "First");
-            addPageLink(linkedItems, selfHref, (count / PAGE_SIZE) + 1, "last",
-                    "Last");
+            addPageLink(linkedItems, selfHref, pages, "last", "Last");
             if (page > 0) {
                 addPageLink(linkedItems, selfHref, page - 1, "prev",
                         "Previous");
             }
+            if (page < pages) {
+                addPageLink(linkedItems, selfHref, page + 1, "next", "Next");
+            }
 
         }
+        super.clear();
+
         withEmbedded("item", embeddedItems);
         withLinks(linkedItems);
     }
