@@ -10,7 +10,7 @@ app.config(function($locationProvider, $httpProvider) {
     $locationProvider.html5Mode(true);
     $httpProvider.interceptors.push(function($q) {
         return {
-            'request' : function(config) {
+            'request'(config) {
                 angular.element(document.getElementById('controller')).scope().controller.loading = true;
                 // app.controller.loading = true;
                 // config.headers.get['Accept'] =
@@ -18,12 +18,12 @@ app.config(function($locationProvider, $httpProvider) {
                 return config;
             },
 
-            'requestError' : function(rejection) {
+            'requestError'(rejection) {
                 angular.element(document.getElementById('controller')).scope().controller.loading = false;
                 return $q.reject(rejection);
             },
 
-            'response' : function(response) {
+            'response'(response) {
                 angular.element(document.getElementById('controller')).scope().controller.loading = false;
                 if (response.headers('Content-Type') !== 'application/hal+json') {
                     window.location.href = response.config.url;
@@ -31,7 +31,7 @@ app.config(function($locationProvider, $httpProvider) {
                 return response;
             },
 
-            'responseError' : function(rejection) {
+            'responseError'(rejection) {
                 angular.element(document.getElementById('controller')).scope().controller.loading = false;
                 return $q.reject(rejection);
             }
@@ -182,7 +182,7 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
             }
         }
         var request = {
-            method : method,
+            method,
             url : href,
             data : requestData, // pass in data as strings
             params : requestParams,
@@ -205,10 +205,10 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
 
     // credit to http://stackoverflow.com/a/12592693/269221
     $scope.isActive = function(path) {
-        if ($location.path().substr(0, path.length) == path) {
+        if ($location.path().substr(0, path.length) === path) {
             if (path === '/' && $location.path() === '/') {
                 return true;
-            } else if (path == '/') {
+            } else if (path === '/') {
                 return false;
             }
             return true;
