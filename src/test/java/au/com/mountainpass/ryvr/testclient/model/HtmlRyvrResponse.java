@@ -13,7 +13,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import cucumber.api.PendingException;
+import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
 
 public class HtmlRyvrResponse implements RyvrResponse {
 
@@ -81,7 +81,12 @@ public class HtmlRyvrResponse implements RyvrResponse {
 
     @Override
     public RyvrResponse followPrevLink() {
-        throw new PendingException();
+        WebElement prevLink = webDriver.findElement(By.id("linkedItems"))
+                .findElement(By.cssSelector("a[rel~='prev']"));
+        prevLink.click();
+        HtmlRyvrClient.waitTillLoaded(webDriver, 5);
+        return new HtmlRyvrResponse(webDriver);
+
     }
 
 }
