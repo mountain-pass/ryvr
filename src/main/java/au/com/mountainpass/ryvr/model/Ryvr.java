@@ -34,7 +34,11 @@ public class Ryvr extends MutableHalRepresentation {
         return super.getEmbedded();
     }
 
-    public void refresh(Integer page) throws URISyntaxException {
+    public void refresh(Long page) throws URISyntaxException {
+
+    }
+
+    public void refresh() throws URISyntaxException {
 
     }
 

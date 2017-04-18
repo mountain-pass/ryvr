@@ -115,6 +115,11 @@ paths:
         in: path
         required: true
         type: string
+      - name: page
+        description: The page of the ryvr to retrieve
+        in: query
+        required: false
+        type: integer
     get:
       tags:
         - ryvrs

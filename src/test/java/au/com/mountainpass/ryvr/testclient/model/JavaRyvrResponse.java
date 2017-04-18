@@ -21,13 +21,13 @@ import de.otto.edison.hal.Link;
 
 public class JavaRyvrResponse implements RyvrResponse {
     private Ryvr ryvr;
-    private Integer page;
+    private Long page;
 
     public JavaRyvrResponse(Ryvr ryvr) {
         this(ryvr, null);
     }
 
-    public JavaRyvrResponse(Ryvr ryvr, Integer page) {
+    public JavaRyvrResponse(Ryvr ryvr, Long page) {
         this.ryvr = ryvr;
         this.page = page;
     }
@@ -78,8 +78,11 @@ public class JavaRyvrResponse implements RyvrResponse {
         Optional<NameValuePair> pageNvp = params.stream()
                 .filter(nvp -> "page".equals(nvp.getName())).findAny();
         assertTrue(pageNvp.isPresent());
-        return new JavaRyvrResponse(ryvr,
-                new Integer(pageNvp.get().getValue()));
+        return new JavaRyvrResponse(ryvr, new Long(pageNvp.get().getValue()));
 
+    }
+
+    public Ryvr getRyvr() {
+        return ryvr;
     }
 }

@@ -97,11 +97,11 @@ public class JsonController implements RyvrContentController {
 
     @Override
     public ResponseContext getRyvr(RequestContext request, String ryvrName,
-            String xRequestId, String accept, String cacheControl)
+            Long page, String xRequestId, String accept, String cacheControl)
             throws URISyntaxException {
 
         Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
-        ryvr.refresh();
+        ryvr.refresh(page);
         return MainRyvrController
                 .toResponseContext(
                         ResponseEntity.status(HttpStatus.OK)

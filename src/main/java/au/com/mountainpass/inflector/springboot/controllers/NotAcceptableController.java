@@ -31,7 +31,7 @@ public class NotAcceptableController implements RyvrController {
 
     @Override
     public ResponseContext getRyvr(RequestContext request, String ryvrName,
-            String xRequestId, String accept, String cacheControl) {
+            Long page, String xRequestId, String accept, String cacheControl) {
         return notAcceptable();
     }
 

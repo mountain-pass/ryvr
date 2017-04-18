@@ -34,16 +34,21 @@ public class JdbcRyvr extends Ryvr {
     }
 
     @Override
-    public void refresh(Integer requestedPage) throws URISyntaxException {
+    public void refresh() throws URISyntaxException {
+        refresh(null);
+    }
+
+    @Override
+    public void refresh(Long requestedPage) throws URISyntaxException {
         Integer count = jt.queryForObject(
                 "select count(*) from \"" + table + "\"", Integer.class);
         jt.setFetchSize(PAGE_SIZE);
         SqlRowSet result = jt.queryForRowSet("select * from \"" + table
                 + "\" ORDER BY \"" + orderedBy + "\" ASC");
-        int pages = (count - 1) / PAGE_SIZE;
-        int page = requestedPage == null ? pages : requestedPage;
-        result.absolute(page * PAGE_SIZE + 1);
-
+        int pages = ((count - 1) / PAGE_SIZE) + 1;
+        // hmmm... what happens when there are more rows than MAX_INT?
+        int page = (int) (requestedPage == null ? pages : requestedPage);
+        result.absolute((page - 1) * PAGE_SIZE + 1);
         List<HalRepresentation> embeddedItems = new ArrayList<>();
         List<Link> linkedItems = new ArrayList<>();
 
@@ -74,7 +79,7 @@ public class JdbcRyvr extends Ryvr {
                     .withTitle("Current").build());
             addPageLink(linkedItems, selfHref, 1, "first", "First");
             addPageLink(linkedItems, selfHref, pages, "last", "Last");
-            if (page > 0) {
+            if (page > 1) {
                 addPageLink(linkedItems, selfHref, page - 1, "prev",
                         "Previous");
             }

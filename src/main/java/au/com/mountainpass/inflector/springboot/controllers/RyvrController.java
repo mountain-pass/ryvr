@@ -15,7 +15,7 @@ public interface RyvrController {
     public ResponseContext getRoot(RequestContext request);
 
     public ResponseContext getRyvr(RequestContext request, String ryvrName,
-            String xRequestId, String accept, String cacheControl)
+            Long page, String xRequestId, String accept, String cacheControl)
             throws URISyntaxException;
 
 }

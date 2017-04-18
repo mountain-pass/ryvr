@@ -100,11 +100,11 @@ public class HtmlController implements RyvrContentController {
 
     @Override
     public ResponseContext getRyvr(RequestContext request, String ryvrName,
-            String xRequestId, String accept, String cacheControl)
+            Long page, String xRequestId, String accept, String cacheControl)
             throws URISyntaxException {
         Root root = (Root) jsonController.getRoot(request).getEntity();
         Ryvr ryvr = (Ryvr) jsonController
-                .getRyvr(request, ryvrName, xRequestId, accept, cacheControl)
+                .getRyvr(request, ryvrName, null, xRequestId, accept, cacheControl)
                 .getEntity();
         return getIndex(root, ryvr);
     }

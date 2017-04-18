@@ -46,9 +46,9 @@ public class MainRyvrController implements RyvrController {
     @Override
     public io.swagger.inflector.models.ResponseContext getRyvr(
             io.swagger.inflector.models.RequestContext request, String ryvrName,
-            String xRequestId, String accept, String cacheControl)
+            Long page, String xRequestId, String accept, String cacheControl)
             throws URISyntaxException {
-        return router.getRyvr(request, ryvrName, xRequestId, accept,
+        return router.getRyvr(request, ryvrName, page, xRequestId, accept,
                 cacheControl);
     }
 
