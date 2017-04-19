@@ -226,4 +226,9 @@ public class StepDefs {
         ryvrResponse = ryvrResponse.followLink("next");
     }
 
+    @When("^the self link is requested$")
+    public void the_self_link_is_requested() throws Throwable {
+        ryvrResponse = ryvrResponse.followLink("self");
+    }
+
 }

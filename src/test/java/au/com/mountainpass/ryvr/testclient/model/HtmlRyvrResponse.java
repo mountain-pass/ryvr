@@ -81,9 +81,9 @@ public class HtmlRyvrResponse implements RyvrResponse {
 
     @Override
     public RyvrResponse followLink(String rel) {
-        WebElement prevLink = webDriver.findElement(By.id("linkedItems"))
+        WebElement link = webDriver.findElement(By.tagName("section"))
                 .findElement(By.cssSelector("a[rel~='" + rel + "']"));
-        prevLink.click();
+        link.click();
         HtmlRyvrClient.waitTillLoaded(webDriver, 5);
         return new HtmlRyvrResponse(webDriver);
 

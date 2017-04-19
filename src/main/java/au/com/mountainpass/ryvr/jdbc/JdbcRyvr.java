@@ -40,15 +40,16 @@ public class JdbcRyvr extends Ryvr {
 
     @Override
     public void refresh(Long requestedPage) throws URISyntaxException {
-        Integer count = jt.queryForObject(
-                "select count(*) from \"" + table + "\"", Integer.class);
+        Long count = new Long(
+                jt.queryForObject("select count(*) from \"" + table + "\"",
+                        Integer.class).longValue());
         jt.setFetchSize(PAGE_SIZE);
         SqlRowSet result = jt.queryForRowSet("select * from \"" + table
                 + "\" ORDER BY \"" + orderedBy + "\" ASC");
-        int pages = ((count - 1) / PAGE_SIZE) + 1;
+        Long pages = ((count - 1) / PAGE_SIZE) + 1;
         // hmmm... what happens when there are more rows than MAX_INT?
-        int page = (int) (requestedPage == null ? pages : requestedPage);
-        result.absolute((page - 1) * PAGE_SIZE + 1);
+        Long page = (requestedPage == null ? pages : requestedPage);
+        result.absolute((int) ((page - 1) * PAGE_SIZE + 1));
         List<HalRepresentation> embeddedItems = new ArrayList<>();
         List<Link> linkedItems = new ArrayList<>();
 
@@ -75,9 +76,8 @@ public class JdbcRyvr extends Ryvr {
 
             String selfHref = selfLinkOptional.get().getHref();
 
-            linkedItems.add(linkBuilder("current", selfHref)
-                    .withTitle("Current").build());
-            addPageLink(linkedItems, selfHref, 1, "first", "First");
+            addPageLink(linkedItems, selfHref, null, "current", "Current");
+            addPageLink(linkedItems, selfHref, new Long(1), "first", "First");
             addPageLink(linkedItems, selfHref, pages, "last", "Last");
             if (page > 1) {
                 addPageLink(linkedItems, selfHref, page - 1, "prev",
@@ -86,7 +86,8 @@ public class JdbcRyvr extends Ryvr {
             if (page < pages) {
                 addPageLink(linkedItems, selfHref, page + 1, "next", "Next");
             }
-
+            addPageLink(linkedItems, selfHref, requestedPage, "self",
+                    selfLinkOptional.get().getTitle());
         }
         super.clear();
 
@@ -94,11 +95,13 @@ public class JdbcRyvr extends Ryvr {
         withLinks(linkedItems);
     }
 
-    public void addPageLink(List<Link> linkedItems, String baseUrl, int pageNo,
+    public void addPageLink(List<Link> linkedItems, String baseUrl, Long pageNo,
             String rel, String title) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(baseUrl);
-        uriBuilder.addParameter("page", Integer.toString(pageNo));
-
+        uriBuilder.removeQuery();
+        if (pageNo != null) {
+            uriBuilder.addParameter("page", Long.toString(pageNo));
+        }
         linkedItems.add(linkBuilder(rel, uriBuilder.build().toString())
                 .withTitle(title).build());
     }
