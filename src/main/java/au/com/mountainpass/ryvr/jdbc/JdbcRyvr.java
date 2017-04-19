@@ -77,14 +77,17 @@ public class JdbcRyvr extends Ryvr {
             String selfHref = selfLinkOptional.get().getHref();
 
             addPageLink(linkedItems, selfHref, null, "current", "Current");
-            addPageLink(linkedItems, selfHref, new Long(1), "first", "First");
-            addPageLink(linkedItems, selfHref, pages, "last", "Last");
+            addPageLink(linkedItems, selfHref, 1l, "first", "First");
             if (page > 1) {
                 addPageLink(linkedItems, selfHref, page - 1, "prev",
                         "Previous");
             }
             if (page < pages) {
                 addPageLink(linkedItems, selfHref, page + 1, "next", "Next");
+            } else {
+                // TODO: provide a lask like alias that redirects to the last
+                // e.g. ...?page=last
+                addPageLink(linkedItems, selfHref, pages, "last", "Last");
             }
             addPageLink(linkedItems, selfHref, requestedPage, "self",
                     selfLinkOptional.get().getTitle());

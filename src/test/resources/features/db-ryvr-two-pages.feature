@@ -57,11 +57,11 @@ Scenario: Get Ryvr - Multiple Pages - Follow Prev Link
     And it will have the following links
       | self    |
       | first   |
-      | last    |
       | current |
       | next    |
     And it will *not* have the following links
       | prev    |
+      | last    |
       
 Scenario: Get Ryvr - Multiple Pages - Follow First Link
     When the "transactions" ryvr is retrieved
@@ -81,11 +81,11 @@ Scenario: Get Ryvr - Multiple Pages - Follow First Link
     And it will have the following links
       | self    |
       | first   |
-      | last    |
       | current |
       | next    |
     And it will *not* have the following links
       | prev    |
+      | last    |
 
 Scenario: Get Ryvr - Multiple Pages - Current Page
     When the "transactions" ryvr is retrieved
@@ -160,8 +160,9 @@ Scenario: Get Ryvr - Multiple Pages - Previous Then Self Link
     And it will have the following links
       | self    |
       | first   |
-      | last    |
       | current |
       | next    |
     And it will *not* have the following links
       | prev    |  
+      | last    |
+      
