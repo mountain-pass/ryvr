@@ -120,4 +120,25 @@ Scenario: Get Ryvr - Multiple Pages - Previous Then Current Page
       | current |
       | prev    |
     And it will *not* have the following links
-      | next    |     
+      | next    |   
+      
+Scenario: Get Ryvr - Multiple Pages - Previous Then Next Page
+    When the "transactions" ryvr is retrieved
+    And the previous page is requested
+    And the next page is requested
+    Then it will contain
+      | ID  | ACCOUNT | DESCRIPTION    | AMOUNT   |
+      | 10  | 7786543 | ATM Withdrawal | -110.00  | 
+      | 11  | 7786543 | ATM Withdrawal | -120.00  | 
+      | 12  | 7786543 | ATM Withdrawal | -130.00  | 
+    And it will have the following links
+      | self    |
+      | first   |
+      | last    |
+      | current |
+      | prev    |
+    And it will *not* have the following links
+      | next    |  
+
+
+ 
