@@ -52,6 +52,8 @@ public class RyvrsCollection extends MutableHalRepresentation {
     public void clear() {
         ryvrs.clear();
         super.clear();
+        withLinks(linkBuilder("self", "/ryvrs").withTitle("Ryvrs").build());
+
     }
 
 }
