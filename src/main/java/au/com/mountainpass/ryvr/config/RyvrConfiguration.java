@@ -35,10 +35,6 @@ public class RyvrConfiguration implements
 
     public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-    public void setPort(int port) {
-        this.port = port;
-    }
-
     public int getPort() {
         return port;
     }
