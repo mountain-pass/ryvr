@@ -7,8 +7,6 @@ import java.util.Map;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -18,16 +16,11 @@ import io.swagger.inflector.models.ResponseContext;
 
 @Component
 public class MainRyvrController implements RyvrController {
-    private Logger logger = LoggerFactory.getLogger(MainRyvrController.class);
-
     @Autowired
-    AcceptRouter router;
-
-    NotAcceptableController notAcceptableController = new NotAcceptableController();
+    private AcceptRouter router;
 
     @Override
-    public ResponseContext getApiDocs(
-            io.swagger.inflector.models.RequestContext request, String group) {
+    public ResponseContext getApiDocs(RequestContext request, String group) {
         return router.getApiDocs(request, group);
     }
 
@@ -44,8 +37,7 @@ public class MainRyvrController implements RyvrController {
     }
 
     @Override
-    public io.swagger.inflector.models.ResponseContext getRyvr(
-            io.swagger.inflector.models.RequestContext request, String ryvrName,
+    public ResponseContext getRyvr(RequestContext request, String ryvrName,
             Long page, String xRequestId, String accept, String cacheControl)
             throws URISyntaxException {
         return router.getRyvr(request, ryvrName, page, xRequestId, accept,
