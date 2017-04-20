@@ -63,7 +63,7 @@ public class StepDefs {
     private List<Map<String, String>> currentEvents;
 
     @Given("^a database \"([^\"]*)\"$")
-    public void a_database(final String dbName) throws Throwable {
+    public void aDatabase(final String dbName) throws Throwable {
         db = new EmbeddedDatabaseBuilder().setName(dbName)
                 .setType(EmbeddedDatabaseType.H2).setScriptEncoding("UTF-8")
                 .ignoreFailedDrops(true).addScript("initH2.sql").build();
@@ -71,17 +71,17 @@ public class StepDefs {
     }
 
     @When("^a request is made for the API Docs$")
-    public void a_request_is_made_for_the_API_Docs() throws Throwable {
+    public void aRequestIsMadeForTheAPIDocs() throws Throwable {
         swaggerResponseFuture = client.getApiDocs();
     }
 
     @When("^a request is made to the server's base URL$")
-    public void a_request_is_made_to_the_server_s_base_URL() throws Throwable {
+    public void aRequestIsMadeToTheServersBaseURL() throws Throwable {
         rootResponseFuture = client.getRoot();
     }
 
     @Given("^a \"([^\"]*)\" ryvr for \"([^\"]*)\" for table \"([^\"]*)\" ordered by \"([^\"]*)\"$")
-    public void a_ryvr_for_for_table_ordered_by(final String name,
+    public void aRyvrForForTableOrderedBy(final String name,
             final String dbName, final String table, String orderedBy)
             throws Throwable {
         final JdbcRyvr ryvr = new JdbcRyvr(name, jt, table, orderedBy);
@@ -89,7 +89,7 @@ public class StepDefs {
     }
 
     @Given("^it has a table \"([^\"]*)\" with the following events$")
-    public void it_has_a_table_with_the_following_events(final String table,
+    public void itHasATableWithTheFollowingEvents(final String table,
             final List<Map<String, String>> events) throws Throwable {
         createTable(table);
 
@@ -133,19 +133,19 @@ public class StepDefs {
     }
 
     @Then("^it will contain$")
-    public void it_will_contain(final List<Map<String, String>> events)
+    public void itWillContain(final List<Map<String, String>> events)
             throws Throwable {
         ryvrResponse.assertHasItems(events);
     }
 
     @Then("^it will have the following links$")
-    public void it_will_have_the_following_links(final List<String> links)
+    public void itWillHaveTheFollowingLinks(final List<String> links)
             throws Throwable {
         ryvrResponse.assertHasLinks(links);
     }
 
     @Then("^it will \\*not\\* have the following links$")
-    public void it_will_not_have_the_following_links(final List<String> links)
+    public void itWillNotHaveTheFollowingLinks(final List<String> links)
             throws Throwable {
         ryvrResponse.assertDoesntHaveLinks(links);
     }
@@ -165,94 +165,92 @@ public class StepDefs {
     }
 
     @Then("^the API Docs will contain an operation for getting the API Docs$")
-    public void the_API_Docs_will_contain_an_operation_for_getting_the_API_Docs()
+    public void theAPIDocsWillContainAnPperationForGettingTheAPIDocs()
             throws Throwable {
         swaggerResponseFuture.assertHasGetApiDocsOperation();
     }
 
     @Then("^the count of ryvrs will be (\\d+)$")
-    public void the_count_of_ryvrs_will_be(final int count) throws Throwable {
+    public void theCountOfRyvrsWillBe(final int count) throws Throwable {
         ryvrsCollectionResponse.assertCount(count);
     }
 
     @Then("^the root entity will contain a link to the api-docs$")
-    public void the_root_entity_will_contain_a_link_to_the_api_docs()
-            throws Throwable {
+    public void theRootEntityWillContainALinkToTheApiDocs() throws Throwable {
         rootResponseFuture.assertHasApiDocsLink();
     }
 
     @Then("^the root entity will contain a link to the ryvrs$")
-    public void the_root_entity_will_contain_a_link_to_the_ryvrs()
-            throws Throwable {
+    public void theRootEntityWillContainALinkToTheRyvrs() throws Throwable {
         rootResponseFuture.assertHasRyvrsLink();
     }
 
     @Then("^the root entity will have an application name of \"([^\"]*)\"$")
-    public void the_root_entity_will_have_an_application_name_of(
+    public void theRootEntityWillHaveAnApplicationNameOf(
             final String applicationName) throws Throwable {
         rootResponseFuture.assertHasTitle(applicationName);
     }
 
     @When("^the \"([^\"]*)\" ryvr is retrieved$")
-    public void the_ryvr_is_retrieved(final String name) throws Throwable {
+    public void theRyvrIsRetrieved(final String name) throws Throwable {
         ryvrResponse = client.getRyvr(name);
     }
 
     @When("^the ryvrs list is retrieved$")
-    public void the_ryvrs_list_is_retrieved() throws Throwable {
+    public void theRyvrsListIsRetrieved() throws Throwable {
         ryvrsCollectionResponse = client.getRyvrsCollection();
     }
 
     @Then("^the ryvrs list will be empty$")
-    public void the_ryvrs_list_will_be_empty() throws Throwable {
+    public void theRyvrsListWillBeEmpty() throws Throwable {
         ryvrsCollectionResponse.assertIsEmpty();
     }
 
     @Then("^the ryvrs list will contain the following entries$")
-    public void the_ryvrs_list_will_contain_the_following_entries(
+    public void theRyvrsListWillContainTheFollowingEntries(
             final List<String> names) throws Throwable {
         ryvrsCollectionResponse.assertHasItem(names);
     }
 
     @Given("^there are no ryvrs configured$")
-    public void there_are_no_ryvrs_configured() throws Throwable {
+    public void thereAreNoRyvrsConfigured() throws Throwable {
         // do nothing
     }
 
     @When("^the previous page is requested$")
-    public void the_previous_page_is_requested() throws Throwable {
+    public void thePreviousPageIsRequested() throws Throwable {
         ryvrResponse = ryvrResponse.followLink("prev");
     }
 
     @When("^the first page is requested$")
-    public void the_first_page_is_requested() throws Throwable {
+    public void theFirstPageIsRequested() throws Throwable {
         ryvrResponse = ryvrResponse.followLink("first");
     }
 
     @When("^the current page is requested$")
-    public void the_current_page_is_requested() throws Throwable {
+    public void theCurrentPageIsRequested() throws Throwable {
         ryvrResponse = ryvrResponse.followLink("current");
     }
 
     @When("^the next page is requested$")
-    public void the_next_page_is_requested() throws Throwable {
+    public void theNextPageIsRequested() throws Throwable {
         ryvrResponse = ryvrResponse.followLink("next");
     }
 
     @When("^the self link is requested$")
-    public void the_self_link_is_requested() throws Throwable {
+    public void theSelfLinkIsRequested() throws Throwable {
         ryvrResponse = ryvrResponse.followLink("self");
     }
 
     @Given("^it has a table \"([^\"]*)\" with the following structure$")
-    public void it_has_a_table_with_the_following_structure(final String table,
+    public void itHasATableWithTheFollowingStructure(final String table,
             final List<String> structure) throws Throwable {
         createTable(table);
         this.currentTable = table;
     }
 
     @Given("^it has (\\d+) events$")
-    public void it_has_events(int noOfEvents) throws Throwable {
+    public void itHasEvents(int noOfEvents) throws Throwable {
         List<Map<String, String>> events = new ArrayList<>(noOfEvents);
         for (int i = 0; i < noOfEvents; ++i) {
             Map<String, String> event = new HashMap<>(4);
@@ -267,13 +265,13 @@ public class StepDefs {
     }
 
     @Then("^it will have the following structure$")
-    public void it_will_have_the_following_structure(List<String> structure)
+    public void itWillHaveTheFollowingStructure(List<String> structure)
             throws Throwable {
         ryvrResponse.assertItemsHaveStructure(structure);
     }
 
     @Then("^it will have the last (\\d+) events$")
-    public void it_will_have_the_last_events(int noOfEvents) throws Throwable {
+    public void itWillHaveTheLastEvents(int noOfEvents) throws Throwable {
         List<Map<String, String>> lastEvents = currentEvents.subList(
                 currentEvents.size() - noOfEvents, currentEvents.size());
         ryvrResponse.assertHasItems(lastEvents);
