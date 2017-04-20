@@ -17,7 +17,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
     }
 
     @Bean
-    DefaultMustacheFactory mustacheFactory() {
+    public DefaultMustacheFactory mustacheFactory() {
         DefaultMustacheFactory mustacheFactory = new DefaultMustacheFactory();
         return mustacheFactory;
     }

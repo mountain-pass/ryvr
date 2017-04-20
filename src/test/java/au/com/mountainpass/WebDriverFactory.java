@@ -12,8 +12,6 @@ import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +22,6 @@ import org.springframework.stereotype.Component;
 @Component
 @Profile("uiTest")
 public class WebDriverFactory implements DisposableBean {
-    private Logger logger = LoggerFactory.getLogger(WebDriverFactory.class);
 
     @Value(value = "${webdriver.browserType:chrome}")
     private String browserType;
@@ -72,7 +69,7 @@ public class WebDriverFactory implements DisposableBean {
     private String browserName;
 
     @Autowired(required = false)
-    SauceLabsTunnel sauceLabsTunnel;
+    private SauceLabsTunnel sauceLabsTunnel;
 
     public WebDriver createWebDriver()
             throws ClassNotFoundException, NoSuchMethodException,

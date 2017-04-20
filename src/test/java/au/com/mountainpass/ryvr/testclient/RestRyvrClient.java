@@ -38,11 +38,11 @@ public class RestRyvrClient implements RyvrTestClient {
     private Logger logger = LoggerFactory.getLogger(RestRyvrClient.class);
 
     @Autowired
-    RyvrConfiguration config;
+    private RyvrConfiguration config;
 
-    String lastResponse;
+    private String lastResponse;
 
-    SwaggerParser swaggerParser = new SwaggerParser();
+    private SwaggerParser swaggerParser = new SwaggerParser();
 
     @Override
     public SwaggerResponse getApiDocs() throws InterruptedException,

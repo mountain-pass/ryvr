@@ -39,7 +39,7 @@ public class SauceLabsTunnel implements DisposableBean {
     private SauceTunnelManager sauceConnectFourManager;
 
     @PostConstruct
-    void connect() throws IOException {
+    public void connect() throws IOException {
         if (sauceConnectProcess == null) {
             logger.info("Starting Sauce Connect");
             sauceConnectFourManager = new SauceConnectFourManager(

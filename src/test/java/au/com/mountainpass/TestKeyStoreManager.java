@@ -46,10 +46,9 @@ public class TestKeyStoreManager {
 
         ks.setKeyEntry(keyAlias, keyPair.getPrivate(),
                 keyPassword.toCharArray(),
-                new java.security.cert.Certificate[] {
-                        createSelfSignedCertificate(keyPair, domainName,
-                                keyAlias, trustStoreFile, trustStorePassword,
-                                trustStoreType) });
+                new Certificate[] { createSelfSignedCertificate(keyPair,
+                        domainName, keyAlias, trustStoreFile,
+                        trustStorePassword, trustStoreType) });
         // Store away the keystore.
         FileOutputStream fos = new FileOutputStream(keyStore);
         ks.store(fos, keyStorePassword.toCharArray());

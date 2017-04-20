@@ -21,7 +21,7 @@ import io.swagger.models.Swagger;
 public class JavaRyvrClient implements RyvrTestClient {
 
     @Autowired
-    AcceptRouter router;
+    private AcceptRouter router;
 
     @Override
     public SwaggerResponse getApiDocs() {

@@ -81,7 +81,7 @@ public class InflectorApplication {
     private int proxyReadTimeoutMs;
 
     @Value("${server.ssl.protocol:TLS}")
-    String sslProtocol;
+    private String sslProtocol;
 
     @Value("${javax.net.ssl.trustStore:}")
     private String trustStore;

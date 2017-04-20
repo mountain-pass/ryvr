@@ -75,14 +75,8 @@ public class TestConfiguration implements
 
     public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-    @Value("${security.user.name:user}")
-    private String name;
-
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Value("${security.user.password:password}")
-    private String password;
 
     private int port;
 

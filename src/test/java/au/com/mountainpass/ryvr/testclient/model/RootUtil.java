@@ -10,7 +10,7 @@ import au.com.mountainpass.ryvr.model.Root;
 
 public class RootUtil {
 
-    static void assertHasLink(Root root, String title) {
+    public static void assertHasLink(Root root, String title) {
         List<String> linkTitles = root.getLinks().stream().map(link -> {
             return link.getTitle();
         }).collect(Collectors.toList());
