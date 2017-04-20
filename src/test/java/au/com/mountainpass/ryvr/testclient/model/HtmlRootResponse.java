@@ -52,6 +52,7 @@ public class HtmlRootResponse implements RootResponse {
 
     @Override
     public RyvrsCollectionResponse followRyvrsLink() {
+        HtmlRyvrClient.waitTillLoaded(webDriver, 5);
         List<WebElement> links = HtmlRyvrClient.getLinks(webDriver);
         (new WebDriverWait(webDriver, 5))
                 .until(ExpectedConditions.visibilityOfAllElements(links));
