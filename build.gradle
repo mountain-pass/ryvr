@@ -216,11 +216,10 @@ test.dependsOn {
 }
 
 task testLocal(group: 'verification') {
-    tasks.findAll { task ->  task.name.endsWith('Test') && task.name !=  'mobileUiTest' }
 }
 
 testLocal.dependsOn {
-    tasks.findAll { task ->  task.name.endsWith('Test') }
+    tasks.findAll { task ->  task.name.endsWith('Test') && task.name !=  'mobileUiTest' }
 }
 
 
