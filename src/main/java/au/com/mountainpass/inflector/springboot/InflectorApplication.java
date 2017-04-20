@@ -67,46 +67,15 @@ import io.swagger.inflector.config.Configuration;
 @ComponentScan("au.com.mountainpass")
 public class InflectorApplication {
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         SpringApplication.run(InflectorApplication.class, args);
     }
 
-    @Bean
-    Configuration configuration(ApplicationContext applicationContext) {
-        Configuration configuration = Configuration.read();
-        configuration.setControllerFactory(
-                (cls, operation) -> applicationContext.getBean(cls));
-        return configuration;
-    }
-
-    /**
-     * Since we're using both Actuator and Jersey, we need to use Springs
-     * <a href=
-     * "http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cors.html#_filter_based_cors_support">
-     * Filter based CORS support</a>
-     *
-     * @return corsFilter
-     */
-    @Bean
-    public FilterRegistrationBean corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("*");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-        source.registerCorsConfiguration("/**", config);
-        FilterRegistrationBean bean = new FilterRegistrationBean(
-                new CorsFilter(source));
-        bean.setOrder(0);
-        return bean;
-    }
+    @Value("${au.com.windyroad.service-gateway.proxy.max.connections.route:20}")
+    private int proxyMaxConnectionsRoute;
 
     @Value("${au.com.windyroad.service-gateway.proxy.max.connections.total:100}")
     private int proxyMaxConnectionsTotal;
-
-    @Value("${au.com.windyroad.service-gateway.proxy.max.connections.route:20}")
-    private int proxyMaxConnectionsRoute;
 
     @Value("${au.com.windyroad.service-gateway.proxy.read.timeout.ms:60000}")
     private int proxyReadTimeoutMs;
@@ -123,11 +92,43 @@ public class InflectorApplication {
     @Value("${javax.net.ssl.trustStoreType:JKS}")
     private String trustStoreType;
 
+    @Bean
+    public Configuration configuration(
+            final ApplicationContext applicationContext) {
+        final Configuration configuration = Configuration.read();
+        configuration.setControllerFactory(
+                (cls, operation) -> applicationContext.getBean(cls));
+        return configuration;
+    }
+
+    /**
+     * Since we're using both Actuator and Jersey, we need to use Springs
+     * <a href=
+     * "http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cors.html#_filter_based_cors_support">
+     * Filter based CORS support</a>
+     *
+     * @return corsFilter
+     */
+    @Bean
+    public FilterRegistrationBean corsFilter() {
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        final CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOrigin("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", config);
+        final FilterRegistrationBean bean = new FilterRegistrationBean(
+                new CorsFilter(source));
+        bean.setOrder(0);
+        return bean;
+    }
+
     public String getTrustStoreLocation() {
         if (StringUtils.hasLength(trustStore)) {
             return trustStore;
         }
-        String locationProperty = System
+        final String locationProperty = System
                 .getProperty("javax.net.ssl.trustStore");
         if (StringUtils.hasLength(locationProperty)) {
             return locationProperty;
@@ -136,51 +137,60 @@ public class InflectorApplication {
         }
     }
 
-    public String systemDefaultTrustStoreLocation() {
-        String javaHome = System.getProperty("java.home");
-        FileSystemResource location = new FileSystemResource(
-                javaHome + "/lib/security/jssecacerts");
-        if (location.exists()) {
-            return location.getFilename();
-        } else {
-            return javaHome + "/lib/security/cacerts";
-        }
+    public String getTrustStorePassword() {
+        return trustStorePassword;
+    }
+
+    public String getTrustStoreType() {
+        return trustStoreType;
+    }
+
+    @Bean // (destroyMethod = "close")
+    public CloseableHttpAsyncClient httpAsyncClient() throws Exception {
+        final CloseableHttpAsyncClient client = httpAsyncClientBuilder()
+                .build();
+        client.start();
+        return client;
     }
 
     @Bean
-    KeyStore trustStore()
-            throws KeyStoreException, IOException, NoSuchAlgorithmException,
-            CertificateException, FileNotFoundException {
-        KeyStore ks = KeyStore.getInstance(trustStoreType);
-
-        File trustFile = new File(getTrustStoreLocation());
-        ks.load(new FileInputStream(trustFile),
-                trustStorePassword.toCharArray());
-        return ks;
+    public HttpAsyncClientBuilder httpAsyncClientBuilder() throws Exception {
+        return HttpAsyncClientBuilder.create().setSSLContext(sslContext())
+                .setConnectionManager(nHttpClientConntectionManager())
+                .setDefaultRequestConfig(httpClientRequestConfig());
     }
 
     @Bean
-    TrustManagerFactory trustManagerFactory() throws NoSuchAlgorithmException {
-        TrustManagerFactory tmf = TrustManagerFactory
-                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        return tmf;
+    RequestConfig httpClientRequestConfig() {
+        final RequestConfig config = RequestConfig.custom()
+                .setConnectTimeout(proxyReadTimeoutMs).build();
+        return config;
     }
 
     @Bean
-    public SSLContext sslContext() throws Exception {
-        SSLContext sslContext = SSLContext.getInstance(sslProtocol);
-        TrustManagerFactory tmf = trustManagerFactory();
-        KeyStore ks = trustStore();
-        tmf.init(ks);
-        sslContext.init(null, tmf.getTrustManagers(), null);
-        return sslContext;
+    public LocaleResolver localeResolver() {
+        final SessionLocaleResolver slr = new SessionLocaleResolver();
+        slr.setDefaultLocale(Locale.ENGLISH);
+        return slr;
     }
 
     @Bean
-    public SSLConnectionSocketFactory sslSocketFactory() throws Exception {
-        SSLConnectionSocketFactory sf = new SSLConnectionSocketFactory(
-                sslContext());
-        return sf;
+    public ReloadableResourceBundleMessageSource messageSource() {
+        final ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+        messageSource.setBasename("classpath:locale/messages");
+        messageSource.setCacheSeconds(3600); // refresh cache once per hour
+        return messageSource;
+    }
+
+    @Bean
+    public NHttpClientConnectionManager nHttpClientConntectionManager()
+            throws Exception {
+        final PoolingNHttpClientConnectionManager connectionManager = new PoolingNHttpClientConnectionManager(
+                new DefaultConnectingIOReactor(IOReactorConfig.DEFAULT),
+                schemeIOSessionStrategyRegistry());
+        connectionManager.setMaxTotal(proxyMaxConnectionsTotal);
+        connectionManager.setDefaultMaxPerRoute(proxyMaxConnectionsRoute);
+        return connectionManager;
     }
 
     @Bean
@@ -193,58 +203,50 @@ public class InflectorApplication {
     }
 
     @Bean
-    public NHttpClientConnectionManager nHttpClientConntectionManager()
-            throws Exception {
-        PoolingNHttpClientConnectionManager connectionManager = new PoolingNHttpClientConnectionManager(
-                new DefaultConnectingIOReactor(IOReactorConfig.DEFAULT),
-                schemeIOSessionStrategyRegistry());
-        connectionManager.setMaxTotal(proxyMaxConnectionsTotal);
-        connectionManager.setDefaultMaxPerRoute(proxyMaxConnectionsRoute);
-        return connectionManager;
+    public SSLContext sslContext() throws Exception {
+        final SSLContext sslContext = SSLContext.getInstance(sslProtocol);
+        final TrustManagerFactory tmf = trustManagerFactory();
+        final KeyStore ks = trustStore();
+        tmf.init(ks);
+        sslContext.init(null, tmf.getTrustManagers(), null);
+        return sslContext;
     }
 
     @Bean
-    RequestConfig httpClientRequestConfig() {
-        RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(proxyReadTimeoutMs).build();
-        return config;
+    public SSLConnectionSocketFactory sslSocketFactory() throws Exception {
+        final SSLConnectionSocketFactory sf = new SSLConnectionSocketFactory(
+                sslContext());
+        return sf;
+    }
+
+    public String systemDefaultTrustStoreLocation() {
+        final String javaHome = System.getProperty("java.home");
+        final FileSystemResource location = new FileSystemResource(
+                javaHome + "/lib/security/jssecacerts");
+        if (location.exists()) {
+            return location.getFilename();
+        } else {
+            return javaHome + "/lib/security/cacerts";
+        }
     }
 
     @Bean
-    public HttpAsyncClientBuilder httpAsyncClientBuilder() throws Exception {
-        return HttpAsyncClientBuilder.create().setSSLContext(sslContext())
-                .setConnectionManager(nHttpClientConntectionManager())
-                .setDefaultRequestConfig(httpClientRequestConfig());
-    }
-
-    @Bean // (destroyMethod = "close")
-    public CloseableHttpAsyncClient httpAsyncClient() throws Exception {
-        CloseableHttpAsyncClient client = httpAsyncClientBuilder().build();
-        client.start();
-        return client;
-    }
-
-    public String getTrustStorePassword() {
-        return trustStorePassword;
-    }
-
-    public String getTrustStoreType() {
-        return trustStoreType;
+    TrustManagerFactory trustManagerFactory() throws NoSuchAlgorithmException {
+        final TrustManagerFactory tmf = TrustManagerFactory
+                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        return tmf;
     }
 
     @Bean
-    public LocaleResolver localeResolver() {
-        SessionLocaleResolver slr = new SessionLocaleResolver();
-        slr.setDefaultLocale(Locale.ENGLISH);
-        return slr;
-    }
+    KeyStore trustStore()
+            throws KeyStoreException, IOException, NoSuchAlgorithmException,
+            CertificateException, FileNotFoundException {
+        final KeyStore ks = KeyStore.getInstance(trustStoreType);
 
-    @Bean
-    public ReloadableResourceBundleMessageSource messageSource() {
-        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasename("classpath:locale/messages");
-        messageSource.setCacheSeconds(3600); // refresh cache once per hour
-        return messageSource;
+        final File trustFile = new File(getTrustStoreLocation());
+        ks.load(new FileInputStream(trustFile),
+                trustStorePassword.toCharArray());
+        return ks;
     }
 
 }
