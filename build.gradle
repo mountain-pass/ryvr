@@ -140,7 +140,7 @@ jacoco {
 
 
 
-task unitTest(type: Test) {
+task unitTest(type: Test, group: 'verification') {
     testClassesDir = sourceSets.test.output.classesDir
     classpath = sourceSets.test.runtimeClasspath
     include 'RyvrUnitTests.class'
@@ -156,7 +156,7 @@ task unitTest(type: Test) {
 }
 
 
-task systemTest(type: Test, dependsOn : unitTest) {
+task systemTest(type: Test, dependsOn : unitTest, group: 'verification') {
     testClassesDir = sourceSets.test.output.classesDir
     classpath = sourceSets.test.runtimeClasspath
     ext.outputDir = "${testOutputDir}/test-results-st"
@@ -171,7 +171,7 @@ task systemTest(type: Test, dependsOn : unitTest) {
     }
 }
 
-task uiTest(type: Test, dependsOn : systemTest) {
+task uiTest(type: Test, dependsOn : systemTest, group: 'verification') {
     testClassesDir = sourceSets.test.output.classesDir
     classpath = sourceSets.test.runtimeClasspath
     ext.outputDir = "${testOutputDir}/test-results-ui"
@@ -191,7 +191,7 @@ task uiTest(type: Test, dependsOn : systemTest) {
     }
 }
 
-task mobileUiTest(type: Test, dependsOn : uiTest) {
+task mobileUiTest(type: Test, dependsOn : uiTest, group: 'verification') {
     testClassesDir = sourceSets.test.output.classesDir
     classpath = sourceSets.test.runtimeClasspath
     ext.outputDir = "${testOutputDir}/test-results-mobile-ui"
@@ -212,6 +212,14 @@ task mobileUiTest(type: Test, dependsOn : uiTest) {
 }
 
 test.dependsOn {
+    tasks.findAll { task ->  task.name.endsWith('Test') }
+}
+
+task testLocal(group: 'verification') {
+    tasks.findAll { task ->  task.name.endsWith('Test') && task.name !=  'mobileUiTest' }
+}
+
+testLocal.dependsOn {
     tasks.findAll { task ->  task.name.endsWith('Test') }
 }
 
@@ -286,12 +294,12 @@ jacocoTestReport {
 ext {
     // TODO: Increase these
     limits = [
-        'instruction': 0,
-        'branch'     : 0,
-        'line'       : 0,
-        'complexity' : 0,
-        'method'     : 0,
-        'class'      : 0
+        'instruction': 75,
+        'branch'     : 75,
+        'line'       : 75,
+        'complexity' : 75,
+        'method'     : 75,
+        'class'      : 75
     ]
 }
 

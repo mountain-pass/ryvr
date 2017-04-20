@@ -24,7 +24,7 @@ public class HtmlRyvrResponse implements RyvrResponse {
     }
 
     @Override
-    public void assertHasItem(List<Map<String, String>> events) {
+    public void assertHasItems(List<Map<String, String>> events) {
         List<String> headings = webDriver.findElement(By.id("linkedItems"))
                 .findElements(By.className("linkedItemHeading")).stream()
                 .map(heading -> heading.getText()).collect(Collectors.toList());
@@ -87,6 +87,14 @@ public class HtmlRyvrResponse implements RyvrResponse {
         HtmlRyvrClient.waitTillLoaded(webDriver, 5);
         return new HtmlRyvrResponse(webDriver);
 
+    }
+
+    @Override
+    public void assertItemsHaveStructure(List<String> structure) {
+        List<String> headings = webDriver
+                .findElements(By.className("linkedItemHeading")).stream()
+                .map(element -> element.getText()).collect(Collectors.toList());
+        assertThat(headings, containsInAnyOrder(structure.toArray()));
     }
 
 }

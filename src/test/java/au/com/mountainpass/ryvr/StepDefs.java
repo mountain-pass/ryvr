@@ -3,6 +3,8 @@ package au.com.mountainpass.ryvr;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,6 +59,8 @@ public class StepDefs {
     private RyvrsCollectionResponse ryvrsCollectionResponse;
 
     private SwaggerResponse swaggerResponseFuture;
+    private String currentTable;
+    private List<Map<String, String>> currentEvents;
 
     @Given("^a database \"([^\"]*)\"$")
     public void a_database(final String dbName) throws Throwable {
@@ -87,15 +91,13 @@ public class StepDefs {
     @Given("^it has a table \"([^\"]*)\" with the following events$")
     public void it_has_a_table_with_the_following_events(final String table,
             final List<Map<String, String>> events) throws Throwable {
-        final StringBuffer statementBuffer = new StringBuffer();
-        statementBuffer.append("create table ");
-        statementBuffer.append(table);
-        // | ID | ACCOUNT | DESCRIPTION | AMOUNT |
-        statementBuffer.append(
-                " (ID INT, ACCOUNT VARCHAR, DESCRIPTION VARCHAR, AMOUNT Decimal(19,4))");
+        createTable(table);
 
-        jt.execute(statementBuffer.toString());
+        insertRows(table, events);
+    }
 
+    public void insertRows(final String table,
+            final List<Map<String, String>> events) {
         jt.batchUpdate(
                 "insert into " + table
                         + "(ID, ACCOUNT, DESCRIPTION, AMOUNT) values (?, ?, ?, ?)",
@@ -119,10 +121,21 @@ public class StepDefs {
                 });
     }
 
+    public void createTable(final String name) {
+        final StringBuffer statementBuffer = new StringBuffer();
+        statementBuffer.append("create table ");
+        statementBuffer.append(name);
+        // | ID | ACCOUNT | DESCRIPTION | AMOUNT |
+        statementBuffer.append(
+                " (ID INT, ACCOUNT VARCHAR, DESCRIPTION VARCHAR, AMOUNT Decimal(19,4))");
+
+        jt.execute(statementBuffer.toString());
+    }
+
     @Then("^it will contain$")
     public void it_will_contain(final List<Map<String, String>> events)
             throws Throwable {
-        ryvrResponse.assertHasItem(events);
+        ryvrResponse.assertHasItems(events);
     }
 
     @Then("^it will have the following links$")
@@ -231,4 +244,39 @@ public class StepDefs {
         ryvrResponse = ryvrResponse.followLink("self");
     }
 
+    @Given("^it has a table \"([^\"]*)\" with the following structure$")
+    public void it_has_a_table_with_the_following_structure(final String table,
+            final List<String> structure) throws Throwable {
+        createTable(table);
+        this.currentTable = table;
+    }
+
+    @Given("^it has (\\d+) events$")
+    public void it_has_events(int noOfEvents) throws Throwable {
+        List<Map<String, String>> events = new ArrayList<>(noOfEvents);
+        for (int i = 0; i < noOfEvents; ++i) {
+            Map<String, String> event = new HashMap<>(4);
+            event.put("ID", Integer.toString(i));
+            event.put("ACCOUNT", "78901234");
+            event.put("DESCRIPTION", "Buying Stuff");
+            event.put("AMOUNT", Double.toString(i * -20.00 - i));
+            events.add(event);
+        }
+        this.currentEvents = events;
+        insertRows(this.currentTable, events);
+    }
+
+    @Then("^it will have the following structure$")
+    public void it_will_have_the_following_structure(List<String> structure)
+            throws Throwable {
+        ryvrResponse.assertItemsHaveStructure(structure);
+    }
+
+    @Then("^it will have the last (\\d+) events$")
+    public void it_will_have_the_last_events(int noOfEvents) throws Throwable {
+        List<Map<String, String>> lastEvents = currentEvents.subList(
+                currentEvents.size() - noOfEvents, currentEvents.size());
+        ryvrResponse.assertHasItems(lastEvents);
+
+    }
 }

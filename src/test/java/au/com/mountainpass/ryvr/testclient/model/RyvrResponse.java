@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface RyvrResponse {
 
-    public void assertHasItem(List<Map<String, String>> events)
+    public void assertHasItems(List<Map<String, String>> events)
             throws URISyntaxException;
 
     public void assertHasLinks(List<String> links);
@@ -14,5 +14,8 @@ public interface RyvrResponse {
     public void assertDoesntHaveLinks(List<String> links);
 
     public RyvrResponse followLink(String rel) throws URISyntaxException;
+
+    public void assertItemsHaveStructure(List<String> structure)
+            throws URISyntaxException;
 
 }

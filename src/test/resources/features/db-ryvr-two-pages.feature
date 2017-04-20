@@ -140,7 +140,7 @@ Scenario: Get Ryvr - Multiple Pages - Previous Then Next Page
     And it will *not* have the following links
       | next    |  
 
-@current
+
 Scenario: Get Ryvr - Multiple Pages - Previous Then Self Link
     When the "transactions" ryvr is retrieved
     And the first page is requested

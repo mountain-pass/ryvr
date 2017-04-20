@@ -33,7 +33,7 @@ public class JavaRyvrResponse implements RyvrResponse {
     }
 
     @Override
-    public void assertHasItem(List<Map<String, String>> events)
+    public void assertHasItems(List<Map<String, String>> events)
             throws URISyntaxException {
         ryvr.refresh(page);
         Embedded embedded = ryvr.getEmbedded();
@@ -87,5 +87,17 @@ public class JavaRyvrResponse implements RyvrResponse {
 
     public Ryvr getRyvr() {
         return ryvr;
+    }
+
+    @Override
+    public void assertItemsHaveStructure(List<String> structure)
+            throws URISyntaxException {
+        ryvr.refresh(page);
+        Embedded embedded = ryvr.getEmbedded();
+        List<Entry> items = embedded.getItemsBy("item", Entry.class);
+        assertThat(items, not(empty()));
+
+        assertThat(items.get(0).getProperties().keySet(),
+                containsInAnyOrder(structure.toArray()));
     }
 }
