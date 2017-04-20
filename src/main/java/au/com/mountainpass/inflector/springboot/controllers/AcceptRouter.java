@@ -6,8 +6,6 @@ import java.util.Optional;
 
 import javax.ws.rs.core.MediaType;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -16,16 +14,14 @@ import io.swagger.inflector.models.ResponseContext;
 
 @Controller
 public class AcceptRouter implements RyvrController {
-    private Logger logger = LoggerFactory.getLogger(AcceptRouter.class);
 
     @Autowired
-    List<RyvrContentController> controllers;
+    private List<RyvrContentController> controllers;
 
-    NotAcceptableController notAcceptableController = new NotAcceptableController();
+    private NotAcceptableController notAcceptableController = new NotAcceptableController();
 
     @Override
-    public ResponseContext getApiDocs(
-            io.swagger.inflector.models.RequestContext request, String group) {
+    public ResponseContext getApiDocs(RequestContext request, String group) {
         return findContentController(request.getAcceptableMediaTypes())
                 .getApiDocs(request, group);
     }
