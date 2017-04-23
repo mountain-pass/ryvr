@@ -117,7 +117,14 @@ dependencies {
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile 'org.bouncycastle:bcpkix-jdk15on:1.53'
-
+    testCompile group: 'net.sf.grinder', name: 'grinder-core', version: '3.11'
+    testCompile group: 'net.sf.grinder', name: 'grinder-dcr-agent', version: '3.11'
+    
+    testCompile group: 'io.prometheus', name: 'simpleclient', version: '0.0.21'
+    testCompile group: 'io.prometheus', name: 'simpleclient_hotspot', version: '0.0.21'
+    testCompile group: 'io.prometheus', name: 'simpleclient_servlet', version: '0.0.21'
+    testCompile group: 'io.prometheus', name: 'simpleclient_pushgateway', version: '0.0.21'
+    testCompile group: 'io.prometheus', name: 'simpleclient_logback', version: '0.0.21'
 
     codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.10'
 
@@ -199,6 +206,27 @@ task mobileUiTest(type: Test, dependsOn : uiTest, group: 'verification') {
     ext.coverageDir = "${coverageOutputDir}/coverage-results-mobile-ui"
     outputs.dir file(coverageDir)
     include 'RyvrUiTests_Mobile.class'
+    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+    if(withSauce) {
+        systemProperty 'spring.profiles.active',  "sauceLabs"
+        systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
+        systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
+    }
+    jacoco {
+        append = false
+        destinationFile = file("${coverageDir}/jacoco/${name}.exec")
+    }
+}
+
+
+task firefoxUiTest(type: Test, dependsOn : uiTest, group: 'verification') {
+    testClassesDir = sourceSets.test.output.classesDir
+    classpath = sourceSets.test.runtimeClasspath
+    ext.outputDir = "${testOutputDir}/test-results-firefox-ui"
+    outputs.dir file(outputDir)
+    ext.coverageDir = "${coverageOutputDir}/coverage-results-firefox-ui"
+    outputs.dir file(coverageDir)
+    include 'RyvrUiTests_Firefox.class'
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
     if(withSauce) {
         systemProperty 'spring.profiles.active',  "sauceLabs"
