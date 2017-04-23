@@ -18,4 +18,10 @@ public interface RyvrResponse {
     public void assertItemsHaveStructure(List<String> structure)
             throws URISyntaxException;
 
+    public void retrieveAllEvents() throws URISyntaxException;
+
+    public boolean hasLink(String rel);
+
+    public void assertLoadedWithin(int percentile, int maxMs);
+
 }

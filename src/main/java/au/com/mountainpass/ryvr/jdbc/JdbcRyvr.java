@@ -24,6 +24,9 @@ public class JdbcRyvr extends Ryvr {
     private String table;
     private JdbcTemplate jt;
     private String orderedBy;
+    private SqlRowSet rowSet;
+    private String[] columnNames;
+    private Long pages;
 
     public JdbcRyvr(String title, JdbcTemplate jt, String table,
             String orderedBy) {
@@ -40,28 +43,34 @@ public class JdbcRyvr extends Ryvr {
 
     @Override
     public void refresh(Long requestedPage) throws URISyntaxException {
-        Long count = new Long(
-                jt.queryForObject("select count(*) from \"" + table + "\"",
-                        Integer.class).longValue());
-        jt.setFetchSize(PAGE_SIZE);
-        SqlRowSet result = jt.queryForRowSet("select * from \"" + table
-                + "\" ORDER BY \"" + orderedBy + "\" ASC");
-        Long pages = ((count - 1) / PAGE_SIZE) + 1;
+        if (pages == null || requestedPage == null
+                || requestedPage.equals(pages)) {
+            final String countQuery = "select count(*) from \"" + table + "\"";
+            Long count = new Long(
+                    jt.queryForObject(countQuery, Integer.class).longValue());
+            pages = ((count - 1) / PAGE_SIZE) + 1;
+        }
         // hmmm... what happens when there are more rows than MAX_INT?
         Long page = (requestedPage == null ? pages : requestedPage);
-        result.absolute((int) ((page - 1) * PAGE_SIZE + 1));
+
+        if (rowSet == null || page == pages) {
+            jt.setFetchSize(PAGE_SIZE);
+            String rowsQuery = "select * from \"" + table + "\" ORDER BY \""
+                    + orderedBy + "\" ASC";
+            rowSet = jt.queryForRowSet(rowsQuery);
+            columnNames = rowSet.getMetaData().getColumnNames();
+        }
+        rowSet.absolute((int) ((page - 1) * PAGE_SIZE + 1));
         List<HalRepresentation> embeddedItems = new ArrayList<>();
         List<Link> linkedItems = new ArrayList<>();
-
-        String[] keyArray = result.getMetaData().getColumnNames();
 
         Optional<Link> selfLinkOptional = super.getLinks().getLinkBy("self");
         if (selfLinkOptional.isPresent()) {
 
             for (int i = 0; i < PAGE_SIZE; ++i) {
                 Map<String, Object> row = new HashMap<>();
-                for (String key : keyArray) {
-                    row.put(key, result.getObject(key));
+                for (int j = columnNames.length; j > 0; --j) {
+                    row.put(columnNames[j - 1], rowSet.getObject(j));
                 }
                 Entry entry = new Entry(selfLinkOptional.get(), row, orderedBy);
                 embeddedItems.add(entry);
@@ -69,7 +78,7 @@ public class JdbcRyvr extends Ryvr {
                         .get();
                 linkedItems.add(linkBuilder("item", embeddedSelfLink.getHref())
                         .withTitle(embeddedSelfLink.getTitle()).build());
-                if (!result.next()) {
+                if (!rowSet.next()) {
                     break;
                 }
             }

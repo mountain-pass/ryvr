@@ -14,6 +14,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
+import cucumber.api.PendingException;
 
 public class HtmlRyvrResponse implements RyvrResponse {
 
@@ -95,6 +96,22 @@ public class HtmlRyvrResponse implements RyvrResponse {
                 .findElements(By.className("linkedItemHeading")).stream()
                 .map(element -> element.getText()).collect(Collectors.toList());
         assertThat(headings, containsInAnyOrder(structure.toArray()));
+    }
+
+    @Override
+    public void retrieveAllEvents() {
+        throw new PendingException();
+    }
+
+    @Override
+    public boolean hasLink(String rel) {
+        throw new PendingException();
+
+    }
+
+    @Override
+    public void assertLoadedWithin(int percentile, int maxMs) {
+        throw new PendingException();
     }
 
 }

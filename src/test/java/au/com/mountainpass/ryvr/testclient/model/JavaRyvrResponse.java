@@ -18,10 +18,16 @@ import au.com.mountainpass.ryvr.model.Entry;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import de.otto.edison.hal.Embedded;
 import de.otto.edison.hal.Link;
+import io.prometheus.client.Collector.MetricFamilySamples;
+import io.prometheus.client.Collector.MetricFamilySamples.Sample;
+import io.prometheus.client.Summary;
 
 public class JavaRyvrResponse implements RyvrResponse {
     private Ryvr ryvr;
     private Long page;
+    static final Summary requestLatency = Summary.build().quantile(0.95, 0.01)
+            .quantile(1, 0.01).name("requests_latency_seconds")
+            .help("Request latency in seconds.").register();
 
     public JavaRyvrResponse(Ryvr ryvr) {
         this(ryvr, null);
@@ -100,4 +106,51 @@ public class JavaRyvrResponse implements RyvrResponse {
         assertThat(items.get(0).getProperties().keySet(),
                 containsInAnyOrder(structure.toArray()));
     }
+
+    void processNextRequest(String rel) {
+
+        // requestLatency.time(new Runnable() {
+        // RyvrResponse rval;
+        //
+        // @Override
+        // public void run() {
+        // try {
+        // followLink("next");
+        // } catch (URISyntaxException e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // }
+        // }
+        // });
+    }
+
+    @Override
+    public void retrieveAllEvents() throws URISyntaxException {
+        Summary.Timer requestTimer = requestLatency.startTimer();
+        RyvrResponse response = followLink("first");
+        requestTimer.observeDuration();
+
+        while (response.hasLink("next")) {
+            requestTimer = requestLatency.startTimer();
+            response = response.followLink("next");
+            requestTimer.observeDuration();
+        }
+    }
+
+    @Override
+    public boolean hasLink(String rel) {
+        return ryvr.getLinks().getLinkBy(rel).isPresent();
+    }
+
+    @Override
+    public void assertLoadedWithin(int percentile, int maxMs) {
+        List<MetricFamilySamples> results = requestLatency.collect();
+        String stringPercentile = percentile == 95 ? "0.95" : "1.0";
+        Sample result = results.get(0).samples.stream()
+                .filter(sample -> sample.labelNames.contains("quantile")
+                        && sample.labelValues.contains(stringPercentile))
+                .findAny().get();
+        assertThat(result.value * 1000.0, lessThan(maxMs * 1.0));
+    }
+
 }

@@ -30,6 +30,7 @@ import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
+import cucumber.api.PendingException;
 import cucumber.api.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
@@ -127,8 +128,7 @@ public class StepDefs {
         statementBuffer.append(name);
         // | ID | ACCOUNT | DESCRIPTION | AMOUNT |
         statementBuffer.append(
-                " (ID INT, ACCOUNT VARCHAR, DESCRIPTION VARCHAR, AMOUNT Decimal(19,4))");
-
+                " (ID INT, ACCOUNT VARCHAR, DESCRIPTION VARCHAR, AMOUNT Decimal(19,4), CONSTRAINT PK_ID PRIMARY KEY (ID))");
         jt.execute(statementBuffer.toString());
     }
 
@@ -275,6 +275,23 @@ public class StepDefs {
         List<Map<String, String>> lastEvents = currentEvents.subList(
                 currentEvents.size() - noOfEvents, currentEvents.size());
         ryvrResponse.assertHasItems(lastEvents);
+    }
 
+    @When("^all the events are retrieved$")
+    public void all_the_events_are_retrieved() throws Throwable {
+        ryvrResponse.retrieveAllEvents();
+    }
+
+    @Then("^(\\d+)% of the pages should be loaded within (\\d+)ms$")
+    public void of_the_pages_should_be_loaded_within_ms(int percentile,
+            int maxMs) throws Throwable {
+        ryvrResponse.assertLoadedWithin(percentile, maxMs);
+    }
+
+    @Then("^(\\d+)% of the pages should be loaded successfully$")
+    public void of_the_pages_should_be_loaded_successfully(int arg1)
+            throws Throwable {
+        // Write code here that turns the phrase above into concrete actions
+        throw new PendingException();
     }
 }

@@ -7,6 +7,8 @@ import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.concurrent.FutureCallback;
@@ -44,6 +46,11 @@ public class RestRyvrClient implements RyvrTestClient {
 
     private SwaggerParser swaggerParser = new SwaggerParser();
 
+    @PostConstruct
+    private void postConstruct() {
+        JythonShim.setRestRyvrClient(this);
+    }
+
     @Override
     public SwaggerResponse getApiDocs() throws InterruptedException,
             ExecutionException, URISyntaxException {
@@ -78,7 +85,7 @@ public class RestRyvrClient implements RyvrTestClient {
     @Autowired
     private CloseableHttpAsyncClient httpAsyncClient;
 
-    private String httpGet(final Link link) {
+    public String httpGet(final Link link) {
         try {
             final HttpGet httpget = new HttpGet(link.getHref());
             if (link.getType().isEmpty()) {

@@ -1,8 +1,8 @@
-<configuration debug="true">
-
+<configuration debug="false">
+<!-- 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
-			by default -->
+		encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
+			by default
 		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
 			<pattern>%-4relative [%thread] %-5level %logger{35} - %msg %n
 			</pattern>
@@ -11,10 +11,12 @@
 
 	<include resource="org/springframework/boot/logging/logback/base.xml" />
 
-	<logger name="org.apache.http.wire" level="TRACE" />
+	<logger name="org.apache.http.wire" level="OFF" />
 
-	<root level="INFO">
+    <appender name="METRICS" class="io.prometheus.client.logback.InstrumentedAppender" />
+
+	<root level="OFF">
 		<appender-ref ref="STDOUT" />
 	</root>
-
+ -->
 </configuration>

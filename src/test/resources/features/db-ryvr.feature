@@ -34,7 +34,6 @@ Scenario: Get Ryvr
       | prev    |
       | next    |
 
-@current
 Scenario: Get Ryvr - Multiple Transactions
     Given a database "TEST_DB" 
     And it has a table "TRANSACTIONS" with the following events

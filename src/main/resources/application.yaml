@@ -28,10 +28,9 @@ security:
     
 
 logging:
-    level.org.apache.http.wire: 'DEBUG'
-    level.au.com.windyroad.servicegateway: 'DEBUG'
+    level.org.apache.http.wire: 'OFF'
     
-server.tomcat.access-log-enabled: true
+server.tomcat.access-log-enabled: false
       
       
 au.com.windyroad.service-gateway:
