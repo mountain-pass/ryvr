@@ -117,8 +117,6 @@ dependencies {
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile 'org.bouncycastle:bcpkix-jdk15on:1.53'
-    testCompile group: 'net.sf.grinder', name: 'grinder-core', version: '3.11'
-    testCompile group: 'net.sf.grinder', name: 'grinder-dcr-agent', version: '3.11'
     
     testCompile group: 'io.prometheus', name: 'simpleclient', version: '0.0.21'
     testCompile group: 'io.prometheus', name: 'simpleclient_hotspot', version: '0.0.21'
@@ -247,7 +245,7 @@ task testLocal(group: 'verification') {
 }
 
 testLocal.dependsOn {
-    tasks.findAll { task ->  task.name.endsWith('Test') && task.name !=  'mobileUiTest' }
+    tasks.findAll { task ->  task.name.endsWith('Test') && task.name !=  'mobileUiTest' && task.name !=  'firefoxUiTest' }
 }
 
 
