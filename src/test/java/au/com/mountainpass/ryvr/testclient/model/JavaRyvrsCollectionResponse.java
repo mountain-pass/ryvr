@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
@@ -19,8 +19,7 @@ public class JavaRyvrsCollectionResponse implements RyvrsCollectionResponse {
 
     @Override
     public void assertIsEmpty() {
-        assertThat(ryvrsCollection.getEmbedded().getItemsBy("item", Ryvr.class),
-                empty());
+        assertThat(ryvrsCollection.getCount(), equalTo(0));
 
     }
 
@@ -31,14 +30,12 @@ public class JavaRyvrsCollectionResponse implements RyvrsCollectionResponse {
 
     @Override
     public void assertHasItem(List<String> names) {
-        List<String> titles = ryvrsCollection.getLinks().getLinksBy("item")
-                .stream().map(item -> item.getTitle())
-                .collect(Collectors.toList());
+        Set<String> titles = ryvrsCollection.getRyvrs().keySet();
         assertThat(titles, containsInAnyOrder(names.toArray()));
     }
 
     @Override
-    public RyvrResponse followEmbeddedRyvrLink(String name) {
+    public RyvrResponse followRyvrLink(String name) {
         Ryvr ryvr = ryvrsCollection.getRyvr(name);
         return new JavaRyvrResponse(ryvr);
     }

@@ -3,15 +3,20 @@ package au.com.mountainpass.ryvr.testclient.model;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import au.com.mountainpass.ryvr.model.Entry;
+import org.apache.commons.lang.NotImplementedException;
+import org.springframework.web.client.RestTemplate;
+
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
-import de.otto.edison.hal.EmbeddedTypeInfo;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.traverson.Traverson;
 
@@ -20,18 +25,19 @@ public class RestRyvrsCollectionResponse implements RyvrsCollectionResponse {
     private RyvrsCollection ryvrsCollection;
     private Traverson traverson;
     private URL contextUrl;
+    private RestTemplate restTemplate;
 
     public RestRyvrsCollectionResponse(Traverson traverson, URL contextUrl,
-            RyvrsCollection ryvrsCollection) {
+            RyvrsCollection ryvrsCollection, RestTemplate restTemplate) {
         this.traverson = traverson;
         this.contextUrl = contextUrl;
         this.ryvrsCollection = ryvrsCollection;
+        this.restTemplate = restTemplate;
     }
 
     @Override
     public void assertIsEmpty() {
-        assertThat(ryvrsCollection.getEmbedded().getItemsBy("item"), empty());
-
+        assertCount(0);
     }
 
     @Override
@@ -41,21 +47,25 @@ public class RestRyvrsCollectionResponse implements RyvrsCollectionResponse {
 
     @Override
     public void assertHasItem(List<String> names) {
-        List<Link> items = ryvrsCollection.getLinks().getLinksBy("item");
-        List<String> titles = items.stream().map(item -> item.getTitle())
-                .collect(Collectors.toList());
+        List<String> titles = Arrays
+                .asList(ryvrsCollection.getLinks().get("item")).stream()
+                .map(link -> link.getTitle()).collect(Collectors.toList());
         assertThat(titles, containsInAnyOrder(names.toArray()));
     }
 
     @Override
-    public RyvrResponse followEmbeddedRyvrLink(String name) {
-        Traverson followed = traverson.startWith(contextUrl, ryvrsCollection)
-                .follow("item", hasName(name));
-        EmbeddedTypeInfo embeddedTypeInfo = EmbeddedTypeInfo
-                .withEmbedded("item", Entry.class);
-        Ryvr ryvr = followed.getResourceAs(Ryvr.class, embeddedTypeInfo).get();
-        return new RestRyvrResponse(traverson, followed.getCurrentContextUrl(),
-                ryvr);
+    public RyvrResponse followRyvrLink(String name) {
+        try {
+            URI ryvrUri = contextUrl.toURI().resolve("/ryvrs/" + name);
+            Ryvr ryvr = restTemplate.getForEntity(ryvrUri, Ryvr.class)
+                    .getBody();
+            return new RestRyvrResponse(traverson, ryvrUri.toURL(), ryvr,
+                    restTemplate);
+        } catch (MalformedURLException | URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            throw new NotImplementedException();
+        }
     }
 
     private Predicate<Link> hasName(String name) {

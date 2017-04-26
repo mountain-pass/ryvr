@@ -237,9 +237,11 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
     controller.itemHeadings = function() {
         var keys = [];
         controller.resource._embedded.item.forEach(function(embeddedItem) {
-            keys = keys.concat(Object.keys(embeddedItem.properties));
+            keys = keys.concat(Object.keys(embeddedItem));
         });
-        keys =  Array.from(new Set(keys));
+        var keySet = new Set(keys);
+        keySet.delete("$$hashKey");
+        keys = Array.from(keySet);
         return keys;
     };
     

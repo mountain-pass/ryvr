@@ -74,10 +74,10 @@
       <div id="properties" ng-if="resourceHasProperties()">
         <h2>Properties</h2>
         <div class="row item properties:{{id}}:{{key}}" ng-repeat="(key, value) in resourceProperties()">
-          <div class="col-md-2 property-label">
+          <div class="col-md-1 property-label">
             <label for="property:{{id}}:{{key}}">{{key}}</label>
           </div>
-          <div class="col-md-10" id="property:{{id}}:{{key}}">{{value}}</div>
+          <div class="col-md-11" id="property:{{id}}:{{key}}">{{value}}</div>
         </div>
         <!-- /row -->
       </div>
@@ -86,29 +86,36 @@
       <div id="linkedItems"
         ng-if="controller.resource.hasOwnProperty('_links') && controller.resource._links.hasOwnProperty('item') && 
         controller.resource._links.item !== null && (!Array.isArray(controller.resource._links.item) || controller.resource._links.item.length > 0)">
+        <h2>Links</h2>
+        <ul>
+          <li ng-repeat="item in [].concat(controller.resource._links.item)" id="item:row:{{item.href}}"><a
+            href="{{item.href}}" rel="item" class="linkedItem" id="item:link:{{item.href}}">{{item.title}}</a></li>
+        </ul>
+      </div>
+
+      <div id="items"
+        ng-if="controller.resource.hasOwnProperty('_embedded') && controller.resource._embedded.hasOwnProperty('item') && 
+        [].concat(controller.resource._embedded.item).length > 0">
         <h2>Items</h2>
         <table class="table">
           <thead>
             <tr>
-              <th></th>
-              <th ng-repeat="heading in controller.itemHeadings()" class="linkedItemHeading">{{heading}}</th>
+              <th ng-repeat="heading in controller.itemHeadings()" class="itemHeading">{{heading}}</th>
             </tr>
           </thead>
           <tbody>
-            <tr ng-repeat="item in [].concat(controller.resource._links.item)" id="item:row:{{item.href}}"
-              class="linkedItemRow">
-              <th><a href="{{item.href}}" rel="item" class="linkedItem" id="item:link:{{item.href}}">{{item.title}}</a></th>
-              <td ng-repeat="heading in controller.itemHeadings()"><a href="{{item.href}}"
-                class="{{controller.typeOf(controller.linkedItem(item).properties[heading])}}"
-                id="item:data:{{item.href}}:{{heading}}">{{controller.linkedItem(item).properties[heading]}}</a></td>
+            <tr ng-repeat="item in [].concat(controller.resource._embedded.item)"
+              class="itemRow">
+              <td ng-repeat="heading in controller.itemHeadings()" data-heading="{{heading}}" data-type="{{controller.typeOf(item[heading])}}">{{item[heading]}}</td>
             </tr>
           </tbody>
         </table>
         <div class="btn-group" role="group" aria-label="navigation" id="itemNavLinks">
           <button type="button" class="btn btn-default"
-            ng-repeat="(rel, link) in controller.itemNavLinks(controller.resource._links)"
-            ng-class="{active: isActive(link.href)}">
-            <a href="{{link.href}}" rel="{{rel}}">{{link.title ? link.title : rel }}</a>
+            ng-repeat="rel in ['first', 'prev', 'next', 'current', 'last']"
+            ng-if="controller.resource._links.hasOwnProperty(rel) && controller.resource._links[rel] != null"
+            ng-class="{active: isActive(controller.resource._links[rel].href)}">
+            <a href="{{controller.resource._links[rel].href}}" rel="{{rel}}">{{controller.resource._links[rel].title ? controller.resource._links[rel].title : rel }}</a>
           </button>
         </div>
       </div>

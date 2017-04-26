@@ -48,7 +48,7 @@ public class JavaRyvrClient implements RyvrTestClient {
 
     @Override
     public RyvrResponse getRyvr(String name) {
-        return getRyvrsCollection().followEmbeddedRyvrLink(name);
+        return getRyvrsCollection().followRyvrLink(name);
     }
 
     @Override

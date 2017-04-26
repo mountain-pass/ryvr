@@ -39,6 +39,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -221,6 +222,12 @@ public class TestConfiguration implements
     @Profile(value = { "systemTest" })
     public RyvrTestClient restClient() {
         return new RestRyvrClient();
+    }
+
+    @Bean
+    @Profile(value = { "systemTest" })
+    public RestTemplate restTemplate() throws Exception {
+        return new RestTemplate(httpClientFactory());
     }
 
     @Bean

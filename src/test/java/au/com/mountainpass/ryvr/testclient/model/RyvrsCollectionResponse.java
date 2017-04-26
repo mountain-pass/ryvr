@@ -10,6 +10,6 @@ public interface RyvrsCollectionResponse {
 
     public void assertHasItem(List<String> names);
 
-    public RyvrResponse followEmbeddedRyvrLink(String name);
+    public RyvrResponse followRyvrLink(String name);
 
 }

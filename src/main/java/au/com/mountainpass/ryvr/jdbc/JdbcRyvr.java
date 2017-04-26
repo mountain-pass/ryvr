@@ -1,22 +1,15 @@
 package au.com.mountainpass.ryvr.jdbc;
 
-import static de.otto.edison.hal.Link.*;
-
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import org.apache.http.client.utils.URIBuilder;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
-import au.com.mountainpass.ryvr.model.Entry;
+import au.com.mountainpass.ryvr.model.Link;
 import au.com.mountainpass.ryvr.model.Ryvr;
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Link;
 
 public class JdbcRyvr extends Ryvr {
 
@@ -26,7 +19,6 @@ public class JdbcRyvr extends Ryvr {
     private String orderedBy;
     private SqlRowSet rowSet;
     private String[] columnNames;
-    private Long pages;
 
     public JdbcRyvr(String title, JdbcTemplate jt, String table,
             String orderedBy) {
@@ -34,24 +26,31 @@ public class JdbcRyvr extends Ryvr {
         this.jt = jt;
         this.table = table;
         this.orderedBy = orderedBy;
+        refresh();
     }
 
     @Override
-    public void refresh() throws URISyntaxException {
-        refresh(null);
+    public void refresh() {
+        refreshPage(null);
     }
 
     @Override
-    public void refresh(Long requestedPage) throws URISyntaxException {
-        if (pages == null || requestedPage == null
-                || requestedPage.equals(pages)) {
+    public void refreshPage(Long requestedPage) {
+        if (requestedPage != null && requestedPage < 0) {
+            throw new IndexOutOfBoundsException();
+        }
+        if (pages == null || requestedPage == null || requestedPage >= pages) {
             final String countQuery = "select count(*) from \"" + table + "\"";
             Long count = new Long(
                     jt.queryForObject(countQuery, Integer.class).longValue());
             pages = ((count - 1) / PAGE_SIZE) + 1;
         }
+        if (requestedPage != null && requestedPage > pages) {
+            throw new IndexOutOfBoundsException();
+        }
+
         // hmmm... what happens when there are more rows than MAX_INT?
-        Long page = (requestedPage == null ? pages : requestedPage);
+        page = requestedPage == null ? pages : requestedPage;
 
         if (rowSet == null || page == pages) {
             jt.setFetchSize(PAGE_SIZE);
@@ -61,61 +60,44 @@ public class JdbcRyvr extends Ryvr {
             columnNames = rowSet.getMetaData().getColumnNames();
         }
         rowSet.absolute((int) ((page - 1) * PAGE_SIZE + 1));
-        List<HalRepresentation> embeddedItems = new ArrayList<>();
-        List<Link> linkedItems = new ArrayList<>();
 
-        Optional<Link> selfLinkOptional = super.getLinks().getLinkBy("self");
-        if (selfLinkOptional.isPresent()) {
-
-            for (int i = 0; i < PAGE_SIZE; ++i) {
-                Map<String, Object> row = new HashMap<>();
-                for (int j = columnNames.length; j > 0; --j) {
-                    row.put(columnNames[j - 1], rowSet.getObject(j));
-                }
-                Entry entry = new Entry(selfLinkOptional.get(), row, orderedBy);
-                embeddedItems.add(entry);
-                Link embeddedSelfLink = entry.getLinks().getLinkBy("self")
-                        .get();
-                linkedItems.add(linkBuilder("item", embeddedSelfLink.getHref())
-                        .withTitle(embeddedSelfLink.getTitle()).build());
-                if (!rowSet.next()) {
-                    break;
-                }
+        rows.clear();
+        for (int i = 0; i < PAGE_SIZE; ++i) {
+            Map<String, Object> row = new HashMap<>();
+            for (int j = columnNames.length; j > 0; --j) {
+                row.put(columnNames[j - 1], rowSet.getObject(j));
             }
-
-            String selfHref = selfLinkOptional.get().getHref();
-
-            addPageLink(linkedItems, selfHref, null, "current", "Current");
-            addPageLink(linkedItems, selfHref, 1l, "first", "First");
-            if (page > 1) {
-                addPageLink(linkedItems, selfHref, page - 1, "prev",
-                        "Previous");
+            List<Map<String, Object>> itemRows = rows.get("item");
+            if (itemRows == null) {
+                itemRows = new ArrayList<>(PAGE_SIZE);
             }
-            if (page < pages) {
-                addPageLink(linkedItems, selfHref, page + 1, "next", "Next");
-            } else {
-                // TODO: provide a lask like alias that redirects to the last
-                // e.g. ...?page=last
-                addPageLink(linkedItems, selfHref, pages, "last", "Last");
+            itemRows.add(row);
+            rows.put("item", itemRows);
+            if (!rowSet.next()) {
+                break;
             }
-            addPageLink(linkedItems, selfHref, requestedPage, "self",
-                    selfLinkOptional.get().getTitle());
         }
-        super.clear();
 
-        withEmbedded("item", embeddedItems);
-        withLinks(linkedItems);
     }
 
-    public void addPageLink(List<Link> linkedItems, String baseUrl, Long pageNo,
-            String rel, String title) throws URISyntaxException {
-        URIBuilder uriBuilder = new URIBuilder(baseUrl);
-        uriBuilder.removeQuery();
-        if (pageNo != null) {
-            uriBuilder.addParameter("page", Long.toString(pageNo));
+    @Override
+    public Map<String, Link> getLinks() {
+        Map<String, Link> links = new HashMap<>();
+        links.put("current", new Link("/ryvrs/" + getTitle()));
+        links.put("self", new Link("/ryvrs/" + getTitle() + "?page=" + page));
+        links.put("first", new Link("/ryvrs/" + getTitle() + "?page=" + 1));
+        if (page > 1) {
+            links.put("prev",
+                    new Link("/ryvrs/" + getTitle() + "?page=" + (page - 1l)));
         }
-        linkedItems.add(linkBuilder(rel, uriBuilder.build().toString())
-                .withTitle(title).build());
+        if (page < pages) {
+            links.put("next",
+                    new Link("/ryvrs/" + getTitle() + "?page=" + (page + 1l)));
+        } else {
+            links.put("last",
+                    new Link("/ryvrs/" + getTitle() + "?page=" + (pages)));
+        }
+        return links;
     }
 
 }

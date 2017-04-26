@@ -7,8 +7,6 @@ import java.net.URISyntaxException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.concurrent.FutureCallback;
@@ -17,20 +15,17 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.client.RestTemplate;
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.model.Root;
-import au.com.mountainpass.ryvr.model.Ryvr;
-import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.testclient.model.JavaSwaggerResponse;
 import au.com.mountainpass.ryvr.testclient.model.RestRootResponse;
-import au.com.mountainpass.ryvr.testclient.model.RestRyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 import cucumber.api.Scenario;
-import de.otto.edison.hal.EmbeddedTypeInfo;
 import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.traverson.Traverson;
@@ -40,16 +35,14 @@ public class RestRyvrClient implements RyvrTestClient {
     private Logger logger = LoggerFactory.getLogger(RestRyvrClient.class);
 
     @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
     private RyvrConfiguration config;
 
     private String lastResponse;
 
     private SwaggerParser swaggerParser = new SwaggerParser();
-
-    @PostConstruct
-    private void postConstruct() {
-        JythonShim.setRestRyvrClient(this);
-    }
 
     @Override
     public SwaggerResponse getApiDocs() throws InterruptedException,
@@ -71,7 +64,7 @@ public class RestRyvrClient implements RyvrTestClient {
         Traverson startedWith = getTraverson();
         return new RestRootResponse(traverson(this::httpGet),
                 startedWith.getCurrentContextUrl(),
-                startedWith.getResourceAs(Root.class).get());
+                startedWith.getResourceAs(Root.class).get(), restTemplate);
     }
 
     private Traverson getTraverson() {
@@ -136,22 +129,12 @@ public class RestRyvrClient implements RyvrTestClient {
 
     @Override
     public RyvrsCollectionResponse getRyvrsCollection() {
-        URI url = config.getBaseUri().resolve("/");
-
-        Traverson followed = traverson(this::httpGet).startWith(url.toString())
-                .follow(Root.RELS_RYVRS_COLLECTION);
-        RyvrsCollection ryvrsCollection = followed
-                .getResourceAs(RyvrsCollection.class,
-                        EmbeddedTypeInfo.withEmbedded("item", Ryvr.class))
-                .get();
-        return new RestRyvrsCollectionResponse(traverson(this::httpGet),
-                followed.getCurrentContextUrl(), ryvrsCollection);
+        return getRoot().followRyvrsLink();
     }
 
     @Override
     public RyvrResponse getRyvr(String name) {
-
-        return getRyvrsCollection().followEmbeddedRyvrLink(name);
+        return getRyvrsCollection().followRyvrLink(name);
     }
 
     @Override

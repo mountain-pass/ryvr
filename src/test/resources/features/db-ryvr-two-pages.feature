@@ -104,6 +104,7 @@ Scenario: Get Ryvr - Multiple Pages - Current Page
     And it will *not* have the following links
       | next    |
 
+@current
 Scenario: Get Ryvr - Multiple Pages - Previous Then Current Page
     When the "transactions" ryvr is retrieved
     And the previous page is requested

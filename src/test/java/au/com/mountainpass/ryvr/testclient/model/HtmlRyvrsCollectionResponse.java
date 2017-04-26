@@ -42,9 +42,9 @@ public class HtmlRyvrsCollectionResponse implements RyvrsCollectionResponse {
     }
 
     @Override
-    public RyvrResponse followEmbeddedRyvrLink(final String name) {
-        List<WebElement> items = webDriver.findElement(By.id("linkedItems"))
-                .findElements(By.className("linkedItem"));
+    public RyvrResponse followRyvrLink(final String name) {
+        List<WebElement> items = webDriver
+                .findElements(By.cssSelector("a[rel~='item']"));
         assertThat(items, not(empty()));
         WebElement link = items.stream()
                 .filter(item -> name.equals(item.getText())).findAny().get();

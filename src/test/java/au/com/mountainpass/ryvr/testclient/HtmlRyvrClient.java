@@ -76,7 +76,7 @@ public class HtmlRyvrClient implements RyvrTestClient {
 
     @Override
     public RyvrResponse getRyvr(String name) {
-        return getRyvrsCollection().followEmbeddedRyvrLink(name);
+        return getRyvrsCollection().followRyvrLink(name);
 
     }
 

@@ -214,7 +214,7 @@ public class StepDefs {
 
     @Given("^there are no ryvrs configured$")
     public void thereAreNoRyvrsConfigured() throws Throwable {
-        // do nothing
+        ryvrsCollection.clear();
     }
 
     @When("^the previous page is requested$")

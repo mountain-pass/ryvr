@@ -3,28 +3,24 @@ package au.com.mountainpass.ryvr.testclient.model;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import au.com.mountainpass.ryvr.model.Entry;
 import au.com.mountainpass.ryvr.model.Ryvr;
-import de.otto.edison.hal.Embedded;
-import de.otto.edison.hal.Link;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Summary;
 
 public class JavaRyvrResponse implements RyvrResponse {
+    public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+
     private Ryvr ryvr;
-    private Long page;
     static final Summary requestLatency = Summary.build().quantile(0.95, 0.01)
             .quantile(1, 0.01).name("requests_latency_seconds")
             .help("Request latency in seconds.").register();
@@ -35,23 +31,22 @@ public class JavaRyvrResponse implements RyvrResponse {
 
     public JavaRyvrResponse(Ryvr ryvr, Long page) {
         this.ryvr = ryvr;
-        this.page = page;
     }
 
     @Override
     public void assertHasItems(List<Map<String, String>> events)
             throws URISyntaxException {
-        ryvr.refresh(page);
-        Embedded embedded = ryvr.getEmbedded();
-        List<Entry> items = embedded.getItemsBy("item", Entry.class);
-        assertThat(items.size(), equalTo(events.size()));
-        for (int i = 0; i < items.size(); ++i) {
+        // ryvr.refresh(page);
+        List<Map<String, Object>> rows = ryvr.getEmbedded().get("item");
+        assertThat(rows.size(), equalTo(events.size()));
+        for (int i = 0; i < rows.size(); ++i) {
             final Map<String, String> expectedRow = events.get(i);
-            items.get(i).getProperties().entrySet().forEach(entry -> {
+            final Map<String, Object> row = rows.get(i);
+            row.keySet().forEach(key -> {
 
-                Object actualValue = entry.getValue();
+                Object actualValue = row.get(key);
 
-                String expectedValue = expectedRow.get(entry.getKey());
+                String expectedValue = expectedRow.get(key);
                 Util.assertEqual(actualValue, expectedValue);
             });
         }
@@ -59,7 +54,7 @@ public class JavaRyvrResponse implements RyvrResponse {
 
     @Override
     public void assertHasLinks(List<String> links) {
-        Set<String> rels = ryvr.getLinks().getRels();
+        Set<String> rels = ryvr.getLinks().keySet();
         links.forEach(item -> {
             assertThat(rels, hasItem(item));
         });
@@ -67,7 +62,7 @@ public class JavaRyvrResponse implements RyvrResponse {
 
     @Override
     public void assertDoesntHaveLinks(List<String> links) {
-        Set<String> rels = ryvr.getLinks().getRels();
+        Set<String> rels = ryvr.getLinks().keySet();
         links.forEach(item -> {
             assertThat(rels, not(hasItem(item)));
         });
@@ -75,20 +70,29 @@ public class JavaRyvrResponse implements RyvrResponse {
 
     @Override
     public RyvrResponse followLink(String rel) throws URISyntaxException {
-        ryvr.refresh(page);
-        Optional<Link> link = ryvr.getLinks().getLinkBy(rel);
-        assertTrue(link.isPresent());
-        URI linkUri = URI.create(link.get().getHref());
-        List<NameValuePair> params = URLEncodedUtils.parse(linkUri,
-                StandardCharsets.UTF_8);
-        Optional<NameValuePair> pageNvp = params.stream()
-                .filter(nvp -> "page".equals(nvp.getName())).findAny();
-        if (pageNvp.isPresent()) {
-            return new JavaRyvrResponse(ryvr,
-                    new Long(pageNvp.get().getValue()));
-        } else {
-            return new JavaRyvrResponse(ryvr);
+        switch (rel) {
+        case "prev":
+            ryvr.prev();
+            break;
+        case "next":
+            ryvr.next();
+            break;
+        case "first":
+            ryvr.first();
+            break;
+        case "last":
+            ryvr.last();
+            break;
+        case "current":
+            ryvr.current();
+            break;
+        case "self":
+            ryvr.self();
+            break;
+        default:
+            throw new NotImplementedException();
         }
+        return this;
     }
 
     public Ryvr getRyvr() {
@@ -98,30 +102,11 @@ public class JavaRyvrResponse implements RyvrResponse {
     @Override
     public void assertItemsHaveStructure(List<String> structure)
             throws URISyntaxException {
-        ryvr.refresh(page);
-        Embedded embedded = ryvr.getEmbedded();
-        List<Entry> items = embedded.getItemsBy("item", Entry.class);
+        List<Map<String, Object>> items = ryvr.getEmbedded().get("item");
         assertThat(items, not(empty()));
 
-        assertThat(items.get(0).getProperties().keySet(),
+        assertThat(items.get(0).keySet(),
                 containsInAnyOrder(structure.toArray()));
-    }
-
-    void processNextRequest(String rel) {
-
-        // requestLatency.time(new Runnable() {
-        // RyvrResponse rval;
-        //
-        // @Override
-        // public void run() {
-        // try {
-        // followLink("next");
-        // } catch (URISyntaxException e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
-        // }
-        // });
     }
 
     @Override
@@ -139,7 +124,7 @@ public class JavaRyvrResponse implements RyvrResponse {
 
     @Override
     public boolean hasLink(String rel) {
-        return ryvr.getLinks().getLinkBy(rel).isPresent();
+        return ryvr.getLinks().containsKey(rel);
     }
 
     @Override
@@ -150,6 +135,8 @@ public class JavaRyvrResponse implements RyvrResponse {
                 .filter(sample -> sample.labelNames.contains("quantile")
                         && sample.labelValues.contains(stringPercentile))
                 .findAny().get();
+        LOGGER.info("latency {}: {}ms", result.labelValues.get(0),
+                result.value * 1000.0);
         assertThat(result.value * 1000.0, lessThan(maxMs * 1.0));
     }
 

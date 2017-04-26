@@ -25,11 +25,7 @@ security:
     name: 'user'
     password: 'password'
     
-    
-
-logging:
-    level.org.apache.http.wire: 'OFF'
-    
+        
 server.tomcat.access-log-enabled: false
       
       

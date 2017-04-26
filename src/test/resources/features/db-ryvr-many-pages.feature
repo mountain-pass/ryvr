@@ -10,8 +10,6 @@ Background:
     And it has 46 events
     And a "transactions" ryvr for "TEST_DB" for table "TRANSACTIONS" ordered by "ID"
   
-
-@current
 Scenario: Get Ryvr - Multiple Pages - Current Page
     When the "transactions" ryvr is retrieved
     Then it will have the following structure

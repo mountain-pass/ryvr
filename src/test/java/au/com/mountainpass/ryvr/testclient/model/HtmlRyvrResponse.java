@@ -26,29 +26,28 @@ public class HtmlRyvrResponse implements RyvrResponse {
 
     @Override
     public void assertHasItems(List<Map<String, String>> events) {
-        List<String> headings = webDriver.findElement(By.id("linkedItems"))
-                .findElements(By.className("linkedItemHeading")).stream()
+        List<String> headings = webDriver.findElement(By.id("items"))
+                .findElements(By.className("itemHeading")).stream()
                 .map(heading -> heading.getText()).collect(Collectors.toList());
-        List<WebElement> items = webDriver.findElement(By.id("linkedItems"))
-                .findElements(By.className("linkedItemRow"));
-        List<Map<String, Object>> itemValues = items.stream().map(item -> {
+
+        List<WebElement> items = webDriver.findElement(By.id("items"))
+                .findElements(By.className("itemRow"));
+
+        List<Map<String, Object>> itemValues = items.stream().map(itemRow -> {
             Map<String, Object> rval = new HashMap<>();
-            String id = item.getAttribute("id").replace("item:row:", "");
-            for (int i = 0; i < headings.size(); ++i) {
-                if (headings.get(i).trim().length() > 0) {
-                    WebElement itemValueElement = item.findElement(
-                            By.id("item:data:" + id + ":" + headings.get(i)));
-                    String itemValue = itemValueElement.getText();
-                    String itemType = itemValueElement.getAttribute("class");
-                    if (java.util.Arrays.binarySearch(itemType.split("\\s"),
-                            "number") >= 0) {
-                        rval.put(headings.get(i).trim(),
-                                new BigDecimal(itemValue));
-                    } else {
-                        rval.put(headings.get(i).trim(), itemValue);
-                    }
+
+            List<WebElement> fields = itemRow.findElements(By.tagName("td"));
+            for (WebElement field : fields) {
+                String heading = field.getAttribute("data-heading");
+                String value = field.getText();
+                String type = field.getAttribute("data-type");
+                if ("number".equals(type)) {
+                    rval.put(heading, new BigDecimal(value));
+                } else {
+                    rval.put(heading, value);
                 }
             }
+
             return rval;
         }).collect(Collectors.toList());
 
@@ -93,7 +92,7 @@ public class HtmlRyvrResponse implements RyvrResponse {
     @Override
     public void assertItemsHaveStructure(List<String> structure) {
         List<String> headings = webDriver
-                .findElements(By.className("linkedItemHeading")).stream()
+                .findElements(By.className("itemHeading")).stream()
                 .map(element -> element.getText()).collect(Collectors.toList());
         assertThat(headings, containsInAnyOrder(structure.toArray()));
     }

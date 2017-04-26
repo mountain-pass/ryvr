@@ -8,9 +8,12 @@ import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,11 +47,20 @@ public class HtmlController implements RyvrContentController {
 
     @Override
     public ResponseContext getApiDocs(RequestContext request, String group) {
-        return MainRyvrController
-                .toResponseContext(ResponseEntity.status(HttpStatus.SEE_OTHER)
-                        .location(URI
-                                .create("/system/webjars/swagger-ui/2.2.10/index.html?url=/api-docs"))
-                        .build());
+        ResponseEntity<?> response = ResponseEntity.status(HttpStatus.SEE_OTHER)
+                .location(URI
+                        .create("/system/webjars/swagger-ui/2.2.10/index.html?url=/api-docs"))
+                .build();
+        ResponseContext rval = new ResponseContext();
+        rval.setStatus(response.getStatusCodeValue());
+        MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
+        for (Map.Entry<String, List<String>> entry : response.getHeaders()
+                .entrySet()) {
+            headers.addAll(entry.getKey(), entry.getValue());
+        }
+        rval.setHeaders(headers);
+        rval.setEntity(response.getBody());
+        return rval;
     }
 
     @Override
@@ -91,8 +103,18 @@ public class HtmlController implements RyvrContentController {
             OutputStreamWriter writer = new OutputStreamWriter(baos);
             mustache.execute(writer, scope).flush();
             writer.flush();
-            return MainRyvrController.toResponseContext(ResponseEntity
-                    .ok(new ByteArrayInputStream(baos.toByteArray())));
+            ResponseEntity<?> response = ResponseEntity
+                    .ok(new ByteArrayInputStream(baos.toByteArray()));
+            ResponseContext rval = new ResponseContext();
+            rval.setStatus(response.getStatusCodeValue());
+            MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
+            for (Map.Entry<String, List<String>> entry : response.getHeaders()
+                    .entrySet()) {
+                headers.addAll(entry.getKey(), entry.getValue());
+            }
+            rval.setHeaders(headers);
+            rval.setEntity(response.getBody());
+            return rval;
         } catch (IOException e) {
             throw new NotImplementedException(e);
         }

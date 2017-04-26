@@ -7,11 +7,10 @@ import java.util.Map;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
+import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import au.com.mountainpass.ryvr.SwaggerFetcher;
@@ -55,11 +54,12 @@ public class JsonController implements RyvrContentController {
             swagger = new VendorSpecFilter().filter(swagger, filter, null,
                     cookies, headers);
         }
-        return MainRyvrController
-                .toResponseContext(ResponseEntity.status(HttpStatus.OK)
-                        .contentType(
-                                org.springframework.http.MediaType.APPLICATION_JSON)
-                        .body(swagger));
+
+        ResponseContext rval = new ResponseContext();
+        rval.setStatus(HttpStatus.SC_OK);
+        rval.setContentType(javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE);
+        rval.setEntity(swagger);
+        return rval;
     }
 
     @Override
@@ -77,22 +77,21 @@ public class JsonController implements RyvrContentController {
     @Override
     public ResponseContext getRyvrsCollection(RequestContext request, Long page,
             String xRequestId, String accept, String cacheControl) {
-        return MainRyvrController
-                .toResponseContext(ResponseEntity.status(HttpStatus.OK)
-                        .contentType(org.springframework.http.MediaType
-                                .valueOf("application/hal+json"))
-                        .body(ryvrsCollection));
+        ResponseContext rval = new ResponseContext();
+        rval.setStatus(HttpStatus.SC_OK);
+        rval.setContentType(APPLICATION_HAL_JSON_TYPE);
+        rval.setEntity(ryvrsCollection);
+        return rval;
     }
 
     @Override
     public ResponseContext getRoot(RequestContext request) {
         Root root = new Root(applicationName);
-        return MainRyvrController
-                .toResponseContext(
-                        ResponseEntity.status(HttpStatus.OK)
-                                .contentType(org.springframework.http.MediaType
-                                        .valueOf("application/hal+json"))
-                                .body(root));
+        ResponseContext rval = new ResponseContext();
+        rval.setStatus(HttpStatus.SC_OK);
+        rval.setContentType(APPLICATION_HAL_JSON_TYPE);
+        rval.setEntity(root);
+        return rval;
     }
 
     @Override
@@ -101,14 +100,13 @@ public class JsonController implements RyvrContentController {
             throws URISyntaxException {
 
         Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
-        ryvr.refresh(page);
-        return MainRyvrController
-                .toResponseContext(
-                        ResponseEntity.status(HttpStatus.OK)
-                                .contentType(org.springframework.http.MediaType
-                                        .valueOf("application/hal+json"))
-                                .body(ryvr));
+        ryvr.refreshPage(page);
 
+        ResponseContext rval = new ResponseContext();
+        rval.setStatus(HttpStatus.SC_OK);
+        rval.setContentType(APPLICATION_HAL_JSON_TYPE);
+        rval.setEntity(ryvr);
+        return rval;
     }
 
 }

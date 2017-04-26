@@ -44,18 +44,4 @@ public class MainRyvrController implements RyvrController {
                 cacheControl);
     }
 
-    public static ResponseContext toResponseContext(
-            ResponseEntity<?> response) {
-        ResponseContext rval = new ResponseContext();
-        rval.setStatus(response.getStatusCodeValue());
-        MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
-        for (Map.Entry<String, List<String>> entry : response.getHeaders()
-                .entrySet()) {
-            headers.addAll(entry.getKey(), entry.getValue());
-        }
-        rval.setHeaders(headers);
-        rval.setEntity(response.getBody());
-        return rval;
-    }
-
 }
