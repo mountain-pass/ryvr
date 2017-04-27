@@ -1,7 +1,7 @@
 resources:
   - name: source-code
     type: gitRepo
-    integration: GitHub
+    integration: github
     pointer:
       sourceName: mountain-pass/ryvr
 
