@@ -111,12 +111,11 @@
           </tbody>
         </table>
         <div class="btn-group" role="group" aria-label="navigation" id="itemNavLinks">
-          <button type="button" class="btn btn-default"
+          <a class="btn btn-default"
             ng-repeat="rel in ['first', 'prev', 'next', 'current', 'last']"
             ng-if="controller.resource._links.hasOwnProperty(rel) && controller.resource._links[rel] != null"
-            ng-class="{active: isActive(controller.resource._links[rel].href)}">
-            <a href="{{controller.resource._links[rel].href}}" rel="{{rel}}">{{controller.resource._links[rel].title ? controller.resource._links[rel].title : rel }}</a>
-          </button>
+            ng-class="{active: isActive(controller.resource._links[rel].href)}"
+            href="{{controller.resource._links[rel].href}}" rel="{{rel}}">{{controller.resource._links[rel].title ? controller.resource._links[rel].title : rel }}</a>
         </div>
       </div>
 
