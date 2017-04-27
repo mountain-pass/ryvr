@@ -3,15 +3,15 @@ jobs:
     type: runSh
     steps:
      - IN: ryvr_master_rSync
-     - IN: ryvr_ciRepo
+     - IN: ryvr_master
      - TASK: 
-       - script: ./gradlew assemble --info
+       - script: ls && ls ./IN && ./IN/mexec-repo/gitRepo/gradlew assemble --info
 
   - name: unitTest
     type: runSh
     steps:
      - IN: assemble
-     - IN: ryvr_ciRepo
+     - IN: ryvr_master
      - TASK: 
-       - script: ./gradlew unitTest -PtestOutputDir=shippable/testresults -x jacocoTestReport --info 
+       - script: ls && ls ./IN && ./gradlew unitTest -PtestOutputDir=shippable/testresults -x jacocoTestReport --info 
        
