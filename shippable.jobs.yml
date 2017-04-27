@@ -2,14 +2,14 @@ jobs:
   - name: assemble
     type: runSh
     steps:
-     - IN: source-code
+     - IN: ryvr_master
      - TASK: 
        - script: ./gradlew assemble --info
 
   - name: unitTest
     type: runSh
     steps:
-     - IN: source-code
+     - IN: ryvr_master
      - TASK: 
        - script: ./gradlew unitTest -PtestOutputDir=shippable/testresults -x jacocoTestReport --info 
        

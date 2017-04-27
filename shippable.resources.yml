@@ -1,5 +1,5 @@
 resources:
-  - name: source-code
+  - name: ryvr_master
     type: gitRepo
     integration: github
     pointer:
