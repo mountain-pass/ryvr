@@ -19,4 +19,6 @@ test:
     - ./gradlew unitTest -x jacocoTestReport --info 
   post:
     - mkdir -p $CIRCLE_TEST_REPORTS/junit/
+    - mkdir -p $CIRCLE_TEST_REPORTS/cucumber/
     - find . -type f -regex ".*/build/test-results-ut/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
+    - find . -type f -regex ".*/build/test-results-ut/.*json" -exec cp {} $CIRCLE_TEST_REPORTS/cucumber/ \;
