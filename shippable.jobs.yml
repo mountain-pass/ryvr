@@ -3,9 +3,9 @@ jobs:
     type: runSh
     steps:
      - IN: ryvr_master_rSync
-     - IN: ryvr_ciRepo
+     - IN: ryvr_source
      - TASK: 
-       - script: ls && echo 1 && ls ./IN && echo 2  && ls ./IN/ryvr_ciRepo/ && echo 3 && ls ./IN/ryvr_ciRepo/ciRepo/ && echo 4 && ./IN/ryvr_ciRepo/ciRepo/gradlew assemble --info
+       - script: ls && echo 1 && ls ./IN && echo 2  && ls ./IN/ryvr_source/ && echo 3 && ls ./IN/ryvr_source/gitRepo/ && echo 4 && ./IN/ryvr_source/gitRepo/gradlew assemble --info
 
   - name: unitTest
     type: runSh
@@ -13,5 +13,5 @@ jobs:
      - IN: assemble
      - IN: ryvr_master
      - TASK: 
-       - script: ./IN/ryvr_ciRepo/ciRepo/gradlew unitTest -x jacocoTestReport --info 
+       - script: ./IN/ryvr_source/gitRepo/gradlew unitTest -x jacocoTestReport --info 
        

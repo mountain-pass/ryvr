@@ -1,9 +1,9 @@
 resources:
-#  - name: ryvr_master
-#    type: gitRepo
-#    integration: github
-#    pointer:
-#      sourceName: mountain-pass/ryvr
+  - name: ryvr_source
+    type: gitRepo
+    integration: github
+    pointer:
+      sourceName: mountain-pass/ryvr
 
 #  - name: unit-test-report
 #    type: file
