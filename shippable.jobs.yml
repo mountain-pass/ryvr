@@ -5,7 +5,7 @@ jobs:
      - IN: ryvr_master_rSync
      - IN: ryvr_master
      - TASK: 
-       - script: ls && ls ./IN && ls ./IN/ryvr_master/ && ls ./IN/ryvr_master/gitRepo/ && ./IN/ryvr_master/gitRepo/gradlew assemble --info
+       - script: ls && ls ./IN && ls ./IN/ryvr_master/ && ls ./IN/ryvr_master/syncRepo/ && ./IN/ryvr_master/syncRepo/gradlew assemble --info
 
   - name: unitTest
     type: runSh
@@ -13,5 +13,5 @@ jobs:
      - IN: assemble
      - IN: ryvr_master
      - TASK: 
-       - script: ./IN/ryvr_master/gitRepo/gradlew unitTest -x jacocoTestReport --info 
+       - script: ./IN/ryvr_master/syncRepo/gradlew unitTest -x jacocoTestReport --info 
        
