@@ -1,6 +1,5 @@
 package au.com.mountainpass.inflector.springboot.controllers;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,18 +7,15 @@ import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.Ordered;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -30,11 +26,9 @@ import com.github.mustachejava.Mustache;
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
-import io.swagger.inflector.models.RequestContext;
-import io.swagger.inflector.models.ResponseContext;
 
 @Component()
-public class HtmlController implements RyvrContentController {
+public class HtmlController {
 
     @Autowired
     DefaultMustacheFactory mustacheFactory;
@@ -45,52 +39,26 @@ public class HtmlController implements RyvrContentController {
     @Autowired
     ObjectMapper om;
 
-    @Override
-    public ResponseContext getApiDocs(RequestContext request, String group) {
-        ResponseEntity<?> response = ResponseEntity.status(HttpStatus.SEE_OTHER)
+    public ResponseEntity<?> getApiDocs(HttpServletRequest req, String group) {
+        return ResponseEntity.status(HttpStatus.SEE_OTHER)
                 .location(URI
-                        .create("/system/webjars/swagger-ui/2.2.10/index.html?url=/api-docs"))
+                        .create("/webjars/swagger-ui/2.2.10/index.html?url=/api-docs"))
                 .build();
-        ResponseContext rval = new ResponseContext();
-        rval.setStatus(response.getStatusCodeValue());
-        MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
-        for (Map.Entry<String, List<String>> entry : response.getHeaders()
-                .entrySet()) {
-            headers.addAll(entry.getKey(), entry.getValue());
-        }
-        rval.setHeaders(headers);
-        rval.setEntity(response.getBody());
-        return rval;
     }
 
-    @Override
-    public boolean isCompatible(MediaType type) {
-        return MediaType.TEXT_HTML_TYPE.isCompatible(type);
-    }
-
-    @Override
-    public int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE - 1;
-    }
-
-    @Override
-    public ResponseContext getRyvrsCollection(RequestContext request, Long page,
-            String xRequestId, String accept, String cacheControl) {
-        Root root = (Root) jsonController.getRoot(request).getEntity();
+    public ResponseEntity<?> getRyvrsCollection(HttpServletRequest req) {
+        Root root = (Root) jsonController.getRoot(req).getBody();
         RyvrsCollection collection = (RyvrsCollection) jsonController
-                .getRyvrsCollection(request, page, xRequestId, accept,
-                        cacheControl)
-                .getEntity();
+                .getRyvrsCollection(req).getBody();
         return getIndex(root, collection);
     }
 
-    @Override
-    public ResponseContext getRoot(RequestContext request) {
-        Root root = (Root) jsonController.getRoot(request).getEntity();
+    public ResponseEntity<?> getRoot(HttpServletRequest req) {
+        Root root = (Root) jsonController.getRoot(req).getBody();
         return getIndex(root, root);
     }
 
-    private ResponseContext getIndex(Root root, Object resource) {
+    private ResponseEntity<?> getIndex(Root root, Object resource) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ClassPathResource index = new ClassPathResource("static/index.html");
         try {
@@ -103,31 +71,19 @@ public class HtmlController implements RyvrContentController {
             OutputStreamWriter writer = new OutputStreamWriter(baos);
             mustache.execute(writer, scope).flush();
             writer.flush();
-            ResponseEntity<?> response = ResponseEntity
-                    .ok(new ByteArrayInputStream(baos.toByteArray()));
-            ResponseContext rval = new ResponseContext();
-            rval.setStatus(response.getStatusCodeValue());
-            MultivaluedMap<String, String> headers = new MultivaluedHashMap<>();
-            for (Map.Entry<String, List<String>> entry : response.getHeaders()
-                    .entrySet()) {
-                headers.addAll(entry.getKey(), entry.getValue());
-            }
-            rval.setHeaders(headers);
-            rval.setEntity(response.getBody());
-            return rval;
+
+            return ResponseEntity.ok().contentType(MediaType.TEXT_HTML)
+                    .body(baos.toByteArray());
         } catch (IOException e) {
             throw new NotImplementedException(e);
         }
     }
 
-    @Override
-    public ResponseContext getRyvr(RequestContext request, String ryvrName,
-            Long page, String xRequestId, String accept, String cacheControl)
-            throws URISyntaxException {
-        Root root = (Root) jsonController.getRoot(request).getEntity();
-        Ryvr ryvr = (Ryvr) jsonController
-                .getRyvr(request, ryvrName, null, xRequestId, accept, cacheControl)
-                .getEntity();
+    public ResponseEntity<?> getRyvr(HttpServletRequest req, String ryvrName,
+            Long page) throws URISyntaxException {
+        Root root = (Root) jsonController.getRoot(req).getBody();
+        Ryvr ryvr = (Ryvr) jsonController.getRyvr(req, ryvrName, page)
+                .getBody();
         return getIndex(root, ryvr);
     }
 

@@ -2,6 +2,8 @@ package au.com.mountainpass.inflector.springboot.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.MediaType;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -21,4 +23,14 @@ public class WebConfig extends WebMvcConfigurerAdapter {
         DefaultMustacheFactory mustacheFactory = new DefaultMustacheFactory();
         return mustacheFactory;
     }
+
+    @Override
+    public void configureContentNegotiation(
+            ContentNegotiationConfigurer configurer) {
+        configurer.defaultContentType(MediaType.TEXT_HTML);
+        configurer.ignoreAcceptHeader(false).favorPathExtension(false)
+                .mediaType("json", MediaType.APPLICATION_JSON);
+        configurer.mediaType("html", MediaType.TEXT_HTML);
+    }
+
 }

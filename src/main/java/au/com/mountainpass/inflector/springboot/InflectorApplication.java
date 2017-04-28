@@ -46,7 +46,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
@@ -58,8 +57,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
-
-import io.swagger.inflector.config.Configuration;
 
 @SpringBootApplication
 @EnableAsync
@@ -92,14 +89,14 @@ public class InflectorApplication {
     @Value("${javax.net.ssl.trustStoreType:JKS}")
     private String trustStoreType;
 
-    @Bean
-    public Configuration configuration(
-            final ApplicationContext applicationContext) {
-        final Configuration configuration = Configuration.read();
-        configuration.setControllerFactory(
-                (cls, operation) -> applicationContext.getBean(cls));
-        return configuration;
-    }
+    // @Bean
+    // public Configuration configuration(
+    // final ApplicationContext applicationContext) {
+    // final Configuration configuration = Configuration.read();
+    // configuration.setControllerFactory(
+    // (cls, operation) -> applicationContext.getBean(cls));
+    // return configuration;
+    // }
 
     /**
      * Since we're using both Actuator and Jersey, we need to use Springs

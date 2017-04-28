@@ -1,0 +1,476 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1",
+    "title": "Ryvr",
+    "description": "Provides extremely fast access to your data, in fine precise slices"
+  },
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "produces": [
+    "application/hal+json",
+    "text/html"
+  ],
+  "tags": [
+    {
+      "name": "system",
+      "description": "Information about the service"
+    },
+    {
+      "name": "ryvr",
+      "description": "Data feed services"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "description": "THe server root. Provides access to other operations",
+        "operationId": "getRoot",
+        "responses": {
+          "200": {
+            "description": "A page of ryvrs",
+            "schema": {
+              "$ref": "#/definitions/root"
+            },
+            "headers": {
+              "ETag": {
+                "description": "The entity tag for the page.\n\nThe ID of the most recent record in the page is used as the ETag as this is quick to generate and will change as new records are added to the page. The service implementation version is also included in the ETag as changes in the service version may result in different page output as well.\n",
+                "type": "string",
+                "pattern": "([wW]/)?\"([^\"]|\\\\\")*\""
+              },
+              "X-Request-Id": {
+                "type": "string",
+                "pattern": "^[0-9+\\/=\\-]{20,200}$",
+                "description": "Logging correlation ID for this request"
+              },
+              "Vary": {
+                "type": "string",
+                "description": "The Vary field value indicates the set of request-header fields that fully determines, while the response is fresh, whether a cache is permitted to use the response to reply to a subsequent request without revalidation. For uncacheable or stale responses, the Vary field value advises the user agent about the criteria that were used to select the representation.\n"
+              },
+              "Cache-Control": {
+                "description": "Caching directives for the response\n",
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ryvrs": {
+      "get": {
+        "tags": [
+          "ryvrs"
+        ],
+        "description": "The current page of the feed",
+        "operationId": "getRyvrsCollection",
+        "parameters": [
+          {
+            "name": "page",
+            "description": "which page to fetch",
+            "in": "query",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "$ref": "#/parameters/X-Request-Id"
+          },
+          {
+            "$ref": "#/parameters/Accept"
+          },
+          {
+            "$ref": "#/parameters/Cache-Control"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of ryvrs",
+            "schema": {
+              "$ref": "#/definitions/page"
+            },
+            "headers": {
+              "ETag": {
+                "description": "The entity tag for the page.\n\nThe ID of the most recent record in the page is used as the ETag as this is quick to generate and will change as new records are added to the page. The service implementation version is also included in the ETag as changes in the service version may result in different page output as well.\n",
+                "type": "string",
+                "pattern": "([wW]/)?\"([^\"]|\\\\\")*\""
+              },
+              "X-Request-Id": {
+                "type": "string",
+                "pattern": "^[0-9+\\/=\\-]{20,200}$",
+                "description": "Logging correlation ID for this request"
+              },
+              "Vary": {
+                "type": "string",
+                "description": "The Vary field value indicates the set of request-header fields that fully determines, while the response is fresh, whether a cache is permitted to use the response to reply to a subsequent request without revalidation. For uncacheable or stale responses, the Vary field value advises the user agent about the criteria that were used to select the representation.\n"
+              },
+              "Cache-Control": {
+                "description": "Caching directives for the response\n",
+                "type": "string"
+              }
+            }
+          },
+          "307": {
+            "description": "Redirection to current page",
+            "headers": {
+              "Location": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "406": {
+            "$ref": "#/responses/406"
+          },
+          "501": {
+            "$ref": "#/responses/501"
+          },
+          "502": {
+            "$ref": "#/responses/502"
+          },
+          "503": {
+            "$ref": "#/responses/503"
+          },
+          "504": {
+            "$ref": "#/responses/504"
+          }
+        }
+      }
+    },
+    "/ryvrs/{ryvrName}": {
+      "parameters": [
+        {
+          "name": "ryvrName",
+          "description": "The unique name of the ryvr",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "name": "page",
+          "description": "The page of the ryvr to retrieve",
+          "in": "query",
+          "required": false,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "tags": [
+          "ryvrs"
+        ],
+        "description": "The current page of the feed",
+        "operationId": "getRyvr",
+        "parameters": [
+          {
+            "$ref": "#/parameters/X-Request-Id"
+          },
+          {
+            "$ref": "#/parameters/Accept"
+          },
+          {
+            "$ref": "#/parameters/Cache-Control"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of ryvrs",
+            "schema": {
+              "$ref": "#/definitions/page"
+            },
+            "headers": {
+              "ETag": {
+                "description": "The entity tag for the page.\n\nThe ID of the most recent record in the page is used as the ETag as this is quick to generate and will change as new records are added to the page. The service implementation version is also included in the ETag as changes in the service version may result in different page output as well.\n",
+                "type": "string",
+                "pattern": "([wW]/)?\"([^\"]|\\\\\")*\""
+              },
+              "X-Request-Id": {
+                "type": "string",
+                "pattern": "^[0-9+\\/=\\-]{20,200}$",
+                "description": "Logging correlation ID for this request"
+              },
+              "Vary": {
+                "type": "string",
+                "description": "The Vary field value indicates the set of request-header fields that fully determines, while the response is fresh, whether a cache is permitted to use the response to reply to a subsequent request without revalidation. For uncacheable or stale responses, the Vary field value advises the user agent about the criteria that were used to select the representation.\n"
+              },
+              "Cache-Control": {
+                "description": "Caching directives for the response\n",
+                "type": "string"
+              }
+            }
+          },
+          "307": {
+            "description": "Redirection to current page",
+            "headers": {
+              "Location": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/responses/400"
+          },
+          "401": {
+            "$ref": "#/responses/401"
+          },
+          "403": {
+            "$ref": "#/responses/403"
+          },
+          "406": {
+            "$ref": "#/responses/406"
+          },
+          "501": {
+            "$ref": "#/responses/501"
+          },
+          "502": {
+            "$ref": "#/responses/502"
+          },
+          "503": {
+            "$ref": "#/responses/503"
+          },
+          "504": {
+            "$ref": "#/responses/504"
+          }
+        }
+      }
+    },
+    "/api-docs": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "description": "Swagger Documentation for this service",
+        "operationId": "getApiDocs",
+        "parameters": [
+          {
+            "name": "group",
+            "in": "query",
+            "description": "the name of the subset of the API",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "produces": [
+          "application/json",
+          "text/html"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  },
+  "responses": {
+    "400": {
+      "description": "[Bad Request](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.1)\n\nThe request could not be understood by the server due to malformed syntax.\n\nWhat other information do we want to provide in this response?\ni.e. should it include the fields that failed\nvalidation and if so, how do we want to present that?\n"
+    },
+    "401": {
+      "description": "[Unauthorized](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.2)\n\nThe request requires user authentication.\n",
+      "headers": {
+        "WWW-Authenticate": {
+          "description": "The field value consists of at least one challenge that indicates the authentication scheme(s) and parameters applicable to the Request-URI.\n\nhttps://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.47\n",
+          "type": "string"
+        }
+      }
+    },
+    "403": {
+      "description": "[Forbidden](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.4)\n\nThe server understood the request, but is refusing to fulfill it.\n"
+    },
+    "406": {
+      "description": "[Not Acceptable](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.7)\n\nThe resource identified by the request is only capable of generating response entities which have content characteristics not acceptable according to the accept headers sent in the request.\n"
+    },
+    "501": {
+      "description": "[Internal Server Error](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.1)\n\nThe server encountered an unexpected condition which prevented it from fulfilling the request.\n"
+    },
+    "502": {
+      "description": "[Bad Gateway](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.3)\n\nThe server, while acting as a gateway or proxy, received an invalid response from the upstream server it accessed in attempting to fulfill the request.\n"
+    },
+    "503": {
+      "description": "[Service Unavailable](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.4)\n\nThe server is currently unable to handle the request due to a temporary overloading or maintenance of the server.\n",
+      "headers": {
+        "Retry-After": {
+          "type": "string",
+          "description": "The Retry-After response-header field can be used with a 503 (Service Unavailable) response to indicate how long the service is expected to be unavailable to the requesting client.\n\nhttps://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.37\n"
+        }
+      }
+    },
+    "504": {
+      "description": "[Gateway Time-out](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.5)\n\nThe server, while acting as a gateway or proxy, did not receive a timely response from the upstream server.\n"
+    }
+  },
+  "securityDefinitions": {
+    "petstore_auth": {
+      "type": "oauth2",
+      "authorizationUrl": "http://petstore.swagger.io/api/oauth/dialog",
+      "flow": "implicit",
+      "scopes": {
+        "write:pets": "modify pets in your account",
+        "read:pets": "read your pets"
+      }
+    },
+    "api_key": {
+      "type": "apiKey",
+      "name": "api_key",
+      "in": "header"
+    }
+  },
+  "definitions": {
+    "links": {
+      "title": "HAL Links",
+      "description": "Object of links with the rels as the keys",
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/link"
+      }
+    },
+    "link": {
+      "type": "object",
+      "description": "A Link Object represents a hyperlink from the containing resource to a URI.\n",
+      "externalDocs": {
+        "url": "https://tools.ietf.org/html/draft-kelly-json-hal-06#section-5"
+      },
+      "properties": {
+        "href": {
+          "type": "string",
+          "format": "uri",
+          "description": "The \"href\" property is REQUIRED.\n\nIts value is either a URI https://tools.ietf.org/html/rfc3986 or a URI Template https://tools.ietf.org/html/rfc6570.\n\nIf the value is a URI Template then the Link Object SHOULD have a\n\"templated\" attribute whose value is true.\n"
+        },
+        "templated": {
+          "type": "boolean",
+          "default": false,
+          "description": "The \"templated\" property is OPTIONAL.\n\nIts value is boolean and SHOULD be true when the Link Object's \"href\"\nproperty is a URI Template.\n\nIts value SHOULD be considered false if it is undefined or any other\nvalue than true.\n"
+        },
+        "type": {
+          "type": "string",
+          "description": "The \"type\" property is OPTIONAL.\n\nIts value is a string used as a hint to indicate the media type\nexpected when dereferencing the target resource.\n"
+        },
+        "deprecation": {
+          "type": "string",
+          "format": "uri",
+          "description": "The \"deprecation\" property is OPTIONAL.\n\nIts presence indicates that the link is to be deprecated (i.e.\nremoved) at a future date.  Its value is a URL that SHOULD provide\nfurther information about the deprecation.\n\nA client SHOULD provide some notification (for example, by logging a\nwarning message) whenever it traverses over a link that has this\nproperty.  The notification SHOULD include the deprecation property's\nvalue so that a client maintainer can easily find information about\nthe deprecation.\n"
+        },
+        "name": {
+          "type": "string",
+          "description": "The \"name\" property is OPTIONAL.\n\nIts value MAY be used as a secondary key for selecting Link Objects\nwhich share the same relation type.\n"
+        },
+        "profile": {
+          "type": "string",
+          "format": "uri",
+          "description": "The \"profile\" property is OPTIONAL.\n\nIts value is a string which is a URI that hints about the profile (as\ndefined by https://tools.ietf.org/html/draft-wilde-profile-link-04) of the target resource.\n"
+        },
+        "title": {
+          "type": "string",
+          "description": "The \"title\" property is OPTIONAL.\n\nIts value is a string and is intended for labelling the link with a\nhuman-readable identifier (as defined by https://tools.ietf.org/html/rfc5988).\n"
+        },
+        "hreflang": {
+          "type": "string",
+          "description": "The \"hreflang\" property is OPTIONAL.\n\nIts value is a string and is intended for indicating the language of\nthe target resource (as defined by https://tools.ietf.org/html/rfc5988).\n"
+        }
+      },
+      "required": [
+        "href"
+      ]
+    },
+    "pageLinks": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/links"
+        }
+      ],
+      "type": "object",
+      "properties": {
+        "self": {
+          "$ref": "#/definitions/link"
+        },
+        "current": {
+          "$ref": "#/definitions/link"
+        },
+        "first": {
+          "$ref": "#/definitions/link"
+        },
+        "last": {
+          "$ref": "#/definitions/link"
+        },
+        "prev": {
+          "$ref": "#/definitions/link"
+        },
+        "next": {
+          "$ref": "#/definitions/link"
+        }
+      },
+      "required": [
+        "self",
+        "current"
+      ]
+    },
+    "page": {
+      "type": "object",
+      "properties": {
+        "_links": {
+          "$ref": "#/definitions/pageLinks"
+        }
+      }
+    },
+    "pageOfRyvrs": {
+      "type": "object",
+      "properties": {
+        "count": {
+          "type": "integer"
+        },
+        "total": {
+          "type": "integer"
+        },
+        "_embedded": {
+          "$ref": "#/definitions/pageLinks"
+        },
+        "_links": {
+          "$ref": "#/definitions/pageLinks"
+        }
+      }
+    },
+    "root": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/page"
+        }
+      ]
+    }
+  },
+  "parameters": {
+    "X-Request-Id": {
+      "in": "header",
+      "name": "X-Request-Id",
+      "description": "Logging correlation ID for this request",
+      "type": "string",
+      "required": false,
+      "pattern": "^[0-9+\\/=\\-]{20,200}$"
+    },
+    "Accept": {
+      "in": "header",
+      "name": "Accept",
+      "type": "string",
+      "description": "The Accept request-header field can be used to specify certain media types which are acceptable for the response.\n\nhttps://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1\n"
+    },
+    "Cache-Control": {
+      "in": "header",
+      "name": "Cache-Control",
+      "description": "Caching Directives",
+      "type": "string",
+      "required": false
+    }
+  }
+}

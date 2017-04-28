@@ -5,19 +5,19 @@ server:
         key-store-password: secret
         key-password: secret
         key-alias: selfsigned
-    servlet-path: /system
+    servlet-path: /
 
 spring:
   application:
     name: ryvr
-  jersey:
-    application-path: /
-  jackson:
-    date-format: com.fasterxml.jackson.databind.util.ISO8601DateFormat
-    default-property-inclusion: NON_ABSENT
-    serialization:
-      WRITE_DATES_AS_TIMESTAMPS: false
-      INDENT_OUTPUT: true
+#  jersey:
+#    application-path: /
+#  jackson:
+#    date-format: com.fasterxml.jackson.databind.util.ISO8601DateFormat
+#    default-property-inclusion: NON_ABSENT
+#    serialization:
+#      WRITE_DATES_AS_TIMESTAMPS: false
+#      INDENT_OUTPUT: true
        
     
 security:
@@ -26,7 +26,7 @@ security:
     password: 'password'
     
         
-server.tomcat.access-log-enabled: false
+server.tomcat.access-log-enabled: true
       
       
 au.com.windyroad.service-gateway:

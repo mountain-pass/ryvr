@@ -1,40 +1,27 @@
 package au.com.mountainpass.inflector.springboot.controllers;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
+import javax.servlet.http.HttpServletRequest;
 
-import org.apache.http.HttpStatus;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.Ordered;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import au.com.mountainpass.ryvr.SwaggerFetcher;
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
-import io.swagger.config.FilterFactory;
-import io.swagger.core.filter.SwaggerSpecFilter;
-import io.swagger.inflector.models.RequestContext;
-import io.swagger.inflector.models.ResponseContext;
-import io.swagger.inflector.utils.VendorSpecFilter;
-import io.swagger.models.Swagger;
 
 @Component()
-public class JsonController implements RyvrContentController {
+public class JsonController {
 
-    private static final MediaType APPLICATION_YAML_TYPE = new MediaType(
-            "application", "yaml");
-
-    private static final MediaType APPLICATION_HAL_JSON_TYPE = new MediaType(
+    public static final org.springframework.http.MediaType APPLICATION_HAL_JSON_TYPE = new org.springframework.http.MediaType(
             "application", "hal+json");
-
-    @Autowired
-    private SwaggerFetcher swaggerFetcher;
 
     @Value("${spring.application.name}")
     private String applicationName;
@@ -42,71 +29,44 @@ public class JsonController implements RyvrContentController {
     @Autowired
     private RyvrsCollection ryvrsCollection;
 
-    @Override
-    public ResponseContext getApiDocs(RequestContext request, String group) {
+    public ResponseEntity<?> getApiDocs(HttpServletRequest req, String group) {
+        ClassPathResource index = new ClassPathResource("static/swagger.json");
 
-        Swagger swagger = swaggerFetcher.getSwagger();
-        SwaggerSpecFilter filter = FilterFactory.getFilter();
-        if (filter != null) {
-            Map<String, String> cookies = new HashMap<String, String>();
-            MultivaluedMap<String, String> headers = request.getHeaders();
-
-            swagger = new VendorSpecFilter().filter(swagger, filter, null,
-                    cookies, headers);
+        StringWriter writer = new StringWriter();
+        try {
+            IOUtils.copy(index.getInputStream(), writer, "UTF-8");
+            return ResponseEntity.ok()
+                    .contentType(
+                            org.springframework.http.MediaType.APPLICATION_JSON)
+                    .body(writer.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
-        ResponseContext rval = new ResponseContext();
-        rval.setStatus(HttpStatus.SC_OK);
-        rval.setContentType(javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE);
-        rval.setEntity(swagger);
-        return rval;
     }
 
-    @Override
-    public boolean isCompatible(MediaType type) {
-        return APPLICATION_HAL_JSON_TYPE.isCompatible(type)
-                || MediaType.APPLICATION_JSON_TYPE.isCompatible(type)
-                || APPLICATION_YAML_TYPE.isCompatible(type);
+    public ResponseEntity<?> getRyvrsCollection(HttpServletRequest req) {
+        return ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE)
+                .body(ryvrsCollection);
     }
 
-    @Override
-    public int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE;
-    }
-
-    @Override
-    public ResponseContext getRyvrsCollection(RequestContext request, Long page,
-            String xRequestId, String accept, String cacheControl) {
-        ResponseContext rval = new ResponseContext();
-        rval.setStatus(HttpStatus.SC_OK);
-        rval.setContentType(APPLICATION_HAL_JSON_TYPE);
-        rval.setEntity(ryvrsCollection);
-        return rval;
-    }
-
-    @Override
-    public ResponseContext getRoot(RequestContext request) {
+    public ResponseEntity<?> getRoot(HttpServletRequest req) {
         Root root = new Root(applicationName);
-        ResponseContext rval = new ResponseContext();
-        rval.setStatus(HttpStatus.SC_OK);
-        rval.setContentType(APPLICATION_HAL_JSON_TYPE);
-        rval.setEntity(root);
-        return rval;
+        return ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE)
+                .body(root);
     }
 
-    @Override
-    public ResponseContext getRyvr(RequestContext request, String ryvrName,
-            Long page, String xRequestId, String accept, String cacheControl)
-            throws URISyntaxException {
+    public ResponseEntity<?> getRyvr(HttpServletRequest req, String ryvrName,
+            Long page) throws URISyntaxException {
 
         Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
+        if (ryvr == null) {
+            return ResponseEntity.notFound().build();
+        }
         ryvr.refreshPage(page);
 
-        ResponseContext rval = new ResponseContext();
-        rval.setStatus(HttpStatus.SC_OK);
-        rval.setContentType(APPLICATION_HAL_JSON_TYPE);
-        rval.setEntity(ryvr);
-        return rval;
+        return ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE)
+                .body(ryvr);
     }
 
 }

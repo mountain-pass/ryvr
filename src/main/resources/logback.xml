@@ -1,14 +1,14 @@
-<configuration debug="false">
+<configuration debug="true">
 
 	<include resource="org/springframework/boot/logging/logback/base.xml" />
 
 	<appender name="METRICS"
 		class="io.prometheus.client.logback.InstrumentedAppender" />
 
-	<logger name="org.apache.http.wire" level="TRACE" />
+	<logger name="org.apache.http.wire" level="OFF" />
 
 	<root level="INFO">
 		<appender-ref ref="METRICS" />
 	</root>
-	-->
+
 </configuration>

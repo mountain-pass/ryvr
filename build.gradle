@@ -76,10 +76,14 @@ configurations {
 dependencies {
     compile('io.swagger:swagger-inflector:1.0.10')
     compile('com.github.javafaker:javafaker:0.11') { exclude group: 'com.github.bmoliveira' }
+//    compile('commons-lang:commons-lang:2.6')
+//    compile('commons-io:commons-io:2.5')
+//    compile('org.apache.commons:commons-lang3:3.4')
     compile('com.fasterxml.jackson.core:jackson-annotations')
     compile('com.fasterxml.jackson.core:jackson-databind')
     compile('com.fasterxml.jackson.datatype:jackson-datatype-jdk8')
     compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+    
     compile('org.springframework.boot:spring-boot-starter-actuator')
     compile('org.springframework.boot:spring-boot-starter-jersey')
     compile('org.springframework.boot:spring-boot-starter-web')
@@ -110,6 +114,7 @@ dependencies {
     testCompile group: 'info.cukes', name: 'cucumber-java', version:'1.2.5'
     testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'
     testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
+    //testCompile('io.swagger:swagger-parser:1.0.22');
     testCompile ('org.seleniumhq.selenium:selenium-java:3.0.1') { exclude(module: 'commons-logging') }
     testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.0.1'
     testCompile 'com.saucelabs:sauce_junit:2.1.20'

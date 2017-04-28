@@ -3,7 +3,6 @@ package au.com.mountainpass.ryvr.config;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.util.Set;
 
 import org.apache.catalina.startup.Tomcat;
 import org.apache.http.client.config.RequestConfig;
@@ -18,7 +17,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.nio.conn.NHttpClientConnectionManager;
-import org.glassfish.jersey.server.model.Resource;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +44,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import au.com.mountainpass.TestKeyStoreManager;
 import au.com.mountainpass.WebDriverFactory;
 import au.com.mountainpass.inflector.springboot.InflectorApplication;
-import au.com.mountainpass.inflector.springboot.config.InflectorConfig;
 import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
 import au.com.mountainpass.ryvr.testclient.JavaRyvrClient;
 import au.com.mountainpass.ryvr.testclient.RestRyvrClient;
@@ -55,9 +52,6 @@ import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 @Configuration
 public class TestConfiguration implements
         ApplicationListener<EmbeddedServletContainerInitializedEvent> {
-
-    @Autowired
-    private InflectorConfig config;
 
     @Autowired
     private InflectorApplication infelctorApplication;
@@ -250,18 +244,6 @@ public class TestConfiguration implements
 
     public void setPort(final int port) {
         this.port = port;
-    }
-
-    @Bean
-    public Object swaggerJsonHandler() {
-        final Set<Resource> resources = config.getResources();
-        for (final Resource r : resources) {
-            if ("/swagger.json/".equals(r.getPath())) {
-                final Set<Object> instances = r.getHandlerInstances();
-                return instances;
-            }
-        }
-        return null;
     }
 
     @Bean

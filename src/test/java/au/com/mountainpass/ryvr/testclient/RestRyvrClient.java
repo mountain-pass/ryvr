@@ -82,7 +82,8 @@ public class RestRyvrClient implements RyvrTestClient {
         try {
             final HttpGet httpget = new HttpGet(link.getHref());
             if (link.getType().isEmpty()) {
-                httpget.addHeader("Accept", "application/hal+json");
+                httpget.addHeader("Accept",
+                        "application/hal+json, application/json");
             } else {
                 httpget.addHeader("Accept", link.getType());
             }
