@@ -17,7 +17,8 @@ import au.com.mountainpass.ryvr.model.Ryvr;
 
 public class JdbcRyvr extends Ryvr {
 
-    static final long PAGE_SIZE = 10;
+    static final long PAGE_SIZE = 10; // as of 2017/05/02, optimal page size is
+                                      // 2048;
     private JdbcTemplate jt;
     private SqlRowSet rowSet;
     private String[] columnNames;
