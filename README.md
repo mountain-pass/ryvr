@@ -73,7 +73,7 @@ profile. It can either by run as a JUnit test from within your IDE or run using 
 `./gradlew uiTest` will record test results in `build/test-results-ui`
 
 
-## TODO
+## Road Map
 
  - [ ] Add tests using MySQL instead of H2
  - [ ] Add logic to calculate optimal page size
