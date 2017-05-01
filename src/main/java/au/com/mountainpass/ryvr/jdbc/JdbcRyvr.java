@@ -8,60 +8,160 @@ import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRawValue;
+
 import au.com.mountainpass.ryvr.model.Link;
 import au.com.mountainpass.ryvr.model.Ryvr;
 
 public class JdbcRyvr extends Ryvr {
 
-    private static final int PAGE_SIZE = 10;
-    private String table;
+    static final long PAGE_SIZE = 10;
     private JdbcTemplate jt;
-    private String orderedBy;
     private SqlRowSet rowSet;
     private String[] columnNames;
+    private String countQuery;
+    private String rowsQuery;
 
     public JdbcRyvr(String title, JdbcTemplate jt, String table,
             String orderedBy) {
         super(title);
         this.jt = jt;
-        this.table = table;
-        this.orderedBy = orderedBy;
+        countQuery = "select count(*) from \"" + table + "\"";
+        rowsQuery = "select * from \"" + table + "\" ORDER BY \"" + orderedBy
+                + "\" ASC";
         refresh();
     }
 
     @Override
     public void refresh() {
-        refreshPage(null);
+        refreshPage(-1l);
+    }
+
+    @JsonRawValue
+    @JsonProperty("_embedded")
+    public String getRawEmbedded() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("{ \"item\": [");
+        for (int i = 0; i < PAGE_SIZE; ++i) {
+            builder.append("{");
+            for (int j = 0; j < columnNames.length; ++j) {
+                builder.append("\"");
+                builder.append(columnNames[j]);
+                builder.append("\": ");
+                Object value = rowSet.getObject(j + 1);
+                if (value instanceof String) {
+                    builder.append("\"");
+                    builder.append(value);
+                    builder.append("\"");
+                } else {
+                    builder.append(value);
+                }
+                if (j + 1 < columnNames.length) {
+                    builder.append(",");
+                }
+            }
+            builder.append("}");
+            if (!rowSet.next()) {
+                break;
+            }
+            if (i + 1 < PAGE_SIZE) {
+                builder.append(",");
+            }
+        }
+        builder.append("]}");
+        return builder.toString();
+    }
+
+    @JsonProperty("_links")
+    @JsonRawValue
+    public String getRawLinks() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("{");
+
+        builder.append("\"self\": { \"href\": \"/ryvrs/");
+        builder.append(getTitle());
+        builder.append("?page=");
+        builder.append(page);
+        builder.append("\"},");
+
+        builder.append("\"first\": { \"href\": \"/ryvrs/");
+        builder.append(getTitle());
+        builder.append("?page=");
+        builder.append(1);
+        builder.append("\"},");
+
+        if (page > 1) {
+            builder.append("\"prev\": { \"href\": \"/ryvrs/");
+            builder.append(getTitle());
+            builder.append("?page=");
+            builder.append(page - 1l);
+            builder.append("\"},");
+        }
+        if (page < pages) {
+            builder.append("\"next\": { \"href\": \"/ryvrs/");
+            builder.append(getTitle());
+            builder.append("?page=");
+            builder.append(page + 1l);
+            builder.append("\"},");
+        } else {
+            builder.append("\"last\": { \"href\": \"/ryvrs/");
+            builder.append(getTitle());
+            builder.append("?page=");
+            builder.append(pages);
+            builder.append("\"},");
+        }
+        builder.append("\"current\": { \"href\": \"/ryvrs/");
+        builder.append(getTitle());
+        builder.append("\"}}");
+        return builder.toString();
     }
 
     @Override
-    public void refreshPage(Long requestedPage) {
-        if (requestedPage != null && requestedPage < 0) {
-            throw new IndexOutOfBoundsException();
+    public void refreshPage(long requestedPage) {
+        if (pages < 0l || requestedPage < 0l || requestedPage >= pages) {
+            long count = jt.queryForObject(countQuery, Long.class);
+            pages = ((count - 1l) / PAGE_SIZE) + 1l;
         }
-        if (pages == null || requestedPage == null || requestedPage >= pages) {
-            final String countQuery = "select count(*) from \"" + table + "\"";
-            Long count = new Long(
-                    jt.queryForObject(countQuery, Integer.class).longValue());
-            pages = ((count - 1) / PAGE_SIZE) + 1;
-        }
-        if (requestedPage != null && requestedPage > pages) {
+        if (requestedPage > pages) {
             throw new IndexOutOfBoundsException();
         }
 
-        // hmmm... what happens when there are more rows than MAX_INT?
-        page = requestedPage == null ? pages : requestedPage;
+        page = requestedPage < 0l ? pages : requestedPage;
 
         if (rowSet == null || page == pages) {
-            jt.setFetchSize(PAGE_SIZE);
-            String rowsQuery = "select * from \"" + table + "\" ORDER BY \""
-                    + orderedBy + "\" ASC";
+            jt.setFetchSize((int) PAGE_SIZE);
             rowSet = jt.queryForRowSet(rowsQuery);
             columnNames = rowSet.getMetaData().getColumnNames();
         }
-        rowSet.absolute((int) ((page - 1) * PAGE_SIZE + 1));
+        // hmmm... what happens when there are more rows than MAX_INT?
+        rowSet.absolute((int) ((page - 1l) * PAGE_SIZE + 1l));
 
-        rows.clear();
+        // rows.clear();
+        // for (int i = 0; i < PAGE_SIZE; ++i) {
+        // Map<String, Object> row = new HashMap<>();
+        // for (int j = columnNames.length; j > 0; --j) {
+        // row.put(columnNames[j - 1], rowSet.getObject(j));
+        // }
+        // List<Map<String, Object>> itemRows = rows.get("item");
+        // if (itemRows == null) {
+        // itemRows = new ArrayList<>(PAGE_SIZE);
+        // }
+        // itemRows.add(row);
+        // rows.put("item", itemRows);
+        // if (!rowSet.next()) {
+        // break;
+        // }
+        // }
+
+    }
+
+    @Override
+    @JsonIgnore
+    public Map<String, List<Map<String, Object>>> getEmbedded() {
+        Map<String, List<Map<String, Object>>> rows = new HashMap<>();
+        rowSet.absolute((int) ((page - 1l) * PAGE_SIZE + 1l));
         for (int i = 0; i < PAGE_SIZE; ++i) {
             Map<String, Object> row = new HashMap<>();
             for (int j = columnNames.length; j > 0; --j) {
@@ -69,7 +169,7 @@ public class JdbcRyvr extends Ryvr {
             }
             List<Map<String, Object>> itemRows = rows.get("item");
             if (itemRows == null) {
-                itemRows = new ArrayList<>(PAGE_SIZE);
+                itemRows = new ArrayList<Map<String, Object>>((int) PAGE_SIZE);
             }
             itemRows.add(row);
             rows.put("item", itemRows);
@@ -77,9 +177,10 @@ public class JdbcRyvr extends Ryvr {
                 break;
             }
         }
-
+        return rows;
     }
 
+    @JsonIgnore
     @Override
     public Map<String, Link> getLinks() {
         Map<String, Link> links = new HashMap<>();
@@ -98,6 +199,16 @@ public class JdbcRyvr extends Ryvr {
                     new Link("/ryvrs/" + getTitle() + "?page=" + (pages)));
         }
         return links;
+    }
+
+    @JsonIgnore
+    public SqlRowSet getRowSet() {
+        return rowSet;
+    }
+
+    @JsonIgnore
+    public String[] getColumnNames() {
+        return this.columnNames;
     }
 
 }

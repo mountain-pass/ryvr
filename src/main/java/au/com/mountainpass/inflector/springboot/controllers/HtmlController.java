@@ -31,13 +31,13 @@ import au.com.mountainpass.ryvr.model.RyvrsCollection;
 public class HtmlController {
 
     @Autowired
-    DefaultMustacheFactory mustacheFactory;
+    private DefaultMustacheFactory mustacheFactory;
 
     @Autowired
-    JsonController jsonController;
+    private JsonController jsonController;
 
     @Autowired
-    ObjectMapper om;
+    private ObjectMapper om;
 
     public ResponseEntity<?> getApiDocs(HttpServletRequest req, String group) {
         return ResponseEntity.status(HttpStatus.SEE_OTHER)

@@ -29,14 +29,17 @@ public class RyvrController {
             @PathVariable String name,
             @RequestParam(required = false) Long page)
             throws URISyntaxException {
-        return jsonController.getRyvr(req, name, page);
+        return jsonController.getRyvr(req, name,
+                page == null ? -1l : page.longValue());
     }
 
     @RequestMapping(method = RequestMethod.GET, produces = {
             MediaType.TEXT_HTML_VALUE })
     public ResponseEntity<?> getHtml(final HttpServletRequest req,
-            @PathVariable String name, @RequestParam Long page)
+            @PathVariable String name,
+            @RequestParam(required = false) Long page)
             throws URISyntaxException {
-        return htmlController.getRyvr(req, name, page);
+        return htmlController.getRyvr(req, name,
+                page == null ? -1l : page.longValue());
     }
 }

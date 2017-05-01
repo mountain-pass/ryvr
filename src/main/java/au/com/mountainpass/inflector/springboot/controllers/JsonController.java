@@ -57,16 +57,14 @@ public class JsonController {
     }
 
     public ResponseEntity<?> getRyvr(HttpServletRequest req, String ryvrName,
-            Long page) throws URISyntaxException {
+            long page) throws URISyntaxException {
 
         Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
         if (ryvr == null) {
             return ResponseEntity.notFound().build();
         }
         ryvr.refreshPage(page);
-
         return ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE)
                 .body(ryvr);
     }
-
 }

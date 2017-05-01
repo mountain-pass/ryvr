@@ -12,8 +12,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Ryvr {
 
     private String title;
-    protected Long page;
-    protected Long pages;
+    protected long page = -1l;
+    protected long pages = -1l;
     protected Map<String, List<Map<String, Object>>> rows = new HashMap<>();
     protected Map<String, Link> links = new HashMap<>();
 
@@ -28,7 +28,7 @@ public class Ryvr {
         return title;
     }
 
-    public void refreshPage(Long page) {
+    public void refreshPage(long page) {
         throw new NotImplementedException();
     }
 
@@ -51,7 +51,7 @@ public class Ryvr {
     }
 
     public Long getPage() {
-        if (page == null) {
+        if (page < 0l) {
             return getPages();
         }
         return page;
@@ -71,7 +71,7 @@ public class Ryvr {
 
     @JsonIgnore
     public Long getPages() {
-        if (pages == null) {
+        if (pages < 0l) {
             refresh();
         }
         return pages;
