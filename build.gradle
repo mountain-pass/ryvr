@@ -74,26 +74,15 @@ configurations {
 
 
 dependencies {
-    compile('io.swagger:swagger-inflector:1.0.10')
-    compile('com.github.javafaker:javafaker:0.11') { exclude group: 'com.github.bmoliveira' }
-//    compile('commons-lang:commons-lang:2.6')
-//    compile('commons-io:commons-io:2.5')
-//    compile('org.apache.commons:commons-lang3:3.4')
-    compile('com.fasterxml.jackson.core:jackson-annotations')
-    compile('com.fasterxml.jackson.core:jackson-databind')
-    compile('com.fasterxml.jackson.datatype:jackson-datatype-jdk8')
-    compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+    compile('commons-lang:commons-lang:2.6')
+    compile('commons-io:commons-io:2.5')
     
     compile('org.springframework.boot:spring-boot-starter-actuator')
-    compile('org.springframework.boot:spring-boot-starter-jersey')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-jdbc')
-    compile('org.springframework.boot:spring-boot-starter-data-rest')
     compile('com.github.spullara.mustache.java:compiler:0.9.2')
 
-    // Devtools can't be used, because swagger inflector uses the
-    // wrong class loader
-    //compile("org.springframework.boot:spring-boot-devtools")
+    compile("org.springframework.boot:spring-boot-devtools")
 
 
     compile 'de.otto.edison:edison-hal:1.0.0.RC5'
@@ -103,30 +92,29 @@ dependencies {
     compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.1'
     compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.1'
 
-    compile 'org.springframework.data:spring-data-commons'
     compile('org.apache.httpcomponents:httpasyncclient')
 
     compile('org.webjars:bootstrap:3.3.7-1')
     compile('org.webjars:jquery:3.1.1-1')
     compile('org.webjars.bower:angularjs:1.6.0')
 
-    testCompile group: 'info.cukes', name: 'cucumber-java', version:'1.2.5'
+    testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'
     testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
-    //testCompile('io.swagger:swagger-parser:1.0.22');
+
     testCompile ('org.seleniumhq.selenium:selenium-java:3.0.1') { exclude(module: 'commons-logging') }
     testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.0.1'
     testCompile 'com.saucelabs:sauce_junit:2.1.20'
     testCompile 'com.saucelabs:ci-sauce:1.123'
 
-    testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile 'org.bouncycastle:bcpkix-jdk15on:1.53'
+    testCompile('io.swagger:swagger-parser:1.0.22')
     
     testCompile group: 'io.prometheus', name: 'simpleclient', version: '0.0.21'
-    testCompile group: 'io.prometheus', name: 'simpleclient_hotspot', version: '0.0.21'
-    testCompile group: 'io.prometheus', name: 'simpleclient_servlet', version: '0.0.21'
-    testCompile group: 'io.prometheus', name: 'simpleclient_pushgateway', version: '0.0.21'
-    testCompile group: 'io.prometheus', name: 'simpleclient_logback', version: '0.0.21'
+//    testCompile group: 'io.prometheus', name: 'simpleclient_hotspot', version: '0.0.21'
+//    testCompile group: 'io.prometheus', name: 'simpleclient_servlet', version: '0.0.21'
+//    testCompile group: 'io.prometheus', name: 'simpleclient_pushgateway', version: '0.0.21'
+//    testCompile group: 'io.prometheus', name: 'simpleclient_logback', version: '0.0.21'
 
     
     runtime('com.h2database:h2')
