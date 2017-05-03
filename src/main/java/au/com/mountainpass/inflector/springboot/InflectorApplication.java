@@ -48,25 +48,15 @@ import org.springframework.boot.actuate.autoconfigure.EndpointAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.EndpointMBeanExportAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.EndpointWebMvcAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.EndpointWebMvcManagementContextConfiguration;
-import org.springframework.boot.actuate.autoconfigure.InfoContributorAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.ManagementServerPropertiesAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.MetricExportAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.MetricFilterAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.MetricRepositoryAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.PublicMetricsAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.TraceRepositoryAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.TraceWebFilterAutoConfiguration;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.autoconfigure.dao.PersistenceExceptionTranslationAutoConfiguration;
-import org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProvidersConfiguration;
-import org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration;
 import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
-import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.DispatcherServletAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.EmbeddedServletContainerAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.ErrorMvcAutoConfiguration;
@@ -103,21 +93,21 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
         EndpointWebMvcManagementContextConfiguration.class,
         ErrorMvcAutoConfiguration.class, HttpEncodingAutoConfiguration.class,
         HttpMessageConvertersAutoConfiguration.class,
-        InfoContributorAutoConfiguration.class, JacksonAutoConfiguration.class,
-        JdbcTemplateAutoConfiguration.class, JmxAutoConfiguration.class,
+        // InfoContributorAutoConfiguration.class,
+        JacksonAutoConfiguration.class, JdbcTemplateAutoConfiguration.class, // JmxAutoConfiguration.class,
         ManagementServerPropertiesAutoConfiguration.class,
-        MetricExportAutoConfiguration.class,
-        MetricFilterAutoConfiguration.class,
-        MetricRepositoryAutoConfiguration.class,
+        // MetricExportAutoConfiguration.class,
+        // MetricFilterAutoConfiguration.class,
+        // MetricRepositoryAutoConfiguration.class,
         MultipartAutoConfiguration.class,
         PersistenceExceptionTranslationAutoConfiguration.class,
-        ProjectInfoAutoConfiguration.class,
+        // ProjectInfoAutoConfiguration.class,
         PropertyPlaceholderAutoConfiguration.class,
-        PublicMetricsAutoConfiguration.class,
+        // PublicMetricsAutoConfiguration.class,
         ServerPropertiesAutoConfiguration.class,
-        TraceRepositoryAutoConfiguration.class,
-        TraceWebFilterAutoConfiguration.class,
-        TransactionAutoConfiguration.class, ValidationAutoConfiguration.class,
+        // TraceRepositoryAutoConfiguration.class,
+        // TraceWebFilterAutoConfiguration.class,
+        TransactionAutoConfiguration.class, // ValidationAutoConfiguration.class,
         WebClientAutoConfiguration.class, WebMvcAutoConfiguration.class })
 @Configuration
 @ComponentScan(value = "au.com.mountainpass")
