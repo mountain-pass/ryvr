@@ -36,23 +36,26 @@ public class TestKeyStoreManager {
             String keyPassword, String keyAlias, String domainName,
             String trustStoreFile, String trustStorePassword,
             String trustStoreType) throws Exception {
-        KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+        File keyStoreFile = new File(keyStore);
+        if (!keyStoreFile.exists()) {
+            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
 
-        ks.load(null, keyStorePassword.toCharArray());
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA",
-                "BC");
-        keyPairGenerator.initialize(2048, new SecureRandom());
-        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            ks.load(null, keyStorePassword.toCharArray());
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator
+                    .getInstance("RSA", "BC");
+            keyPairGenerator.initialize(2048, new SecureRandom());
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-        ks.setKeyEntry(keyAlias, keyPair.getPrivate(),
-                keyPassword.toCharArray(),
-                new Certificate[] { createSelfSignedCertificate(keyPair,
-                        domainName, keyAlias, trustStoreFile,
-                        trustStorePassword, trustStoreType) });
-        // Store away the keystore.
-        FileOutputStream fos = new FileOutputStream(keyStore);
-        ks.store(fos, keyStorePassword.toCharArray());
-        fos.close();
+            ks.setKeyEntry(keyAlias, keyPair.getPrivate(),
+                    keyPassword.toCharArray(),
+                    new Certificate[] { createSelfSignedCertificate(keyPair,
+                            domainName, keyAlias, trustStoreFile,
+                            trustStorePassword, trustStoreType) });
+            // Store away the keystore.
+            FileOutputStream fos = new FileOutputStream(keyStoreFile);
+            ks.store(fos, keyStorePassword.toCharArray());
+            fos.close();
+        }
     }
 
     static {

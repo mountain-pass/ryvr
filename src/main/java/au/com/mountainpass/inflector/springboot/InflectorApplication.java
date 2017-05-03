@@ -43,11 +43,13 @@ import org.apache.http.nio.conn.SchemeIOSessionStrategy;
 import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.autoconfigure.HealthIndicatorAutoConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -58,10 +60,11 @@ import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
-@SpringBootApplication
 @EnableAsync
-@EnableAutoConfiguration
-@ComponentScan("au.com.mountainpass")
+@EnableAutoConfiguration(exclude = { WebSocketAutoConfiguration.class,
+        HealthIndicatorAutoConfiguration.class })
+@Configuration
+@ComponentScan(value = "au.com.mountainpass")
 public class InflectorApplication {
 
     public static void main(final String[] args) {

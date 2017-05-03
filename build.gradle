@@ -78,8 +78,9 @@ dependencies {
     compile('commons-io:commons-io:2.5')
     
     compile('org.springframework.boot:spring-boot-starter-actuator')
-    compile('org.springframework.boot:spring-boot-starter-web')
+    compile('org.springframework.boot:spring-boot-starter-web') //{ exclude(module: 'spring-boot-starter-tomcat') } compile('org.springframework.boot:spring-boot-starter-undertow')
     compile('org.springframework.boot:spring-boot-starter-jdbc')
+    
     compile('com.github.spullara.mustache.java:compiler:0.9.2')
 
     compile("org.springframework.boot:spring-boot-devtools")
