@@ -373,6 +373,12 @@ task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
     ]
 }
 
+jar {
+    manifest {
+        attributes("Implementation-Title": "Ryvr",
+                   "Implementation-Version": version)
+    }
+}
 
 gradle.taskGraph.afterTask { Task task, TaskState state ->
     if (state.failure) {
