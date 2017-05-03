@@ -76,6 +76,8 @@ profile. It can either by run as a JUnit test from within your IDE or run using 
 ## Road Map
 
  - [ ] Add tests using MySQL instead of H2
+ - [ ] Add Circuit Breaker
+ - [ ] Modify Perf test to use latency per event rather than latency per page
  - [ ] Add logic to calculate optimal page size
  - [ ] Switch to async io
  - [ ] Change rest of ryvr response to use StringBuilder

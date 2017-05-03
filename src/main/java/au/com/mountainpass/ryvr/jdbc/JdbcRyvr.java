@@ -17,8 +17,8 @@ import au.com.mountainpass.ryvr.model.Ryvr;
 
 public class JdbcRyvr extends Ryvr {
 
-    static final long PAGE_SIZE = 10; // as of 2017/05/02, optimal page size is
-                                      // 2048;
+    private long pageSize = 10; // as of 2017/05/02, optimal page size is
+    // 2048;
     private JdbcTemplate jt;
     private SqlRowSet rowSet;
     private String[] columnNames;
@@ -26,9 +26,10 @@ public class JdbcRyvr extends Ryvr {
     private String rowsQuery;
 
     public JdbcRyvr(String title, JdbcTemplate jt, String table,
-            String orderedBy) {
+            String orderedBy, long pageSize) {
         super(title);
         this.jt = jt;
+        this.pageSize = pageSize;
         countQuery = "select count(*) from \"" + table + "\"";
         rowsQuery = "select * from \"" + table + "\" ORDER BY \"" + orderedBy
                 + "\" ASC";
@@ -45,7 +46,7 @@ public class JdbcRyvr extends Ryvr {
     public String getRawEmbedded() {
         StringBuilder builder = new StringBuilder();
         builder.append("{ \"item\": [");
-        for (int i = 0; i < PAGE_SIZE; ++i) {
+        for (int i = 0; i < pageSize; ++i) {
             builder.append("{");
             for (int j = 0; j < columnNames.length; ++j) {
                 builder.append("\"");
@@ -67,7 +68,7 @@ public class JdbcRyvr extends Ryvr {
             if (!rowSet.next()) {
                 break;
             }
-            if (i + 1 < PAGE_SIZE) {
+            if (i + 1 < pageSize) {
                 builder.append(",");
             }
         }
@@ -123,7 +124,7 @@ public class JdbcRyvr extends Ryvr {
     public void refreshPage(long requestedPage) {
         if (pages < 0l || requestedPage < 0l || requestedPage >= pages) {
             long count = jt.queryForObject(countQuery, Long.class);
-            pages = ((count - 1l) / PAGE_SIZE) + 1l;
+            pages = ((count - 1l) / pageSize) + 1l;
         }
         if (requestedPage > pages) {
             throw new IndexOutOfBoundsException();
@@ -132,12 +133,12 @@ public class JdbcRyvr extends Ryvr {
         page = requestedPage < 0l ? pages : requestedPage;
 
         if (rowSet == null || page == pages) {
-            jt.setFetchSize((int) PAGE_SIZE);
+            jt.setFetchSize((int) pageSize);
             rowSet = jt.queryForRowSet(rowsQuery);
             columnNames = rowSet.getMetaData().getColumnNames();
         }
         // hmmm... what happens when there are more rows than MAX_INT?
-        rowSet.absolute((int) ((page - 1l) * PAGE_SIZE + 1l));
+        rowSet.absolute((int) ((page - 1l) * pageSize + 1l));
 
         // rows.clear();
         // for (int i = 0; i < PAGE_SIZE; ++i) {
@@ -162,15 +163,15 @@ public class JdbcRyvr extends Ryvr {
     @JsonIgnore
     public Map<String, List<Map<String, Object>>> getEmbedded() {
         Map<String, List<Map<String, Object>>> rows = new HashMap<>();
-        rowSet.absolute((int) ((page - 1l) * PAGE_SIZE + 1l));
-        for (int i = 0; i < PAGE_SIZE; ++i) {
+        rowSet.absolute((int) ((page - 1l) * pageSize + 1l));
+        for (int i = 0; i < pageSize; ++i) {
             Map<String, Object> row = new HashMap<>();
             for (int j = columnNames.length; j > 0; --j) {
                 row.put(columnNames[j - 1], rowSet.getObject(j));
             }
             List<Map<String, Object>> itemRows = rows.get("item");
             if (itemRows == null) {
-                itemRows = new ArrayList<Map<String, Object>>((int) PAGE_SIZE);
+                itemRows = new ArrayList<Map<String, Object>>((int) pageSize);
             }
             itemRows.add(row);
             rows.put("item", itemRows);

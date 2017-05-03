@@ -20,7 +20,12 @@ Background:
       | 10  | 7786543 | ATM Withdrawal | -110.00  | 
       | 11  | 7786543 | ATM Withdrawal | -120.00  | 
       | 12  | 7786543 | ATM Withdrawal | -130.00  | 
-    And a "transactions" ryvr for "TEST_DB" for table "TRANSACTIONS" ordered by "ID"
+    And a database ryvr with the following configuration
+      | name        | transactions  |
+      | database    | TEST_DB       |
+      | table       | TRANSACTIONS  |
+      | ordered by  | ID            |
+      | page size   | 10            |
   
 
 Scenario: Get Ryvr - Multiple Pages - Current Page

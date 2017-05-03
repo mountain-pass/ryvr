@@ -90,7 +90,6 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
     compile('org.springframework.boot:spring-boot-starter-data-rest')
     compile('com.github.spullara.mustache.java:compiler:0.9.2')
-    runtime('com.h2database:h2')
 
     // Devtools can't be used, because swagger inflector uses the
     // wrong class loader
@@ -129,9 +128,16 @@ dependencies {
     testCompile group: 'io.prometheus', name: 'simpleclient_pushgateway', version: '0.0.21'
     testCompile group: 'io.prometheus', name: 'simpleclient_logback', version: '0.0.21'
 
+    
+    runtime('com.h2database:h2')
+    runtime group: 'mysql', name: 'mysql-connector-java', version: '6.0.6'
+    
+    
+    
     codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.10'
 
 
+    
 }
 
 

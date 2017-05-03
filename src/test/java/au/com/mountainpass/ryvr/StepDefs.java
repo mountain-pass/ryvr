@@ -81,11 +81,12 @@ public class StepDefs {
         rootResponseFuture = client.getRoot();
     }
 
-    @Given("^a \"([^\"]*)\" ryvr for \"([^\"]*)\" for table \"([^\"]*)\" ordered by \"([^\"]*)\"$")
-    public void aRyvrForForTableOrderedBy(final String name,
-            final String dbName, final String table, String orderedBy)
-            throws Throwable {
-        final JdbcRyvr ryvr = new JdbcRyvr(name, jt, table, orderedBy);
+    @Given("^a database ryvr with the following configuration$")
+    public void a_database_ryvr_with_the_following_configuration(
+            Map<String, String> config) throws Throwable {
+        final JdbcRyvr ryvr = new JdbcRyvr(config.get("name"), jt,
+                config.get("table"), config.get("ordered by"),
+                Long.parseLong(config.get("page size")));
         ryvrsCollection.addRyvr(ryvr);
     }
 

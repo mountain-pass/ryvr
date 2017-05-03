@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
@@ -21,8 +22,9 @@ public class JavaRyvrResponse implements RyvrResponse {
     public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     private Ryvr ryvr;
-    static final Summary requestLatency = Summary.build().quantile(0.95, 0.01)
-            .quantile(1, 0.01).name("requests_latency_seconds")
+    static final Summary requestLatency = Summary.build().quantile(0.5, 0.01)
+            .quantile(0.95, 0.01).quantile(1, 0.01)
+            .name("requests_latency_seconds")
             .help("Request latency in seconds.").register();
 
     public JavaRyvrResponse(Ryvr ryvr) {
@@ -120,6 +122,14 @@ public class JavaRyvrResponse implements RyvrResponse {
             response = response.followLink("next");
             requestTimer.observeDuration();
         }
+        List<MetricFamilySamples> results = requestLatency.collect();
+        Stream<Sample> quantiles = results.get(0).samples.stream()
+                .filter(sample -> sample.labelNames.contains("quantile"));
+        quantiles.forEachOrdered(sample -> {
+            LOGGER.info("latency - {}th percentile: {}ms",
+                    (int) (Double.parseDouble(sample.labelValues.get(0)) * 100),
+                    sample.value * 1000);
+        });
     }
 
     @Override
@@ -131,12 +141,11 @@ public class JavaRyvrResponse implements RyvrResponse {
     public void assertLoadedWithin(int percentile, int maxMs) {
         List<MetricFamilySamples> results = requestLatency.collect();
         String stringPercentile = percentile == 95 ? "0.95" : "1.0";
-        Sample result = results.get(0).samples.stream()
-                .filter(sample -> sample.labelNames.contains("quantile")
-                        && sample.labelValues.contains(stringPercentile))
+        Stream<Sample> quantiles = results.get(0).samples.stream()
+                .filter(sample -> sample.labelNames.contains("quantile"));
+        Sample result = quantiles
+                .filter(sample -> sample.labelValues.contains(stringPercentile))
                 .findAny().get();
-        LOGGER.info("latency {}: {}ms", result.labelValues.get(0),
-                result.value * 1000.0);
         assertThat(result.value * 1000.0, lessThan(maxMs * 1.0));
     }
 

@@ -8,7 +8,12 @@ Background:
     And it has a table "TRANSACTIONS" with the following structure
       | ID  | ACCOUNT | DESCRIPTION    | AMOUNT   |
     And it has 46 events
-    And a "transactions" ryvr for "TEST_DB" for table "TRANSACTIONS" ordered by "ID"
+    And a database ryvr with the following configuration
+      | name        | transactions  |
+      | database    | TEST_DB       |
+      | table       | TRANSACTIONS  |
+      | ordered by  | ID            |
+      | page size   | 10            |
   
 Scenario: Get Ryvr - Multiple Pages - Current Page
     When the "transactions" ryvr is retrieved
