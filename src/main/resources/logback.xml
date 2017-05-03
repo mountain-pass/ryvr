@@ -3,11 +3,7 @@
 
 	<include resource="org/springframework/boot/logging/logback/base.xml" />
 
-<!-- 	<appender name="METRICS"
-		class="io.prometheus.client.logback.InstrumentedAppender" />
- -->
 	<logger name="org.apache.http.wire" level="off" />
-
 	<root level="INFO">
 		<appender-ref ref="CONSOLE" />
 	</root>

@@ -43,13 +43,44 @@ import org.apache.http.nio.conn.SchemeIOSessionStrategy;
 import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.actuate.autoconfigure.HealthIndicatorAutoConfiguration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.AuditAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.EndpointAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.EndpointMBeanExportAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.EndpointWebMvcAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.EndpointWebMvcManagementContextConfiguration;
+import org.springframework.boot.actuate.autoconfigure.InfoContributorAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.ManagementServerPropertiesAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.MetricExportAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.MetricFilterAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.MetricRepositoryAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.PublicMetricsAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.TraceRepositoryAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.TraceWebFilterAutoConfiguration;
+import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
+import org.springframework.boot.autoconfigure.dao.PersistenceExceptionTranslationAutoConfiguration;
+import org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.metadata.DataSourcePoolMetadataProvidersConfiguration;
+import org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration;
+import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
+import org.springframework.boot.autoconfigure.validation.ValidationAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.DispatcherServletAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.EmbeddedServletContainerAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.ErrorMvcAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.HttpEncodingAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.MultipartAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.ServerPropertiesAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.WebClientAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -61,8 +92,33 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 @EnableAsync
-@EnableAutoConfiguration(exclude = { WebSocketAutoConfiguration.class,
-        HealthIndicatorAutoConfiguration.class })
+@Import({ AuditAutoConfiguration.class, DataSourceAutoConfiguration.class,
+        DataSourcePoolMetadataProvidersConfiguration.class,
+        DataSourceTransactionManagerAutoConfiguration.class,
+        DispatcherServletAutoConfiguration.class,
+        EmbeddedServletContainerAutoConfiguration.class,
+        EndpointAutoConfiguration.class,
+        EndpointMBeanExportAutoConfiguration.class,
+        EndpointWebMvcAutoConfiguration.class,
+        EndpointWebMvcManagementContextConfiguration.class,
+        ErrorMvcAutoConfiguration.class, HttpEncodingAutoConfiguration.class,
+        HttpMessageConvertersAutoConfiguration.class,
+        InfoContributorAutoConfiguration.class, JacksonAutoConfiguration.class,
+        JdbcTemplateAutoConfiguration.class, JmxAutoConfiguration.class,
+        ManagementServerPropertiesAutoConfiguration.class,
+        MetricExportAutoConfiguration.class,
+        MetricFilterAutoConfiguration.class,
+        MetricRepositoryAutoConfiguration.class,
+        MultipartAutoConfiguration.class,
+        PersistenceExceptionTranslationAutoConfiguration.class,
+        ProjectInfoAutoConfiguration.class,
+        PropertyPlaceholderAutoConfiguration.class,
+        PublicMetricsAutoConfiguration.class,
+        ServerPropertiesAutoConfiguration.class,
+        TraceRepositoryAutoConfiguration.class,
+        TraceWebFilterAutoConfiguration.class,
+        TransactionAutoConfiguration.class, ValidationAutoConfiguration.class,
+        WebClientAutoConfiguration.class, WebMvcAutoConfiguration.class })
 @Configuration
 @ComponentScan(value = "au.com.mountainpass")
 public class InflectorApplication {
