@@ -180,13 +180,6 @@ task mySqlUnitTest(type: Test, group: 'verification') {
     ext.coverageDir = "${coverageOutputDir}/coverage-results-ut-mysql"
     outputs.dir file(coverageDir)
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
-//    systemProperty 'spring.datasource.url', project.getProperties().get("spring.datasource.url") ?: ""
-    if( project.getProperties().get("spring.datasource.username") ) {
-        systemProperty 'spring.datasource.username', project.getProperties().get("spring.datasource.username")
-    }
-    if( project.getProperties().get("spring.datasource.password") ) {
-        systemProperty 'spring.datasource.password', project.getProperties().get("spring.datasource.password")
-    }
     
     jacoco {
         append = false

@@ -15,8 +15,8 @@ build:
     - mkdir -p shippable/codecoverage/target/site/jacoco/html
     - ./gradlew assemble --info
     - ./gradlew unitTest -PtestOutputDir=shippable/testresults -x jacocoTestReport --info 
-    - mysql -e "CREATE USER shippable@localhost IDENTIFIED BY ''; GRANT ALL ON *.* TO shippable@localhost; FLUSH PRIVILEGES;"
-    - ./gradlew mySqlUnitTest -PtestOutputDir=shippable/testresults -x jacocoTestReport --info -Pspring.datasource.username=shippable -Pspring.datasource.password=
+    - mysql -e "CREATE USER dbuser@localhost IDENTIFIED BY 'dbpass'; GRANT ALL ON *.* TO dbuser@localhost; FLUSH PRIVILEGES;"
+    - ./gradlew mySqlUnitTest -PtestOutputDir=shippable/testresults -x jacocoTestReport --info
     - ./gradlew systemTest -PtestOutputDir=shippable/testresults -x unitTest -x jacocoTestReport --info 
     - ./gradlew uiTest -PtestOutputDir=shippable/testresults -x unitTest -x systemTest -x jacocoTestReport --info -PwithSauce=true -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY 
     - ./gradlew firefoxUiTest -PtestOutputDir=shippable/testresults -x unitTest -x systemTest -x uiTest -x jacocoTestReport --info -PwithSauce=true -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY
