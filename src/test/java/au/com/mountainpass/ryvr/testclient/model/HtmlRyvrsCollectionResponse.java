@@ -43,6 +43,7 @@ public class HtmlRyvrsCollectionResponse implements RyvrsCollectionResponse {
 
     @Override
     public RyvrResponse followRyvrLink(final String name) {
+        HtmlRyvrClient.waitTillLoaded(webDriver, 5);
         List<WebElement> items = webDriver
                 .findElements(By.cssSelector("a[rel~='item']"));
         assertThat(items, not(empty()));
