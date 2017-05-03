@@ -14,7 +14,7 @@ Background:
       | database    | TEST_DB       |
       | table       | TRANSACTIONS  |
       | ordered by  | ID            |
-      | page size   | 2048          |
+      | page size   | 8192          |
   
 
 Scenario: Get Ryvr - Multiple Pages - Current Page

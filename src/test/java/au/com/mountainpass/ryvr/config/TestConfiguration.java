@@ -33,10 +33,6 @@ import org.springframework.http.client.AsyncClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsAsyncClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -119,14 +115,6 @@ public class TestConfiguration implements
         return factory;
     }
 
-    @Bean
-    public EmbeddedDatabase db() {
-        return new EmbeddedDatabaseBuilder().setName("TEST_DB")
-                .setType(EmbeddedDatabaseType.H2).setScriptEncoding("UTF-8")
-                .ignoreFailedDrops(true).addScript("initH2.sql").build();
-
-    }
-
     public URI getBaseUri() {
         return URI.create("https://" + sslHostname + ":" + getPort());
     }
@@ -192,11 +180,6 @@ public class TestConfiguration implements
     @Profile(value = { "unitTest" })
     public RyvrTestClient javaClient() {
         return new JavaRyvrClient();
-    }
-
-    @Bean
-    public JdbcTemplate jdbcTemplate() {
-        return new JdbcTemplate(db());
     }
 
     @Bean

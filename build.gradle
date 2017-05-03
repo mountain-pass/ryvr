@@ -87,7 +87,7 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-actuator')
     compile('org.springframework.boot:spring-boot-starter-jersey')
     compile('org.springframework.boot:spring-boot-starter-web')
-    compile('org.springframework.boot:spring-boot-starter-data-jpa')
+    compile('org.springframework.boot:spring-boot-starter-jdbc')
     compile('org.springframework.boot:spring-boot-starter-data-rest')
     compile('com.github.spullara.mustache.java:compiler:0.9.2')
 
@@ -130,7 +130,7 @@ dependencies {
 
     
     runtime('com.h2database:h2')
-    runtime group: 'mysql', name: 'mysql-connector-java', version: '6.0.6'
+    runtime group: 'mysql', name: 'mysql-connector-java', version: '5.1.39'
     
     
     
@@ -165,6 +165,29 @@ task unitTest(type: Test, group: 'verification') {
     ext.coverageDir = "${coverageOutputDir}/coverage-results-ut"
     outputs.dir file(coverageDir)
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+    jacoco {
+        append = false
+        destinationFile = file("${coverageDir}/jacoco/${name}.exec")
+    }
+}
+
+task mySqlUnitTest(type: Test, group: 'verification') {
+    testClassesDir = sourceSets.test.output.classesDir
+    classpath = sourceSets.test.runtimeClasspath
+    include 'RyvrUnitTests_MySql.class'
+    ext.outputDir = "${testOutputDir}/test-results-ut-mysql"
+    outputs.dir file(outputDir)
+    ext.coverageDir = "${coverageOutputDir}/coverage-results-ut-mysql"
+    outputs.dir file(coverageDir)
+    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+//    systemProperty 'spring.datasource.url', project.getProperties().get("spring.datasource.url") ?: ""
+    if( project.getProperties().get("spring.datasource.username") ) {
+        systemProperty 'spring.datasource.username', project.getProperties().get("spring.datasource.username")
+    }
+    if( project.getProperties().get("spring.datasource.password") ) {
+        systemProperty 'spring.datasource.password', project.getProperties().get("spring.datasource.password")
+    }
+    
     jacoco {
         append = false
         destinationFile = file("${coverageDir}/jacoco/${name}.exec")

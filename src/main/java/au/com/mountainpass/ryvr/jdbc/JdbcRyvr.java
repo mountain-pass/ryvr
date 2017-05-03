@@ -1,5 +1,6 @@
 package au.com.mountainpass.ryvr.jdbc;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,21 +19,30 @@ import au.com.mountainpass.ryvr.model.Ryvr;
 public class JdbcRyvr extends Ryvr {
 
     private long pageSize = 10; // as of 2017/05/02, optimal page size is
-    // 2048;
+    // 2048 when using h2
     private JdbcTemplate jt;
     private SqlRowSet rowSet;
     private String[] columnNames;
     private String countQuery;
     private String rowsQuery;
 
-    public JdbcRyvr(String title, JdbcTemplate jt, String table,
-            String orderedBy, long pageSize) {
+    public JdbcRyvr(String title, JdbcTemplate jt, String database,
+            String table, String orderedBy, long pageSize) throws SQLException {
         super(title);
         this.jt = jt;
         this.pageSize = pageSize;
-        countQuery = "select count(*) from \"" + table + "\"";
-        rowsQuery = "select * from \"" + table + "\" ORDER BY \"" + orderedBy
-                + "\" ASC";
+        String identifierQuoteString = jt.getDataSource().getConnection()
+                .getMetaData().getIdentifierQuoteString();
+        String catalogSeparator = jt.getDataSource().getConnection()
+                .getMetaData().getCatalogSeparator();
+        countQuery = "select count(*) from " + identifierQuoteString + database
+                + identifierQuoteString + catalogSeparator
+                + identifierQuoteString + table + identifierQuoteString;
+        rowsQuery = "select * from " + identifierQuoteString + database
+                + identifierQuoteString + catalogSeparator
+                + identifierQuoteString + table + identifierQuoteString
+                + " ORDER BY " + identifierQuoteString + orderedBy
+                + identifierQuoteString + " ASC";
         refresh();
     }
 

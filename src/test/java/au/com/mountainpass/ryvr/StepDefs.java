@@ -8,7 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -16,8 +20,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -47,7 +49,7 @@ public class StepDefs {
     @Autowired
     private RyvrTestClient client;
     @Autowired
-    private EmbeddedDatabase db;
+    private DataSource db;
     @Autowired
     private JdbcTemplate jt;
     private RootResponse rootResponseFuture;
@@ -63,12 +65,33 @@ public class StepDefs {
     private String currentTable;
     private List<Map<String, String>> currentEvents;
 
+    @Autowired
+    DataSource dataSource;
+
+    public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+    private String quoteString;
+
+    @Autowired
+    Map<String, DataSource> dataSources;
+
     @Given("^a database \"([^\"]*)\"$")
     public void aDatabase(final String dbName) throws Throwable {
-        db = new EmbeddedDatabaseBuilder().setName(dbName)
-                .setType(EmbeddedDatabaseType.H2).setScriptEncoding("UTF-8")
-                .ignoreFailedDrops(true).addScript("initH2.sql").build();
-        jt = new JdbcTemplate(db);
+        quoteString = dataSource.getConnection().getMetaData()
+                .getIdentifierQuoteString();
+        String dbProductName = dataSource.getConnection().getMetaData()
+                .getDatabaseProductName();
+        LOGGER.info("dbProductName: {}", dbProductName);
+        switch (dbProductName) {
+        case "H2":
+            jt.execute("CREATE SCHEMA IF NOT EXISTS " + quoteString + dbName
+                    + quoteString + ";");
+            break;
+        case "MySQL":
+            jt.execute("CREATE DATABASE IF NOT EXISTS " + quoteString + dbName
+                    + quoteString + ";");
+            break;
+        }
+        jt.execute("USE " + quoteString + dbName + quoteString + ";");
     }
 
     @When("^a request is made for the API Docs$")
@@ -85,7 +108,8 @@ public class StepDefs {
     public void a_database_ryvr_with_the_following_configuration(
             Map<String, String> config) throws Throwable {
         final JdbcRyvr ryvr = new JdbcRyvr(config.get("name"), jt,
-                config.get("table"), config.get("ordered by"),
+                config.get("database"), config.get("table"),
+                config.get("ordered by"),
                 Long.parseLong(config.get("page size")));
         ryvrsCollection.addRyvr(ryvr);
     }
@@ -120,16 +144,18 @@ public class StepDefs {
                         ps.setString(3, row.get("DESCRIPTION"));
                         ps.setBigDecimal(4, new BigDecimal(row.get("AMOUNT")));
                     }
+
                 });
     }
 
     public void createTable(final String name) {
-        final StringBuffer statementBuffer = new StringBuffer();
+        final StringBuilder statementBuffer = new StringBuilder();
+        jt.execute("drop table if exists " + quoteString + name + quoteString);
+
         statementBuffer.append("create table ");
-        statementBuffer.append(name);
-        // | ID | ACCOUNT | DESCRIPTION | AMOUNT |
+        statementBuffer.append(quoteString + name + quoteString);
         statementBuffer.append(
-                " (ID INT, ACCOUNT VARCHAR, DESCRIPTION VARCHAR, AMOUNT Decimal(19,4), CONSTRAINT PK_ID PRIMARY KEY (ID))");
+                " (ID INT, ACCOUNT VARCHAR(255), DESCRIPTION VARCHAR(255), AMOUNT Decimal(19,4), CONSTRAINT PK_ID PRIMARY KEY (ID))");
         jt.execute(statementBuffer.toString());
     }
 
@@ -160,8 +186,8 @@ public class StepDefs {
     @After
     public void tearDown(final Scenario scenario) {
         client.after(scenario);
-        if (db != null) {
-            db.shutdown();
+        if (db != null && db instanceof EmbeddedDatabase) {
+            ((EmbeddedDatabase) db).shutdown();
         }
     }
 
