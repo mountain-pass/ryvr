@@ -4,12 +4,13 @@ server:
     key-store: build/keystore.jks
     key-store-password: secret
     key-password: secret
-    key-alias: selfsigned
+    key-alias: selfSigned
 
 
 au.com.mountainpass.ryvr:
   ssl:
     hostname: localhost
+    genCert: selfSigned
 
 javax.net.ssl.trustStore: build/truststore.jks
 javax.net.ssl.trustStorePassword: changeit

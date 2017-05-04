@@ -1,20 +1,17 @@
 package au.com.mountainpass.ryvr.config;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.apache.catalina.startup.Tomcat;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -40,25 +37,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerInitializedEvent;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainer;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.client.AsyncClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsAsyncClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import au.com.mountainpass.TestKeyStoreManager;
+import au.com.mountainpass.TrustStoreManager;
 import au.com.mountainpass.WebDriverFactory;
-import au.com.mountainpass.ryvr.Application;
 import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
 import au.com.mountainpass.ryvr.testclient.JavaRyvrClient;
 import au.com.mountainpass.ryvr.testclient.RestRyvrClient;
@@ -68,26 +60,8 @@ import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 public class TestConfiguration implements
         ApplicationListener<EmbeddedServletContainerInitializedEvent> {
 
-    @Autowired
-    private Application infelctorApplication;
-
-    @Value("${server.ssl.key-alias}")
-    private String keyAlias;
-
-    @Value("${server.ssl.key-password}")
-    private String keyPassword;
-
-    @Value("${server.ssl.key-store}")
-    private String keyStore;
-
-    @Value("${server.ssl.key-store-password}")
-    private String keyStorePassword;
-
     @Value("${server.ssl.protocol:TLS}")
     private String sslProtocol;
-
-    @Value("${javax.net.ssl.trustStore:}")
-    private String trustStore;
 
     @Value("${javax.net.ssl.trustStorePassword:changeit}")
     private String trustStorePassword;
@@ -227,37 +201,8 @@ public class TestConfiguration implements
         return new RestTemplate(httpClientFactory());
     }
 
-    @Bean
-    public TestKeyStoreManager serviceGatewayKeyStoreManager()
-            throws Exception {
-        if (getTrustStoreLocation().equals(systemDefaultTrustStoreLocation())) {
-            LOGGER.warn(
-                    "Trust Store location {} appears to be set to system default. The Self signed cert for testing will not be added and the tests will likely fail.",
-                    getTrustStoreLocation());
-            return new TestKeyStoreManager(keyStore, keyStorePassword,
-                    keyPassword, keyAlias, sslHostname, null, null, null);
-        }
-        return new TestKeyStoreManager(keyStore, keyStorePassword, keyPassword,
-                keyAlias, sslHostname, getTrustStoreLocation(),
-                getTrustStorePassword(), getTrustStoreType());
-    }
-
     public void setPort(final int port) {
         this.port = port;
-    }
-
-    @Bean
-    public TomcatEmbeddedServletContainerFactory tomcatFactory()
-            throws Exception {
-        serviceGatewayKeyStoreManager();
-        return new TomcatEmbeddedServletContainerFactory() {
-
-            @Override
-            protected TomcatEmbeddedServletContainer getTomcatEmbeddedServletContainer(
-                    final Tomcat tomcat) {
-                return super.getTomcatEmbeddedServletContainer(tomcat);
-            }
-        };
     }
 
     @Bean
@@ -274,27 +219,6 @@ public class TestConfiguration implements
             IllegalArgumentException, InvocationTargetException, IOException {
         final WebDriver webDriver = webDriverFactory.createWebDriver();
         return webDriver;
-    }
-
-    public String getTrustStoreLocation() {
-        if (StringUtils.hasLength(trustStore)) {
-            return trustStore;
-        }
-        final String locationProperty = System
-                .getProperty("javax.net.ssl.trustStore");
-        if (StringUtils.hasLength(locationProperty)) {
-            return locationProperty;
-        } else {
-            return systemDefaultTrustStoreLocation();
-        }
-    }
-
-    public String getTrustStorePassword() {
-        return trustStorePassword;
-    }
-
-    public String getTrustStoreType() {
-        return trustStoreType;
     }
 
     @Bean // (destroyMethod = "close")
@@ -317,6 +241,27 @@ public class TestConfiguration implements
         final RequestConfig config = RequestConfig.custom()
                 .setConnectTimeout(proxyReadTimeoutMs).build();
         return config;
+    }
+
+    @Autowired
+    Certificate cert;
+
+    @Value("${server.ssl.key-alias}")
+    private String keyAlias;
+
+    @Bean
+    TrustStoreManager trustStoreManager() throws KeyStoreException,
+            NoSuchAlgorithmException, CertificateException, IOException {
+        TrustStoreManager trustStoreManager = new TrustStoreManager(
+                trustStoreFile, trustStoreType, trustStorePassword);
+        if (trustStoreManager.isSystemDefaultTrustStore()) {
+            LOGGER.warn(
+                    "Trust Store location {} appears to be set to system default. The Self signed cert for testing will not be added and the tests will likely fail.",
+                    trustStoreManager.getTrustStoreLocation());
+        } else {
+            trustStoreManager.addCert(keyAlias, cert);
+        }
+        return trustStoreManager;
     }
 
     @Bean
@@ -343,7 +288,7 @@ public class TestConfiguration implements
     public SSLContext sslContext() throws Exception {
         final SSLContext sslContext = SSLContext.getInstance(sslProtocol);
         final TrustManagerFactory tmf = trustManagerFactory();
-        final KeyStore ks = trustStore();
+        final KeyStore ks = trustStoreManager().getKeyStore();
         tmf.init(ks);
         sslContext.init(null, tmf.getTrustManagers(), null);
         return sslContext;
@@ -356,34 +301,11 @@ public class TestConfiguration implements
         return sf;
     }
 
-    public String systemDefaultTrustStoreLocation() {
-        final String javaHome = System.getProperty("java.home");
-        final FileSystemResource location = new FileSystemResource(
-                javaHome + "/lib/security/jssecacerts");
-        if (location.exists()) {
-            return location.getFilename();
-        } else {
-            return javaHome + "/lib/security/cacerts";
-        }
-    }
-
     @Bean
     TrustManagerFactory trustManagerFactory() throws NoSuchAlgorithmException {
         final TrustManagerFactory tmf = TrustManagerFactory
                 .getInstance(TrustManagerFactory.getDefaultAlgorithm());
         return tmf;
-    }
-
-    @Bean
-    KeyStore trustStore()
-            throws KeyStoreException, IOException, NoSuchAlgorithmException,
-            CertificateException, FileNotFoundException {
-        final KeyStore ks = KeyStore.getInstance(trustStoreType);
-
-        final File trustFile = new File(getTrustStoreLocation());
-        ks.load(new FileInputStream(trustFile),
-                trustStorePassword.toCharArray());
-        return ks;
     }
 
 }
