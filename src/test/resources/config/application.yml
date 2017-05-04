@@ -1,16 +1,16 @@
 server:
-    ssl:
-        key-store: build/keystore.jks
-        key-store-password: secret
-        key-password: secret
-        key-alias: selfsigned
+  port: 8443
+  ssl:
+    key-store: build/keystore.jks
+    key-store-password: secret
+    key-password: secret
+    key-alias: selfsigned
 
 
 au.com.mountainpass.ryvr:
-    ssl:
-        hostname: localhost
-        
-        
+  ssl:
+    hostname: localhost
+
 javax.net.ssl.trustStore: build/truststore.jks
 javax.net.ssl.trustStorePassword: changeit
 

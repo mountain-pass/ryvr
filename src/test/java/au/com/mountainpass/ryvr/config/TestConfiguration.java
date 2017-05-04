@@ -1,8 +1,18 @@
 package au.com.mountainpass.ryvr.config;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.catalina.startup.Tomcat;
 import org.apache.http.client.config.RequestConfig;
@@ -11,12 +21,19 @@ import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.apache.http.impl.nio.conn.PoolingNHttpClientConnectionManager;
+import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
+import org.apache.http.impl.nio.reactor.IOReactorConfig;
 import org.apache.http.nio.conn.NHttpClientConnectionManager;
+import org.apache.http.nio.conn.NoopIOSessionStrategy;
+import org.apache.http.nio.conn.SchemeIOSessionStrategy;
+import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,10 +46,12 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.client.AsyncClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsAsyncClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -63,6 +82,18 @@ public class TestConfiguration implements
 
     @Value("${server.ssl.key-store-password}")
     private String keyStorePassword;
+
+    @Value("${server.ssl.protocol:TLS}")
+    private String sslProtocol;
+
+    @Value("${javax.net.ssl.trustStore:}")
+    private String trustStore;
+
+    @Value("${javax.net.ssl.trustStorePassword:changeit}")
+    private String trustStorePassword;
+
+    @Value("${javax.net.ssl.trustStoreType:JKS}")
+    private String trustStoreType;
 
     public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
@@ -96,14 +127,12 @@ public class TestConfiguration implements
 
     @Bean
     public HttpAsyncClientBuilder asyncHttpClientBuilder() throws Exception {
-        final NHttpClientConnectionManager connectionManager = infelctorApplication
-                .nHttpClientConntectionManager();
+        final NHttpClientConnectionManager connectionManager = nHttpClientConntectionManager();
         final RequestConfig config = httpClientRequestConfig();
         return HttpAsyncClientBuilder.create()
                 .setConnectionManager(connectionManager)
                 .setConnectionManagerShared(true)
-                .setDefaultRequestConfig(config)
-                .setSSLContext(infelctorApplication.sslContext());
+                .setDefaultRequestConfig(config).setSSLContext(sslContext());
     }
 
     @Bean
@@ -135,9 +164,8 @@ public class TestConfiguration implements
         return HttpClientBuilder.create()
                 .setConnectionManager(connectionManager)
                 .setDefaultRequestConfig(config)
-                .setSSLSocketFactory(infelctorApplication.sslSocketFactory())
-                .setSslcontext(infelctorApplication.sslContext())
-                .disableRedirectHandling();
+                .setSSLSocketFactory(sslSocketFactory())
+                .setSslcontext(sslContext()).disableRedirectHandling();
     }
 
     @Bean
@@ -160,20 +188,12 @@ public class TestConfiguration implements
     }
 
     @Bean
-    public RequestConfig httpClientRequestConfig() {
-        final RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(proxyReadTimeoutMs).build();
-        return config;
-    }
-
-    @Bean
     public Registry<ConnectionSocketFactory> httpConnectionSocketFactoryRegistry()
             throws Exception {
         return RegistryBuilder.<ConnectionSocketFactory> create()
                 .register("http",
                         PlainConnectionSocketFactory.getSocketFactory())
-                .register("https", infelctorApplication.sslSocketFactory())
-                .build();
+                .register("https", sslSocketFactory()).build();
     }
 
     @Bean
@@ -210,19 +230,16 @@ public class TestConfiguration implements
     @Bean
     public TestKeyStoreManager serviceGatewayKeyStoreManager()
             throws Exception {
-        if (infelctorApplication.getTrustStoreLocation().equals(
-                infelctorApplication.systemDefaultTrustStoreLocation())) {
+        if (getTrustStoreLocation().equals(systemDefaultTrustStoreLocation())) {
             LOGGER.warn(
                     "Trust Store location {} appears to be set to system default. The Self signed cert for testing will not be added and the tests will likely fail.",
-                    infelctorApplication.getTrustStoreLocation());
+                    getTrustStoreLocation());
             return new TestKeyStoreManager(keyStore, keyStorePassword,
                     keyPassword, keyAlias, sslHostname, null, null, null);
         }
         return new TestKeyStoreManager(keyStore, keyStorePassword, keyPassword,
-                keyAlias, sslHostname,
-                infelctorApplication.getTrustStoreLocation(),
-                infelctorApplication.getTrustStorePassword(),
-                infelctorApplication.getTrustStoreType());
+                keyAlias, sslHostname, getTrustStoreLocation(),
+                getTrustStorePassword(), getTrustStoreType());
     }
 
     public void setPort(final int port) {
@@ -257,6 +274,116 @@ public class TestConfiguration implements
             IllegalArgumentException, InvocationTargetException, IOException {
         final WebDriver webDriver = webDriverFactory.createWebDriver();
         return webDriver;
+    }
+
+    public String getTrustStoreLocation() {
+        if (StringUtils.hasLength(trustStore)) {
+            return trustStore;
+        }
+        final String locationProperty = System
+                .getProperty("javax.net.ssl.trustStore");
+        if (StringUtils.hasLength(locationProperty)) {
+            return locationProperty;
+        } else {
+            return systemDefaultTrustStoreLocation();
+        }
+    }
+
+    public String getTrustStorePassword() {
+        return trustStorePassword;
+    }
+
+    public String getTrustStoreType() {
+        return trustStoreType;
+    }
+
+    @Bean // (destroyMethod = "close")
+    public CloseableHttpAsyncClient httpAsyncClient() throws Exception {
+        final CloseableHttpAsyncClient client = httpAsyncClientBuilder()
+                .build();
+        client.start();
+        return client;
+    }
+
+    @Bean
+    public HttpAsyncClientBuilder httpAsyncClientBuilder() throws Exception {
+        return HttpAsyncClientBuilder.create().setSSLContext(sslContext())
+                .setConnectionManager(nHttpClientConntectionManager())
+                .setDefaultRequestConfig(httpClientRequestConfig());
+    }
+
+    @Bean
+    RequestConfig httpClientRequestConfig() {
+        final RequestConfig config = RequestConfig.custom()
+                .setConnectTimeout(proxyReadTimeoutMs).build();
+        return config;
+    }
+
+    @Bean
+    public NHttpClientConnectionManager nHttpClientConntectionManager()
+            throws Exception {
+        final PoolingNHttpClientConnectionManager connectionManager = new PoolingNHttpClientConnectionManager(
+                new DefaultConnectingIOReactor(IOReactorConfig.DEFAULT),
+                schemeIOSessionStrategyRegistry());
+        connectionManager.setMaxTotal(proxyMaxConnectionsTotal);
+        connectionManager.setDefaultMaxPerRoute(proxyMaxConnectionsRoute);
+        return connectionManager;
+    }
+
+    @Bean
+    Registry<SchemeIOSessionStrategy> schemeIOSessionStrategyRegistry()
+            throws Exception {
+        return RegistryBuilder.<SchemeIOSessionStrategy> create()
+                .register("http", NoopIOSessionStrategy.INSTANCE)
+                .register("https", new SSLIOSessionStrategy(sslContext()))
+                .build();
+    }
+
+    @Bean
+    public SSLContext sslContext() throws Exception {
+        final SSLContext sslContext = SSLContext.getInstance(sslProtocol);
+        final TrustManagerFactory tmf = trustManagerFactory();
+        final KeyStore ks = trustStore();
+        tmf.init(ks);
+        sslContext.init(null, tmf.getTrustManagers(), null);
+        return sslContext;
+    }
+
+    @Bean
+    public SSLConnectionSocketFactory sslSocketFactory() throws Exception {
+        final SSLConnectionSocketFactory sf = new SSLConnectionSocketFactory(
+                sslContext());
+        return sf;
+    }
+
+    public String systemDefaultTrustStoreLocation() {
+        final String javaHome = System.getProperty("java.home");
+        final FileSystemResource location = new FileSystemResource(
+                javaHome + "/lib/security/jssecacerts");
+        if (location.exists()) {
+            return location.getFilename();
+        } else {
+            return javaHome + "/lib/security/cacerts";
+        }
+    }
+
+    @Bean
+    TrustManagerFactory trustManagerFactory() throws NoSuchAlgorithmException {
+        final TrustManagerFactory tmf = TrustManagerFactory
+                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        return tmf;
+    }
+
+    @Bean
+    KeyStore trustStore()
+            throws KeyStoreException, IOException, NoSuchAlgorithmException,
+            CertificateException, FileNotFoundException {
+        final KeyStore ks = KeyStore.getInstance(trustStoreType);
+
+        final File trustFile = new File(getTrustStoreLocation());
+        ks.load(new FileInputStream(trustFile),
+                trustStorePassword.toCharArray());
+        return ks;
     }
 
 }
