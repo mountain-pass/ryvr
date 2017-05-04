@@ -1,4 +1,4 @@
-package au.com.mountainpass.inflector.springboot.config;
+package au.com.mountainpass.ryvr.config;
 
 import javax.annotation.PostConstruct;
 

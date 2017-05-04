@@ -39,7 +39,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import au.com.mountainpass.TestKeyStoreManager;
 import au.com.mountainpass.WebDriverFactory;
-import au.com.mountainpass.inflector.springboot.InflectorApplication;
+import au.com.mountainpass.ryvr.Application;
 import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
 import au.com.mountainpass.ryvr.testclient.JavaRyvrClient;
 import au.com.mountainpass.ryvr.testclient.RestRyvrClient;
@@ -50,7 +50,7 @@ public class TestConfiguration implements
         ApplicationListener<EmbeddedServletContainerInitializedEvent> {
 
     @Autowired
-    private InflectorApplication infelctorApplication;
+    private Application infelctorApplication;
 
     @Value("${server.ssl.key-alias}")
     private String keyAlias;
@@ -71,16 +71,16 @@ public class TestConfiguration implements
 
     private int port;
 
-    @Value("${au.com.windyroad.service-gateway.proxy.max.connections.route:20}")
+    @Value("${au.com.mountainpass.ryvr.proxy.max.connections.route:20}")
     private int proxyMaxConnectionsRoute;
 
-    @Value("${au.com.windyroad.service-gateway.proxy.max.connections.total:100}")
+    @Value("${au.com.mountainpass.ryvr.proxy.max.connections.total:100}")
     private int proxyMaxConnectionsTotal;
 
-    @Value("${au.com.windyroad.service-gateway.proxy.read.timeout.ms:60000}")
+    @Value("${au.com.mountainpass.ryvr.proxy.read.timeout.ms:60000}")
     private int proxyReadTimeoutMs;
 
-    @Value("${au.com.windyroad.service-gateway.ssl.hostname}")
+    @Value("${au.com.mountainpass.ryvr.ssl.hostname}")
     private String sslHostname;
 
     @Value("${javax.net.ssl.trustStore:build/truststore.jks}")

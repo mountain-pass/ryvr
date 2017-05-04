@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import au.com.mountainpass.inflector.springboot.controllers.JsonController;
+import au.com.mountainpass.ryvr.controllers.JsonController;
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.testclient.model.JavaRootResponse;
 import au.com.mountainpass.ryvr.testclient.model.JavaSwaggerResponse;

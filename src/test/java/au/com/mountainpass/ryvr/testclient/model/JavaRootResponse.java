@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import au.com.mountainpass.inflector.springboot.controllers.JsonController;
+import au.com.mountainpass.ryvr.controllers.JsonController;
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 

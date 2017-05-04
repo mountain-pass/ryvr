@@ -22,7 +22,6 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import au.com.mountainpass.inflector.springboot.InflectorApplication;
 import au.com.mountainpass.ryvr.jdbc.JdbcRyvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
@@ -38,7 +37,7 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 
-@ContextConfiguration(classes = { InflectorApplication.class })
+@ContextConfiguration(classes = { Application.class })
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class StepDefs {

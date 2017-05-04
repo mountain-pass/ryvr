@@ -1,4 +1,4 @@
-package au.com.mountainpass.inflector.springboot.controllers;
+package au.com.mountainpass.ryvr.controllers;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -7,13 +7,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api-docs")
-public class ApiDocsController {
-
+@RequestMapping("/")
+public class RootController {
     @Autowired
     private HtmlController htmlController;
 
@@ -22,15 +20,13 @@ public class ApiDocsController {
 
     @RequestMapping(method = RequestMethod.GET, produces = {
             MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<?> getJson(final HttpServletRequest req,
-            @RequestParam(required = false) String group) {
-        return jsonController.getApiDocs(req, group);
+    public ResponseEntity<?> getJson(final HttpServletRequest req) {
+        return jsonController.getRoot(req);
     }
 
     @RequestMapping(method = RequestMethod.GET, produces = {
-            MediaType.TEXT_HTML_VALUE })
-    public ResponseEntity<?> getHtml(final HttpServletRequest req,
-            @RequestParam(required = false) String group) {
-        return htmlController.getApiDocs(req, group);
+            MediaType.ALL_VALUE })
+    public ResponseEntity<?> getHtml(final HttpServletRequest req) {
+        return htmlController.getRoot(req);
     }
 }

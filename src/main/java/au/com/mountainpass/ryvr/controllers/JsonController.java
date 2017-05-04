@@ -1,4 +1,4 @@
-package au.com.mountainpass.inflector.springboot.controllers;
+package au.com.mountainpass.ryvr.controllers;
 
 import java.io.IOException;
 import java.io.StringWriter;

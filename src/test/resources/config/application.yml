@@ -1,6 +1,12 @@
+server:
+    ssl:
+        key-store: build/keystore.jks
+        key-store-password: secret
+        key-password: secret
+        key-alias: selfsigned
 
 
-au.com.windyroad.service-gateway:
+au.com.mountainpass.ryvr:
     ssl:
         hostname: localhost
         

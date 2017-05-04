@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package au.com.mountainpass.inflector.springboot;
+package au.com.mountainpass.ryvr;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -111,19 +111,19 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
         WebClientAutoConfiguration.class, WebMvcAutoConfiguration.class })
 @Configuration
 @ComponentScan(value = "au.com.mountainpass")
-public class InflectorApplication {
+public class Application {
 
     public static void main(final String[] args) {
-        SpringApplication.run(InflectorApplication.class, args);
+        SpringApplication.run(Application.class, args);
     }
 
-    @Value("${au.com.windyroad.service-gateway.proxy.max.connections.route:20}")
+    @Value("${au.com.mountainpass.ryvr.proxy.max.connections.route:20}")
     private int proxyMaxConnectionsRoute;
 
-    @Value("${au.com.windyroad.service-gateway.proxy.max.connections.total:100}")
+    @Value("${au.com.mountainpass.ryvr.proxy.max.connections.total:100}")
     private int proxyMaxConnectionsTotal;
 
-    @Value("${au.com.windyroad.service-gateway.proxy.read.timeout.ms:60000}")
+    @Value("${au.com.mountainpass.ryvr.proxy.read.timeout.ms:60000}")
     private int proxyReadTimeoutMs;
 
     @Value("${server.ssl.protocol:TLS}")

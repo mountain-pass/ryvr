@@ -13,7 +13,7 @@ public class RyvrConfiguration implements
 
     private int port;
 
-    @Value("${au.com.windyroad.service-gateway.ssl.hostname}")
+    @Value("${au.com.mountainpass.ryvr.ssl.hostname}")
     private String sslHostname;
 
     public int getPort() {
