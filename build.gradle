@@ -99,6 +99,10 @@ dependencies {
     compile('org.webjars:jquery:3.1.1-1')
     compile('org.webjars.bower:angularjs:1.6.0')
 
+    compile group: 'org.shredzone.acme4j', name: 'acme4j-client', version: '0.10'    
+    compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
+
+    
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'
     testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
@@ -108,7 +112,7 @@ dependencies {
     testCompile 'com.saucelabs:sauce_junit:2.1.20'
     testCompile 'com.saucelabs:ci-sauce:1.123'
 
-    testCompile 'org.bouncycastle:bcpkix-jdk15on:1.53'
+
     testCompile('io.swagger:swagger-parser:1.0.22')
     
     testCompile group: 'io.prometheus', name: 'simpleclient', version: '0.0.21'

@@ -1,16 +1,11 @@
 server:
-    servlet-path: /
+  ssl:
+    key-store: keystore.jks
+  servlet-path: /
 
 spring:
   application:
     name: ryvr
-       
-    
-security:
-  user:
-    name: 'user'
-    password: 'password'
-    
         
 server.tomcat.access-log-enabled: true
       
