@@ -25,14 +25,28 @@ The swagger definition will be available at the following URI:
 
 The Spring Boot Actuator end-points are available here:
 
-- [https://localhost:8443/system/info](http://localhost:8443/system/info)
-- [https://localhost:8080/system/env](http://localhost:8443/system/env)
+- [https://localhost:8443/info](http://localhost:8443/info)
 
-Unimplemented controllers and methods are available here:
+## HTTPS
 
- - [https://localhost:8443/debug.json](http://localhost:8080/debug.json)
+Ryvr is configured to enable HTTPS and disable HTTP, in order to ensure that all traffic is encrypted.
 
-Have fun!
+HTTPS is configured using the following standard Spring Boot application properties:
+
+    server.ssl.key-store
+    server.ssl.key-alias
+    server.ssl.key-password
+    server.ssl.key-store
+    server.ssl.key-store-password
+
+See https://docs.spring.io/spring-boot/docs/current/reference/html/howto-embedded-servlet-containers.html#howto-configure-ssl for more details regarding these properties
+
+### Automatic Certificate Generation
+
+By default, if Ryvr is unable to find the certificate specified by `server.ssl.key-alias`, it will generate one for you. The type of certificate generated is controlled via the `au.com.mountainpass.ryvr.ssl.genCert` application property, which defaults to `selfSigned`. Currently, `selfSigned` is the only type of certificate generation implemented. `au.com.mountainpass.ryvr.ssl.genCert` can be set to false, which will disable certificate generation. Ryvr will shutdown on startup if `au.com.mountainpass.ryvr.ssl.genCert` is false and it is unable to find the certificate specified by `server.ssl.key-alias`.
+
+When generating a certificate, Ryvr will set the hostname to the value of the `au.com.mountainpass.ryvr.ssl.hostname` application property. `au.com.mountainpass.ryvr.ssl.hostname` defaults to `localhost`.
+
 
 ## Testing
 
