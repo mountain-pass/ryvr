@@ -140,6 +140,17 @@ new ByteArrayOutputStream().withStream { os ->
     ext.whoami = os.toString().trim()
 }
 
+new ByteArrayOutputStream().withStream { os ->
+    def result = exec {
+        commandLine 'sh', '-c', 'if [ -z "$SHIPPABLE" ]; then hostname; else echo "shippable"; fi'
+       
+        standardOutput = os
+    }
+    ext.host = os.toString().trim()
+}
+
+logger.quiet("Host: " + host)
+
 if(file("gradle-${whoami}.properties").exists()) {
     file("gradle-${whoami}.properties").withReader { reader ->
         def userProps = new Properties()

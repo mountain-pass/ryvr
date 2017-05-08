@@ -14,6 +14,7 @@ build:
     - mkdir -p shippable/testresults
     - mkdir -p shippable/codecoverage/target/site/jacoco/html
     - whoami
+    - hostname
     - mysql -e "CREATE USER dbuser@localhost IDENTIFIED BY 'dbpass'; GRANT ALL ON *.* TO dbuser@localhost; FLUSH PRIVILEGES;"
     - ./gradlew test -PtestOutputDir=shippable/testresults -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY --info 
     - cp build/coverage-results/jacoco/ryvr.xml shippable/codecoverage/target/site/jacoco/jacoco.xml
