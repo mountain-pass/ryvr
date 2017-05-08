@@ -76,11 +76,11 @@ configurations {
 dependencies {
     compile('commons-lang:commons-lang:2.6')
     compile('commons-io:commons-io:2.5')
-    
+
     compile('org.springframework.boot:spring-boot-starter-actuator')
     compile('org.springframework.boot:spring-boot-starter-web') //{ exclude(module: 'spring-boot-starter-tomcat') } compile('org.springframework.boot:spring-boot-starter-undertow')
     compile('org.springframework.boot:spring-boot-starter-jdbc')
-    
+
     compile('com.github.spullara.mustache.java:compiler:0.9.2')
 
     compile("org.springframework.boot:spring-boot-devtools")
@@ -99,10 +99,10 @@ dependencies {
     compile('org.webjars:jquery:3.1.1-1')
     compile('org.webjars.bower:angularjs:1.6.0')
 
-    compile group: 'org.shredzone.acme4j', name: 'acme4j-client', version: '0.10'    
+    compile group: 'org.shredzone.acme4j', name: 'acme4j-client', version: '0.10'
     compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
 
-    
+
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'
     testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
@@ -114,23 +114,42 @@ dependencies {
 
 
     testCompile('io.swagger:swagger-parser:1.0.22')
-    
+
     testCompile group: 'io.prometheus', name: 'simpleclient', version: '0.0.21'
 
-    
+
     runtime('com.h2database:h2')
     runtime group: 'mysql', name: 'mysql-connector-java', version: '5.1.39'
-    
-    
-    
+
+
+
     codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.10'
 
 
-    
+
 }
 
 
 test { exclude '**' }
+
+new ByteArrayOutputStream().withStream { os ->
+    def result = exec {
+        executable = 'whoami'
+        standardOutput = os
+    }
+    ext.whoami = os.toString().trim()
+}
+
+if(file("gradle-${whoami}.properties").exists()) {
+    file("gradle-${whoami}.properties").withReader { reader ->
+        def userProps = new Properties()
+        userProps.load(reader)
+        userProps.each { prop ->
+            project.ext.set(prop.key, prop.value)
+        }
+    }
+}
+
 
 def testOutputDir = project.getProperties().get("testOutputDir") ?: "${buildDir}"
 def coverageOutputDir = project.getProperties().get("coverageOutputDir") ?: "${buildDir}"
@@ -144,124 +163,45 @@ jacoco {
 }
 
 
-
-task unitTest(type: Test, group: 'verification') {
-    testClassesDir = sourceSets.test.output.classesDir
-    classpath = sourceSets.test.runtimeClasspath
-    include 'RyvrUnitTests.class'
-    ext.outputDir = "${testOutputDir}/test-results-ut"
-    outputs.dir file(outputDir)
-    ext.coverageDir = "${coverageOutputDir}/coverage-results-ut"
-    outputs.dir file(coverageDir)
-    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
-    jacoco {
-        append = false
-        destinationFile = file("${coverageDir}/jacoco/${name}.exec")
-    }
+def testClasses = fileTree("src/test/java") {
+    // include { details -> details.file.text.contains('@RunWith(SpringProfileCucumber.class)') }
+    include '**/*Tests*.java'
+    exclude '**/*_Current.java'
 }
 
-task mySqlUnitTest(type: Test, group: 'verification') {
-    testClassesDir = sourceSets.test.output.classesDir
-    classpath = sourceSets.test.runtimeClasspath
-    include 'RyvrUnitTests_MySql.class'
-    ext.outputDir = "${testOutputDir}/test-results-ut-mysql"
-    outputs.dir file(outputDir)
-    ext.coverageDir = "${coverageOutputDir}/coverage-results-ut-mysql"
-    outputs.dir file(coverageDir)
-    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
-    
-    jacoco {
-        append = false
-        destinationFile = file("${coverageDir}/jacoco/${name}.exec")
-    }
-}
-
-
-task systemTest(type: Test, dependsOn : unitTest, group: 'verification') {
-    testClassesDir = sourceSets.test.output.classesDir
-    classpath = sourceSets.test.runtimeClasspath
-    ext.outputDir = "${testOutputDir}/test-results-st"
-    outputs.dir file(outputDir)
-    ext.coverageDir = "${coverageOutputDir}/coverage-results-st"
-    outputs.dir file(coverageDir)
-    include 'RyvrSystemTests.class'
-    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
-    jacoco {
-        append = false
-        destinationFile = file("${coverageDir}/jacoco/${name}.exec")
-    }
-}
-
-task uiTest(type: Test, dependsOn : systemTest, group: 'verification') {
-    testClassesDir = sourceSets.test.output.classesDir
-    classpath = sourceSets.test.runtimeClasspath
-    ext.outputDir = "${testOutputDir}/test-results-ui"
-    outputs.dir file(outputDir)
-    ext.coverageDir = "${coverageOutputDir}/coverage-results-ui"
-    outputs.dir file(coverageDir)
-    include 'RyvrUiTests.class'
-    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
-    if(withSauce) {
-        systemProperty 'spring.profiles.active',  "sauceLabs"
+testClasses.each { File testClass ->
+    println testClass
+    def baseName = testClass.name.replace('.java', '')
+    println baseName
+    task "test${baseName}"(type: Test, group: 'verification', description: "run ${baseName}") {
+        testClassesDir = sourceSets.test.output.classesDir
+        classpath = sourceSets.test.runtimeClasspath
+        include "**/${baseName}.class"
+        ext.outputDir = "${testOutputDir}/test-results-${baseName}"
+        outputs.dir file(outputDir)
+        ext.coverageDir = "${coverageOutputDir}/coverage-results-${baseName}"
+        outputs.dir file(coverageDir)
+        systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
         systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
         systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
+        jacoco {
+            append = false
+            destinationFile = file("${coverageDir}/jacoco/${baseName}.exec")
+        }
     }
-    jacoco {
-        append = false
-        destinationFile = file("${coverageDir}/jacoco/${name}.exec")
-    }
-}
-
-task mobileUiTest(type: Test, dependsOn : uiTest, group: 'verification') {
-    testClassesDir = sourceSets.test.output.classesDir
-    classpath = sourceSets.test.runtimeClasspath
-    ext.outputDir = "${testOutputDir}/test-results-mobile-ui"
-    outputs.dir file(outputDir)
-    ext.coverageDir = "${coverageOutputDir}/coverage-results-mobile-ui"
-    outputs.dir file(coverageDir)
-    include 'RyvrUiTests_Mobile.class'
-    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
-    if(withSauce) {
-        systemProperty 'spring.profiles.active',  "sauceLabs"
-        systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
-        systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
-    }
-    jacoco {
-        append = false
-        destinationFile = file("${coverageDir}/jacoco/${name}.exec")
-    }
-}
-
-
-task firefoxUiTest(type: Test, dependsOn : uiTest, group: 'verification') {
-    testClassesDir = sourceSets.test.output.classesDir
-    classpath = sourceSets.test.runtimeClasspath
-    ext.outputDir = "${testOutputDir}/test-results-firefox-ui"
-    outputs.dir file(outputDir)
-    ext.coverageDir = "${coverageOutputDir}/coverage-results-firefox-ui"
-    outputs.dir file(coverageDir)
-    include 'RyvrUiTests_Firefox.class'
-    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
-    if(withSauce) {
-        systemProperty 'spring.profiles.active',  "sauceLabs"
-        systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
-        systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
-    }
-    jacoco {
-        append = false
-        destinationFile = file("${coverageDir}/jacoco/${name}.exec")
-    }
+    tasks["test${baseName}"].finalizedBy jacocoTestReport
 }
 
 test.dependsOn {
-    tasks.findAll { task ->  task.name.endsWith('Test') }
-}
-
-task testLocal(group: 'verification') {
-}
-
-testLocal.dependsOn {
-    tasks.findAll { task ->  task.name.endsWith('Test') && task.name !=  'mobileUiTest' && task.name !=  'firefoxUiTest' }
+    tasks.findAll { task ->  
+//    println "${task.name}.local: ${project.ext.properties["${task.name}.local"]}"
+//    println 'task.name.startsWith(\'test\')?: ' +         task.name.startsWith('test')
+//    println 'task.name != "test"?: ' +        task.name != "test"
+//    println 'project.hasProperty("${task.name}.local")?: ' +         project.hasProperty("${task.name}.local")
+//    println 'project.ext.properties["${task.name}.local"]?: ' +          project.ext.properties["${task.name}.local"]=='true'
+//    println 'test?: ' +        ( task.name.startsWith('test') && task.name != "test" && project.hasProperty("${task.name}.local") && project.ext.properties["${task.name}.local"]=='true' )
+//
+        task.name.startsWith('test') && task.name != "test" && project.hasProperty("${task.name}.enabled") && project.ext.properties["${task.name}.enabled"]=='true' }
 }
 
 
@@ -335,20 +275,16 @@ jacocoTestReport {
 ext {
     // TODO: Increase these
     limits = [
-        'instruction': 75,
-        'branch'     : 75,
-        'line'       : 75,
-        'complexity' : 75,
-        'method'     : 75,
-        'class'      : 75
+        'instruction': 70,
+        'branch'     : 70,
+        'line'       : 70,
+        'complexity' : 70,
+        'method'     : 70,
+        'class'      : 70
     ]
 }
 
 
-unitTest.finalizedBy jacocoTestReport
-systemTest.finalizedBy jacocoTestReport
-uiTest.finalizedBy jacocoTestReport
-mobileUiTest.finalizedBy jacocoTestReport
 
 
 task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
@@ -365,7 +301,7 @@ task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
 jar {
     manifest {
         attributes("Implementation-Title": "Ryvr",
-                   "Implementation-Version": version)
+        "Implementation-Version": version)
     }
 }
 

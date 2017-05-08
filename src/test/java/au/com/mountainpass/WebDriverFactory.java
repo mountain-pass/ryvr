@@ -20,7 +20,7 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile("uiTest")
+@Profile("ui")
 public class WebDriverFactory implements DisposableBean {
 
     @Value(value = "${webdriver.browserType:chrome}")

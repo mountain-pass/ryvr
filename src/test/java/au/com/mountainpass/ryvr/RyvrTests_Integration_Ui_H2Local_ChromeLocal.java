@@ -1,3 +1,5 @@
+package au.com.mountainpass.ryvr;
+
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -8,7 +10,7 @@ import cucumber.api.CucumberOptions;
 @CucumberOptions(plugin = { "pretty" }, features = {
         "src/test/resources/features/" }, strict = false, glue = {
                 "au.com.mountainpass.ryvr" }, tags = { "~@performance" })
-@ActiveProfiles("systemTest")
-public class RyvrSystemTests {
+@ActiveProfiles({ "intetgrationTest", "ui", "h2", "chrome" })
+public class RyvrTests_Integration_Ui_H2Local_ChromeLocal {
 
 }

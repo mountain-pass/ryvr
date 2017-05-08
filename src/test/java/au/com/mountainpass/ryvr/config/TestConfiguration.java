@@ -171,7 +171,7 @@ public class TestConfiguration implements
     }
 
     @Bean
-    @Profile(value = { "unitTest" })
+    @Profile(value = { "javaApi" })
     public RyvrTestClient javaClient() {
         return new JavaRyvrClient();
     }
@@ -190,13 +190,13 @@ public class TestConfiguration implements
     }
 
     @Bean
-    @Profile(value = { "systemTest" })
+    @Profile(value = { "restApi" })
     public RyvrTestClient restClient() {
         return new RestRyvrClient();
     }
 
     @Bean
-    @Profile(value = { "systemTest" })
+    @Profile(value = { "restApi" })
     public RestTemplate restTemplate() throws Exception {
         return new RestTemplate(httpClientFactory());
     }
@@ -206,13 +206,13 @@ public class TestConfiguration implements
     }
 
     @Bean
-    @Profile(value = { "uiTest" })
+    @Profile(value = { "ui" })
     public RyvrTestClient uiClient() {
         return new HtmlRyvrClient();
     }
 
     @Bean
-    @Profile("uiTest")
+    @Profile("ui")
     public WebDriver webDriver()
             throws ClassNotFoundException, NoSuchMethodException,
             SecurityException, InstantiationException, IllegalAccessException,

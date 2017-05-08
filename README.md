@@ -59,13 +59,13 @@ Tests for the three layers can be executed by running `./gradlew test`
 
 #### Unit Tests
 
-The Unit tests are run with the `unitTest` Spring profile, which enables the
+The Unit tests are run with the `integrationTest` Spring profile, which enables the
 `au.com.mountainpass.ryvr.testclient.JavaRyvrClient` client.
 
-The `RyvrUnitTests` is used to run the tests against the Java layer and automatically activates the `unitTest` Spring
-profile. It can either by run as a JUnit test from within your IDE or run using `./gradlew unitTest`.
+The `RyvrintegrationTests` is used to run the tests against the Java layer and automatically activates the `integrationTest` Spring
+profile. It can either by run as a JUnit test from within your IDE or run using `./gradlew integrationTest`.
 
-`./gradlew unitTest` will record test results in `build/test-results-ut`
+`./gradlew integrationTest` will record test results in `build/test-results-ut`
 
 #### System Tests
 

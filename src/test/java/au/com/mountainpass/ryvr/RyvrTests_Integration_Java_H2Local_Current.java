@@ -1,3 +1,4 @@
+package au.com.mountainpass.ryvr;
 
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ActiveProfiles;
@@ -8,8 +9,7 @@ import cucumber.api.CucumberOptions;
 @RunWith(SpringProfileCucumber.class)
 @CucumberOptions(plugin = { "pretty" }, features = {
         "src/test/resources/features/" }, strict = false, glue = {
-                "au.com.mountainpass.ryvr" }, tags = { "~@performance" })
-@ActiveProfiles({ "uiTest", "mobile", "sauceLabs" })
-public class RyvrUiTests_Mobile {
-
+                "au.com.mountainpass.ryvr" }, tags = { "@current" })
+@ActiveProfiles({ "integrationTest", "javaApi", "h2" })
+public class RyvrTests_Integration_Java_H2Local_Current {
 }

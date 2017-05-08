@@ -1,4 +1,4 @@
-package au.com.mountainpass.ryvr;
+package au.com.mountainpass.ryvr.steps;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -22,6 +22,7 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import au.com.mountainpass.ryvr.Application;
 import au.com.mountainpass.ryvr.jdbc.JdbcRyvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;

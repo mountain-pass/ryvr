@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -54,8 +55,16 @@ public class HtmlRootResponse implements RootResponse {
     public RyvrsCollectionResponse followRyvrsLink() {
         HtmlRyvrClient.waitTillLoaded(webDriver, 5);
         List<WebElement> links = HtmlRyvrClient.getLinks(webDriver);
-        (new WebDriverWait(webDriver, 5))
-                .until(ExpectedConditions.visibilityOfAllElements(links));
+        boolean visible = false;
+        for (int i = 0; i < 10 && !visible; ++i) {
+            try {
+                (new WebDriverWait(webDriver, 5)).until(
+                        ExpectedConditions.visibilityOfAllElements(links));
+                visible = true;
+            } catch (StaleElementReferenceException e) {
+                links = HtmlRyvrClient.getLinks(webDriver);
+            }
+        }
         assertHasRyvrsLink();
         for (WebElement element : links) {
             if ("Ryvrs".equals(element.getText())) {
