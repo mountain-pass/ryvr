@@ -84,6 +84,7 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
         WebClientAutoConfiguration.class, WebMvcAutoConfiguration.class })
 @Configuration
 @ComponentScan(value = "au.com.mountainpass")
+// @EnableConfigurationProperties(DataSourcesRyvrConfiguration.class)
 public class Application {
 
     public static void main(final String[] args) {

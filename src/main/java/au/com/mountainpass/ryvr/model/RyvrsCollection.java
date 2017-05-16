@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -15,6 +16,7 @@ public class RyvrsCollection {
 
     private static final String TITLE = "Ryvrs";
 
+    @Autowired
     private Map<String, Ryvr> ryvrs = new HashMap<>();
 
     private Map<String, Link[]> links;
@@ -31,6 +33,7 @@ public class RyvrsCollection {
 
     public int getCount() {
         return links.get("item") == null ? 0 : links.get("item").length;
+        // return ryvrs.size();
     }
 
     public String getTitle() {
@@ -39,11 +42,6 @@ public class RyvrsCollection {
 
     public Ryvr getRyvr(String ryvrName) {
         return ryvrs.get(ryvrName);
-    }
-
-    public void clear() {
-        ryvrs.clear();
-        this.links = genLinks();
     }
 
     @JsonIgnore
@@ -70,6 +68,11 @@ public class RyvrsCollection {
             rval.put("item", items);
         }
         return rval;
+    }
+
+    public void clear() {
+        ryvrs.clear();
+        links = genLinks();
     }
 
 }

@@ -1,14 +1,15 @@
 package au.com.mountainpass.ryvr.steps;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.sql.DataSource;
 
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -18,12 +19,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
+import org.springframework.jdbc.support.DatabaseMetaDataCallback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import au.com.mountainpass.ryvr.Application;
-import au.com.mountainpass.ryvr.jdbc.JdbcRyvr;
+import au.com.mountainpass.ryvr.datasource.DataSourceRyvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
@@ -42,12 +43,12 @@ import cucumber.api.java.en.When;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class StepDefs {
+
     @Autowired
     private RyvrTestClient client;
+
     @Autowired
-    private DataSource db;
-    @Autowired
-    private JdbcTemplate jt;
+    private JdbcTemplate currentJt;
     private RootResponse rootResponseFuture;
 
     private RyvrResponse ryvrResponse;
@@ -61,33 +62,32 @@ public class StepDefs {
     private String currentTable;
     private List<Map<String, String>> currentEvents;
 
-    @Autowired
-    DataSource dataSource;
-
     public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-    private String quoteString;
-
-    @Autowired
-    Map<String, DataSource> dataSources;
 
     @Given("^a database \"([^\"]*)\"$")
     public void aDatabase(final String dbName) throws Throwable {
-        quoteString = dataSource.getConnection().getMetaData()
+
+        Connection connection = currentJt.getDataSource().getConnection();
+        String identifierQuoteString = connection.getMetaData()
                 .getIdentifierQuoteString();
-        String dbProductName = dataSource.getConnection().getMetaData()
+
+        String dbProductName = connection.getMetaData()
                 .getDatabaseProductName();
         LOGGER.info("dbProductName: {}", dbProductName);
         switch (dbProductName) {
         case "H2":
-            jt.execute("CREATE SCHEMA IF NOT EXISTS " + quoteString + dbName
-                    + quoteString + ";");
+            currentJt.execute(
+                    "CREATE SCHEMA IF NOT EXISTS " + identifierQuoteString
+                            + dbName + identifierQuoteString + ";");
             break;
         case "MySQL":
-            jt.execute("CREATE DATABASE IF NOT EXISTS " + quoteString + dbName
-                    + quoteString + ";");
+            currentJt.execute(
+                    "CREATE DATABASE IF NOT EXISTS " + identifierQuoteString
+                            + dbName + identifierQuoteString + ";");
             break;
         }
-        jt.execute("USE " + quoteString + dbName + quoteString + ";");
+        connection.setCatalog(dbName);
+        connection.close();
     }
 
     @When("^a request is made for the API Docs$")
@@ -103,25 +103,49 @@ public class StepDefs {
     @Given("^a database ryvr with the following configuration$")
     public void a_database_ryvr_with_the_following_configuration(
             Map<String, String> config) throws Throwable {
-        final JdbcRyvr ryvr = new JdbcRyvr(config.get("name"), jt,
-                config.get("database"), config.get("table"),
+        final DataSourceRyvr ryvr = new DataSourceRyvr(config.get("name"),
+                currentJt, config.get("database"), config.get("table"),
                 config.get("ordered by"),
                 Long.parseLong(config.get("page size")));
         ryvrsCollection.addRyvr(ryvr);
+
+        // assertThat(ryvrsCollection.getRyvrs().keySet(),
+        // hasItem(config.get("name")));
+        // Ryvr ryvr = ryvrsCollection.getRyvrs().get(config.get("name"));
+        // assertThat(ryvr, instanceOf(DataSourceRyvr.class));
+        // DataSourceRyvr dataSourceRyvr = (DataSourceRyvr) ryvr;
+        // assertThat(dataSourceRyvr.getJdbcTemplate().getDataSource()
+        // .getConnection().getCatalog(), equalTo(config.get("database")));
+        // assertThat(dataSourceRyvr.getPageSize(),
+        // equalTo(Long.parseLong(config.get("page size"))));
+        // assertThat(dataSourceRyvr.getTable(), equalTo(config.get("table")));
+        // assertThat(dataSourceRyvr.getOrderedBy(),
+        // equalTo(config.get("ordered by")));
+        //
+        // ryvrsCollection.getRyvrs().clear();
+        // ryvrsCollection.getRyvrs().put(config.get("name"), ryvr);
     }
 
     @Given("^it has a table \"([^\"]*)\" with the following events$")
     public void itHasATableWithTheFollowingEvents(final String table,
             final List<Map<String, String>> events) throws Throwable {
-        createTable(table);
+        createTable("TEST_DB", table);
 
-        insertRows(table, events);
+        insertRows("TEST_DB", table, events);
     }
 
-    public void insertRows(final String table,
-            final List<Map<String, String>> events) {
-        jt.batchUpdate(
-                "insert into " + table
+    public void insertRows(final String catalog, final String table,
+            final List<Map<String, String>> events) throws SQLException {
+        Connection connection = currentJt.getDataSource().getConnection();
+        String identifierQuoteString = connection.getMetaData()
+                .getIdentifierQuoteString();
+        String catalogSeparator = connection.getMetaData()
+                .getCatalogSeparator();
+
+        currentJt.batchUpdate(
+                "insert into " + identifierQuoteString + catalog
+                        + identifierQuoteString + catalogSeparator
+                        + identifierQuoteString + table + identifierQuoteString
                         + "(ID, ACCOUNT, DESCRIPTION, AMOUNT) values (?, ?, ?, ?)",
                 new BatchPreparedStatementSetter() {
 
@@ -142,17 +166,53 @@ public class StepDefs {
                     }
 
                 });
+        connection.close();
     }
 
-    public void createTable(final String name) {
-        final StringBuilder statementBuffer = new StringBuilder();
-        jt.execute("drop table if exists " + quoteString + name + quoteString);
+    class GetTableNames implements DatabaseMetaDataCallback {
 
+        @Override
+        public Object processMetaData(DatabaseMetaData dbmd)
+                throws SQLException {
+            ResultSet rs = dbmd.getTables(dbmd.getUserName(), null, null,
+                    new String[] { "TABLE" });
+            ArrayList l = new ArrayList();
+            while (rs.next()) {
+                l.add(rs.getString(3));
+            }
+            return l;
+        }
+    }
+
+    public void createTable(String catalog, final String table)
+            throws SQLException {
+        Connection connection = currentJt.getDataSource().getConnection();
+        String identifierQuoteString = connection.getMetaData()
+                .getIdentifierQuoteString();
+        String catalogSeparator = connection.getMetaData()
+                .getCatalogSeparator();
+        currentJt.execute("drop table if exists " + identifierQuoteString
+                + catalog + identifierQuoteString + catalogSeparator
+                + identifierQuoteString + table + identifierQuoteString);
+
+        final StringBuilder statementBuffer = new StringBuilder();
         statementBuffer.append("create table ");
-        statementBuffer.append(quoteString + name + quoteString);
+        statementBuffer.append(identifierQuoteString + catalog
+                + identifierQuoteString + catalogSeparator);
+        statementBuffer
+                .append(identifierQuoteString + table + identifierQuoteString);
         statementBuffer.append(
                 " (ID INT, ACCOUNT VARCHAR(255), DESCRIPTION VARCHAR(255), AMOUNT Decimal(19,4), CONSTRAINT PK_ID PRIMARY KEY (ID))");
-        jt.execute(statementBuffer.toString());
+        currentJt.execute(statementBuffer.toString());
+        currentJt.update("DELETE FROM " + identifierQuoteString + catalog
+                + identifierQuoteString + catalogSeparator
+                + identifierQuoteString + table + identifierQuoteString);
+        DatabaseMetaData md = connection.getMetaData();
+        ResultSet rs = md.getTables(null, null, "%", null);
+        while (rs.next()) {
+            LOGGER.debug("TABLE: {}", rs.getString(3));
+        }
+        connection.close();
     }
 
     @Then("^it will contain$")
@@ -174,17 +234,14 @@ public class StepDefs {
     }
 
     @Before
-    public void setUp(final Scenario scenario) {
+    public void _before(final Scenario scenario) {
         client.before(scenario);
         ryvrsCollection.clear();
     }
 
     @After
-    public void tearDown(final Scenario scenario) {
+    public void _after(final Scenario scenario) {
         client.after(scenario);
-        if (db != null && db instanceof EmbeddedDatabase) {
-            ((EmbeddedDatabase) db).shutdown();
-        }
     }
 
     @Then("^the API Docs will contain an operation for getting the API Docs$")
@@ -268,7 +325,7 @@ public class StepDefs {
     @Given("^it has a table \"([^\"]*)\" with the following structure$")
     public void itHasATableWithTheFollowingStructure(final String table,
             final List<String> structure) throws Throwable {
-        createTable(table);
+        createTable("TEST_DB", table);
         this.currentTable = table;
     }
 
@@ -284,7 +341,7 @@ public class StepDefs {
             events.add(event);
         }
         this.currentEvents = events;
-        insertRows(this.currentTable, events);
+        insertRows("TEST_DB", this.currentTable, events);
     }
 
     @Then("^it will have the following structure$")

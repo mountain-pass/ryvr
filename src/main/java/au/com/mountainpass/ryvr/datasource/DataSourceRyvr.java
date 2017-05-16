@@ -1,11 +1,17 @@
-package au.com.mountainpass.ryvr.jdbc;
+package au.com.mountainpass.ryvr.datasource;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.constraints.Min;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
@@ -16,34 +22,59 @@ import com.fasterxml.jackson.annotation.JsonRawValue;
 import au.com.mountainpass.ryvr.model.Link;
 import au.com.mountainpass.ryvr.model.Ryvr;
 
-public class JdbcRyvr extends Ryvr {
+public class DataSourceRyvr extends Ryvr {
+    @JsonIgnore
+    public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
+    @Min(0)
     private long pageSize = 10; // as of 2017/05/02, optimal page size is
     // 2048 when using h2
+    @JsonIgnore
     private JdbcTemplate jt;
+    @JsonIgnore
     private SqlRowSet rowSet;
     private String[] columnNames;
     private String countQuery;
     private String rowsQuery;
+    private String table;
+    private String orderedBy;
 
-    public JdbcRyvr(String title, JdbcTemplate jt, String database,
+    public DataSourceRyvr(String title, JdbcTemplate jt, String catalog,
             String table, String orderedBy, long pageSize) throws SQLException {
         super(title);
+        this.table = table;
+        this.orderedBy = orderedBy;
         this.jt = jt;
+        Connection connection = this.jt.getDataSource().getConnection();
+        connection.setCatalog(catalog);
+        connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
         this.pageSize = pageSize;
-        String identifierQuoteString = jt.getDataSource().getConnection()
-                .getMetaData().getIdentifierQuoteString();
-        String catalogSeparator = jt.getDataSource().getConnection()
-                .getMetaData().getCatalogSeparator();
-        countQuery = "select count(*) from " + identifierQuoteString + database
-                + identifierQuoteString + catalogSeparator
-                + identifierQuoteString + table + identifierQuoteString;
-        rowsQuery = "select * from " + identifierQuoteString + database
+        String identifierQuoteString = connection.getMetaData()
+                .getIdentifierQuoteString();
+        String catalogSeparator = connection.getMetaData()
+                .getCatalogSeparator();
+        countQuery = generateCountQuery(catalog, table, identifierQuoteString,
+                catalogSeparator);
+        rowsQuery = generateRowQuery(catalog, table, orderedBy,
+                identifierQuoteString, catalogSeparator);
+        connection.close();
+    }
+
+    public String generateRowQuery(String database, String table,
+            String orderedBy, String identifierQuoteString,
+            String catalogSeparator) {
+        return "select * from " + identifierQuoteString + database
                 + identifierQuoteString + catalogSeparator
                 + identifierQuoteString + table + identifierQuoteString
                 + " ORDER BY " + identifierQuoteString + orderedBy
                 + identifierQuoteString + " ASC";
-        refresh();
+    }
+
+    public String generateCountQuery(String database, String table,
+            String identifierQuoteString, String catalogSeparator) {
+        return "select count(*) from " + identifierQuoteString + database
+                + identifierQuoteString + catalogSeparator
+                + identifierQuoteString + table + identifierQuoteString;
     }
 
     @Override
@@ -173,6 +204,9 @@ public class JdbcRyvr extends Ryvr {
     @JsonIgnore
     public Map<String, List<Map<String, Object>>> getEmbedded() {
         Map<String, List<Map<String, Object>>> rows = new HashMap<>();
+        if (rowSet == null) {
+            refreshPage(page);
+        }
         rowSet.absolute((int) ((page - 1l) * pageSize + 1l));
         for (int i = 0; i < pageSize; ++i) {
             Map<String, Object> row = new HashMap<>();
@@ -221,6 +255,26 @@ public class JdbcRyvr extends Ryvr {
     @JsonIgnore
     public String[] getColumnNames() {
         return this.columnNames;
+    }
+
+    /**
+     * @return the jt
+     */
+    @JsonIgnore
+    public JdbcTemplate getJdbcTemplate() {
+        return jt;
+    }
+
+    public long getPageSize() {
+        return pageSize;
+    }
+
+    public String getTable() {
+        return this.table;
+    }
+
+    public String getOrderedBy() {
+        return orderedBy;
     }
 
 }

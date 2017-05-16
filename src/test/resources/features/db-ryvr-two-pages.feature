@@ -28,6 +28,7 @@ Background:
       | page size   | 10            |
   
 
+@current
 Scenario: Get Ryvr - Multiple Pages - Current Page
     When the "transactions" ryvr is retrieved
     Then it will contain
@@ -109,7 +110,6 @@ Scenario: Get Ryvr - Multiple Pages - Current Page
     And it will *not* have the following links
       | next    |
 
-@current
 Scenario: Get Ryvr - Multiple Pages - Previous Then Current Page
     When the "transactions" ryvr is retrieved
     And the previous page is requested
