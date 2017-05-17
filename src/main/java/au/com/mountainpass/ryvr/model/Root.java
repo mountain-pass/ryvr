@@ -30,12 +30,4 @@ public class Root extends HalRepresentation {
         return title;
     }
 
-    /**
-     * @param title
-     *            the title to set
-     */
-    public void setApplicationName(String applicationName) {
-        this.title = applicationName;
-    }
-
 }

@@ -19,15 +19,19 @@ public class SpringProfileCucumber extends Cucumber {
         ActiveProfiles ap = (ActiveProfiles) clazz
                 .getAnnotation(ActiveProfiles.class);
         if (ap != null) {
-            logger.info("spring.profiles.active: {}",
-                    System.getProperty("spring.profiles.active"));
+            String springProfilesActive = System
+                    .getProperty("spring.profiles.active");
+            logger.info("initial spring.profiles.active: {}",
+                    springProfilesActive);
             String newActiveProfiles = String.join(",", ap.value());
-            String activeProfiles = String.join(",",
-                    System.getProperty("spring.profiles.active"),
-                    newActiveProfiles);
+            String activeProfiles = newActiveProfiles;
+            if (springProfilesActive != null) {
+                activeProfiles = String.join(",", springProfilesActive,
+                        newActiveProfiles);
+            }
             System.setProperty("spring.profiles.active", activeProfiles);
-            logger.info("spring.profiles.active: {}",
-                    System.getProperty("spring.profiles.active"));
+            logger.info("current spring.profiles.active: {}",
+                    springProfilesActive);
         }
     }
 }

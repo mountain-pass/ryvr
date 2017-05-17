@@ -91,6 +91,7 @@ public class HtmlRyvrResponse implements RyvrResponse {
 
     @Override
     public void assertItemsHaveStructure(List<String> structure) {
+        HtmlRyvrClient.waitTillLoaded(webDriver, 5);
         List<String> headings = webDriver
                 .findElements(By.className("itemHeading")).stream()
                 .map(element -> element.getText()).collect(Collectors.toList());

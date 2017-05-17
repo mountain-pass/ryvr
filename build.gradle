@@ -205,6 +205,10 @@ testClasses.each { File testClass ->
     tasks["test${baseName}"].finalizedBy jacocoTestReport
 }
 
+test {
+    ignoreFailures = true
+}
+
 test.dependsOn {
     tasks.findAll { task ->  
 //    println "${task.name}.local: ${project.ext.properties["${task.name}.local"]}"

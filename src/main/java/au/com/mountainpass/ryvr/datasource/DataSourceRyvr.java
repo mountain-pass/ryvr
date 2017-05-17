@@ -247,34 +247,8 @@ public class DataSourceRyvr extends Ryvr {
         return links;
     }
 
-    @JsonIgnore
-    public SqlRowSet getRowSet() {
-        return rowSet;
-    }
-
-    @JsonIgnore
-    public String[] getColumnNames() {
-        return this.columnNames;
-    }
-
-    /**
-     * @return the jt
-     */
-    @JsonIgnore
-    public JdbcTemplate getJdbcTemplate() {
-        return jt;
-    }
-
     public long getPageSize() {
         return pageSize;
-    }
-
-    public String getTable() {
-        return this.table;
-    }
-
-    public String getOrderedBy() {
-        return orderedBy;
     }
 
 }

@@ -10,7 +10,7 @@ import cucumber.api.CucumberOptions;
 @CucumberOptions(plugin = { "pretty" }, features = {
         "src/test/resources/features/" }, strict = false, glue = {
                 "au.com.mountainpass.ryvr" }, tags = { "~@performance" })
-@ActiveProfiles({ "intetgrationTest", "ui", "h2", "chrome" })
+@ActiveProfiles({ "integrationTest", "ui", "h2", "chrome" })
 public class RyvrTests_Integration_Ui_H2Local_ChromeLocal {
 
 }

@@ -1,9 +1,6 @@
 package au.com.mountainpass.ryvr.steps;
 
-import java.math.BigDecimal;
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -17,16 +14,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.DatabaseMetaDataCallback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import au.com.mountainpass.ryvr.Application;
-import au.com.mountainpass.ryvr.datasource.DataSourceRyvr;
-import au.com.mountainpass.ryvr.model.RyvrsCollection;
+import au.com.mountainpass.ryvr.config.TestConfiguration;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
+import au.com.mountainpass.ryvr.testclient.RyvrTestConfigClient;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
@@ -39,22 +34,19 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 
-@ContextConfiguration(classes = { Application.class })
+@ContextConfiguration(classes = { Application.class, TestConfiguration.class })
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class StepDefs {
 
     @Autowired
     private RyvrTestClient client;
-
     @Autowired
-    private JdbcTemplate currentJt;
+    private RyvrTestConfigClient configClient;
+
     private RootResponse rootResponseFuture;
 
     private RyvrResponse ryvrResponse;
-
-    @Autowired
-    private RyvrsCollection ryvrsCollection;
 
     private RyvrsCollectionResponse ryvrsCollectionResponse;
 
@@ -67,27 +59,7 @@ public class StepDefs {
     @Given("^a database \"([^\"]*)\"$")
     public void aDatabase(final String dbName) throws Throwable {
 
-        Connection connection = currentJt.getDataSource().getConnection();
-        String identifierQuoteString = connection.getMetaData()
-                .getIdentifierQuoteString();
-
-        String dbProductName = connection.getMetaData()
-                .getDatabaseProductName();
-        LOGGER.info("dbProductName: {}", dbProductName);
-        switch (dbProductName) {
-        case "H2":
-            currentJt.execute(
-                    "CREATE SCHEMA IF NOT EXISTS " + identifierQuoteString
-                            + dbName + identifierQuoteString + ";");
-            break;
-        case "MySQL":
-            currentJt.execute(
-                    "CREATE DATABASE IF NOT EXISTS " + identifierQuoteString
-                            + dbName + identifierQuoteString + ";");
-            break;
-        }
-        connection.setCatalog(dbName);
-        connection.close();
+        configClient.createDatabase(dbName);
     }
 
     @When("^a request is made for the API Docs$")
@@ -103,11 +75,7 @@ public class StepDefs {
     @Given("^a database ryvr with the following configuration$")
     public void a_database_ryvr_with_the_following_configuration(
             Map<String, String> config) throws Throwable {
-        final DataSourceRyvr ryvr = new DataSourceRyvr(config.get("name"),
-                currentJt, config.get("database"), config.get("table"),
-                config.get("ordered by"),
-                Long.parseLong(config.get("page size")));
-        ryvrsCollection.addRyvr(ryvr);
+        configClient.createDataSourceRyvr(config);
 
         // assertThat(ryvrsCollection.getRyvrs().keySet(),
         // hasItem(config.get("name")));
@@ -135,38 +103,9 @@ public class StepDefs {
     }
 
     public void insertRows(final String catalog, final String table,
-            final List<Map<String, String>> events) throws SQLException {
-        Connection connection = currentJt.getDataSource().getConnection();
-        String identifierQuoteString = connection.getMetaData()
-                .getIdentifierQuoteString();
-        String catalogSeparator = connection.getMetaData()
-                .getCatalogSeparator();
+            final List<Map<String, String>> events) throws Throwable {
+        configClient.insertRows(catalog, table, events);
 
-        currentJt.batchUpdate(
-                "insert into " + identifierQuoteString + catalog
-                        + identifierQuoteString + catalogSeparator
-                        + identifierQuoteString + table + identifierQuoteString
-                        + "(ID, ACCOUNT, DESCRIPTION, AMOUNT) values (?, ?, ?, ?)",
-                new BatchPreparedStatementSetter() {
-
-                    @Override
-                    public int getBatchSize() {
-                        return events.size();
-                    }
-
-                    @Override
-                    public void setValues(final PreparedStatement ps,
-                            final int i) throws SQLException {
-                        // TODO Auto-generated method stub
-                        final Map<String, String> row = events.get(i);
-                        ps.setInt(1, Integer.parseInt(row.get("ID")));
-                        ps.setString(2, row.get("ACCOUNT"));
-                        ps.setString(3, row.get("DESCRIPTION"));
-                        ps.setBigDecimal(4, new BigDecimal(row.get("AMOUNT")));
-                    }
-
-                });
-        connection.close();
     }
 
     class GetTableNames implements DatabaseMetaDataCallback {
@@ -185,34 +124,9 @@ public class StepDefs {
     }
 
     public void createTable(String catalog, final String table)
-            throws SQLException {
-        Connection connection = currentJt.getDataSource().getConnection();
-        String identifierQuoteString = connection.getMetaData()
-                .getIdentifierQuoteString();
-        String catalogSeparator = connection.getMetaData()
-                .getCatalogSeparator();
-        currentJt.execute("drop table if exists " + identifierQuoteString
-                + catalog + identifierQuoteString + catalogSeparator
-                + identifierQuoteString + table + identifierQuoteString);
+            throws Throwable {
+        configClient.createTable(catalog, table);
 
-        final StringBuilder statementBuffer = new StringBuilder();
-        statementBuffer.append("create table ");
-        statementBuffer.append(identifierQuoteString + catalog
-                + identifierQuoteString + catalogSeparator);
-        statementBuffer
-                .append(identifierQuoteString + table + identifierQuoteString);
-        statementBuffer.append(
-                " (ID INT, ACCOUNT VARCHAR(255), DESCRIPTION VARCHAR(255), AMOUNT Decimal(19,4), CONSTRAINT PK_ID PRIMARY KEY (ID))");
-        currentJt.execute(statementBuffer.toString());
-        currentJt.update("DELETE FROM " + identifierQuoteString + catalog
-                + identifierQuoteString + catalogSeparator
-                + identifierQuoteString + table + identifierQuoteString);
-        DatabaseMetaData md = connection.getMetaData();
-        ResultSet rs = md.getTables(null, null, "%", null);
-        while (rs.next()) {
-            LOGGER.debug("TABLE: {}", rs.getString(3));
-        }
-        connection.close();
     }
 
     @Then("^it will contain$")
@@ -236,7 +150,7 @@ public class StepDefs {
     @Before
     public void _before(final Scenario scenario) {
         client.before(scenario);
-        ryvrsCollection.clear();
+        configClient._before(scenario);
     }
 
     @After
@@ -294,7 +208,7 @@ public class StepDefs {
 
     @Given("^there are no ryvrs configured$")
     public void thereAreNoRyvrsConfigured() throws Throwable {
-        ryvrsCollection.clear();
+        configClient.clearRyvrs();
     }
 
     @When("^the previous page is requested$")
