@@ -50,6 +50,7 @@ public class KeyStoreManager {
             String keyStorePassword)
             throws KeyStoreException, IOException, NoSuchAlgorithmException,
             CertificateException, FileNotFoundException {
+        LOGGER.info("Loading Key Store: {}", keyStoreFile.getAbsolutePath());
         KeyStore rval = KeyStore.getInstance(keyStoreType);
         if (keyStoreFile.exists()) {
             rval.load(new FileInputStream(keyStoreFile),
@@ -79,6 +80,10 @@ public class KeyStoreManager {
         keyStore.setKeyEntry(keyAlias, keyPair.getPrivate(),
                 keyPassword.toCharArray(), new Certificate[] { cert });
         // Store away the keystore.
+        File parent = keyStoreFile.getParentFile();
+        if (parent != null) {
+            parent.mkdirs();
+        }
         FileOutputStream fos = new FileOutputStream(keyStoreFile);
         keyStore.store(fos, keyStorePassword.toCharArray());
         fos.close();

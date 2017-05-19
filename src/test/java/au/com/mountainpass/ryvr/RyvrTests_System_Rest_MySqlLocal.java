@@ -9,8 +9,7 @@ import cucumber.api.CucumberOptions;
 @RunWith(SpringProfileCucumber.class)
 @CucumberOptions(plugin = { "pretty" }, features = {
         "src/test/resources/features/" }, strict = false, glue = {
-                "au.com.mountainpass.ryvr.test.system" }, tags = {
-                        "~@performance" })
+                "au.com.mountainpass.ryvr" }, tags = { "~@performance" })
 @ActiveProfiles({ "systemTest", "restApi", "mysql" })
 public class RyvrTests_System_Rest_MySqlLocal {
 

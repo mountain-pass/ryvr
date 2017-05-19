@@ -24,6 +24,10 @@ public class RyvrConfiguration implements
         return URI.create("https://" + sslHostname + ":" + getPort());
     }
 
+    public void setPort(int port) {
+        this.port = port;
+    }
+
     @Override
     public void onApplicationEvent(
             EmbeddedServletContainerInitializedEvent event) {

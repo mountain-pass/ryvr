@@ -237,20 +237,20 @@ public class TestConfiguration implements
     }
 
     @Bean
-    RequestConfig httpClientRequestConfig() {
+    public RequestConfig httpClientRequestConfig() {
         final RequestConfig config = RequestConfig.custom()
                 .setConnectTimeout(proxyReadTimeoutMs).build();
         return config;
     }
 
     @Autowired
-    Certificate cert;
+    private Certificate cert;
 
     @Value("${server.ssl.key-alias}")
     private String keyAlias;
 
     @Bean
-    TrustStoreManager trustStoreManager() throws KeyStoreException,
+    public TrustStoreManager trustStoreManager() throws KeyStoreException,
             NoSuchAlgorithmException, CertificateException, IOException {
         TrustStoreManager trustStoreManager = new TrustStoreManager(
                 trustStoreFile, trustStoreType, trustStorePassword);

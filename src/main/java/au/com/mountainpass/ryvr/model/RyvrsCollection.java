@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +24,11 @@ public class RyvrsCollection {
     private Map<String, Link[]> links;
 
     public RyvrsCollection() {
+        links = genLinks();
+    }
+
+    @PostConstruct
+    private void _postConstruct() {
         links = genLinks();
     }
 

@@ -1,16 +1,30 @@
 server:
+  port: 8443
   ssl:
     key-store: keystore.jks
+    key-store-password: secret
+    key-password: secret
+    key-alias: selfSigned
   servlet-path: /
 
 spring:
   application:
     name: ryvr
-        
+
 server.tomcat.access-log-enabled: true
-      
-      
+
 au.com.mountainpass.ryvr:
-    ssl:
-        hostname: localhost
-      
+  ssl:
+    hostname: localhost
+    genCert: selfSigned
+  data-sources:
+    - url: jdbc:mysql://localhost
+      username: dbuser
+      password: dbpass
+      ryvrs:
+        transactions:
+          page-size: 10
+          catalog: TEST_DB
+          table: TRANSACTIONS
+          ordered-by: ID
+    

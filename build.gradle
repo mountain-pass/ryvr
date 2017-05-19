@@ -126,11 +126,19 @@ dependencies {
 
 
     codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.10'
-
-
-
 }
 
+
+bootRun {
+    //args "--spring.config.location=build/bootrun/application.properties"
+}
+//bootRun {
+//    
+//    if ( project.hasProperty('jvmArgs') ) {
+//        jvmArgs = ["-Dserver.ssl.key-store: ${buildDir}/keystore.jks"]
+//        jvmArgs.addAll(project.jvmArgs.split("\\s+") as List)
+//    }
+//}
 
 test { exclude '**' }
 

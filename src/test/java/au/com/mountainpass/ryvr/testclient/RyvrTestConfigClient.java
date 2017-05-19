@@ -20,4 +20,8 @@ public interface RyvrTestConfigClient {
 
     void clearRyvrs();
 
+    void ensureStarted() throws Throwable;
+
+    void _after(Scenario scenario);
+
 }

@@ -145,4 +145,14 @@ public class JavaRyvrConfigClient implements RyvrTestConfigClient {
         ryvrsCollection.clear();
     }
 
+    @Override
+    public void ensureStarted() {
+        // nothing
+    }
+
+    @Override
+    public void _after(Scenario scenario) {
+        // nothing
+    }
+
 }

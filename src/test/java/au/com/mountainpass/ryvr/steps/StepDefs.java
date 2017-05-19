@@ -64,6 +64,7 @@ public class StepDefs {
 
     @When("^a request is made for the API Docs$")
     public void aRequestIsMadeForTheAPIDocs() throws Throwable {
+        configClient.ensureStarted();
         swaggerResponseFuture = client.getApiDocs();
     }
 
@@ -156,6 +157,7 @@ public class StepDefs {
     @After
     public void _after(final Scenario scenario) {
         client.after(scenario);
+        configClient._after(scenario);
     }
 
     @Then("^the API Docs will contain an operation for getting the API Docs$")
@@ -187,6 +189,7 @@ public class StepDefs {
 
     @When("^the \"([^\"]*)\" ryvr is retrieved$")
     public void theRyvrIsRetrieved(final String name) throws Throwable {
+        configClient.ensureStarted();
         ryvrResponse = client.getRyvr(name);
     }
 
