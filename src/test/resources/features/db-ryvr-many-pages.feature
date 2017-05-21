@@ -14,7 +14,8 @@ Background:
       | table       | TRANSACTIONS  |
       | ordered by  | ID            |
       | page size   | 10            |
-  
+
+#@current  
 Scenario: Get Ryvr - Multiple Pages - Current Page
     When the "transactions" ryvr is retrieved
     Then it will have the following structure
