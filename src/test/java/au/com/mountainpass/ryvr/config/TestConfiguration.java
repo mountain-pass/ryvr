@@ -196,7 +196,7 @@ public class TestConfiguration implements
     }
 
     @Bean
-    @Profile(value = { "restApi" })
+    @Profile(value = { "restApi", "systemTest" })
     public RestTemplate restTemplate() throws Exception {
         return new RestTemplate(httpClientFactory());
     }

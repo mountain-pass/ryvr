@@ -10,11 +10,6 @@ import java.math.BigDecimal;
 import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -26,19 +21,7 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,13 +29,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import au.com.mountainpass.TrustStoreManager;
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.config.SslConfig;
 import au.com.mountainpass.ryvr.config.TestConfiguration;
@@ -62,44 +43,24 @@ import cucumber.api.Scenario;
 @Component
 @Profile(value = { "systemTest" })
 public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
-    private static final String PROJECT_DIR = "../..";
 
     private static final String RUN_DIR = "build/bootrun";
-
     private static final String APPLICATION_YML = RUN_DIR + "/application.yml";
-
-    public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private JdbcTemplate currentJt;
 
-    private List<Map<String, String>> dataSourcesRyvrConfigs = new ArrayList<>();
+    private final List<Map<String, String>> dataSourcesRyvrConfigs = new ArrayList<>();
+
+    public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    private RyvrConfiguration ryvrConfig;
 
     private Process server;
 
-    @Value("${server.ssl.protocol:TLS}")
-    private String sslProtocol;
-
-    @Value("${au.com.mountainpass.ryvr.proxy.max.connections.route:20}")
-    private int proxyMaxConnectionsRoute;
-
-    @Value("${au.com.mountainpass.ryvr.proxy.max.connections.total:100}")
-    private int proxyMaxConnectionsTotal;
-
-    @Value("${au.com.mountainpass.ryvr.proxy.read.timeout.ms:60000}")
-    private int proxyReadTimeoutMs;
-
-    @Value("${au.com.mountainpass.ryvr.ssl.hostname}")
-    private String sslHostname;
-
-    @Value("${javax.net.ssl.trustStore:build/truststore.jks}")
-    private String trustStoreFile;
-
-    @Value("${javax.net.ssl.trustStorePassword:changeit}")
-    private String trustStorePassword;
-
-    @Value("${javax.net.ssl.trustStoreType:JKS}")
-    private String trustStoreType;
+    @Value("${spring.datasource.password}")
+    private String springDatasourcePassword;
 
     @Value("${spring.datasource.url}")
     private String springDatasourceUrl;
@@ -107,16 +68,67 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
     @Value("${spring.datasource.username}")
     private String springDatasourceUsername;
 
-    @Value("${spring.datasource.password}")
-    private String springDatasourcePassword;
+    @Autowired
+    private SslConfig sslConfig;
+
+    @Autowired
+    private TestConfiguration testConfig;
 
     @Override
-    public void createDatabase(String dbName) throws Throwable {
-        Connection connection = currentJt.getDataSource().getConnection();
-        String identifierQuoteString = connection.getMetaData()
+    public void _after(final Scenario scenario) {
+        stop();
+    }
+
+    @Override
+    public void _before(final Scenario scenario) {
+        clearRyvrs();
+    }
+
+    @Override
+    public void clearRyvrs() {
+        stop();
+        dataSourcesRyvrConfigs.clear();
+    }
+
+    private void createApplicationProperties() throws IOException {
+        new File(RUN_DIR).mkdirs();
+        new File(APPLICATION_YML).delete();
+        final FileWriter fileWriter = new FileWriter(APPLICATION_YML);
+        final StringWriter writer = new StringWriter();
+        writer.write("server:\n");
+        writer.write("  ssl:\n");
+        writer.write("    key-store: build/bootrun/keystore.jks\n");
+        writer.write("au.com.mountainpass.ryvr:\n");
+        writer.write("  data-sources:\n");
+        writer.write("    - url: " + springDatasourceUrl + "\n");
+        writer.write("      username: " + springDatasourceUsername + "\n");
+        writer.write("      password: " + springDatasourcePassword + "\n");
+        if (!dataSourcesRyvrConfigs.isEmpty()) {
+            writer.write("      ryvrs:\n");
+            for (final Map<String, String> config : dataSourcesRyvrConfigs) {
+                writer.write("        " + config.get("name") + ":\n");
+                writer.write("          page-size: " + config.get("page size")
+                        + "\n");
+                writer.write(
+                        "          catalog: " + config.get("database") + "\n");
+                writer.write("          table: " + config.get("table") + "\n");
+                writer.write("          ordered-by: " + config.get("ordered by")
+                        + "\n");
+            }
+        }
+        writer.close();
+        LOGGER.info("CONFIG:\r\n{}", writer.getBuffer().toString());
+        fileWriter.write(writer.getBuffer().toString());
+        fileWriter.close();
+    }
+
+    @Override
+    public void createDatabase(final String dbName) throws Throwable {
+        final Connection connection = currentJt.getDataSource().getConnection();
+        final String identifierQuoteString = connection.getMetaData()
                 .getIdentifierQuoteString();
 
-        String dbProductName = connection.getMetaData()
+        final String dbProductName = connection.getMetaData()
                 .getDatabaseProductName();
         LOGGER.info("dbProductName: {}", dbProductName);
         switch (dbProductName) {
@@ -136,18 +148,114 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
     }
 
     @Override
-    public void createDataSourceRyvr(Map<String, String> config)
+    public void createDataSourceRyvr(final Map<String, String> config)
             throws Throwable {
         this.dataSourcesRyvrConfigs.add(config);
     }
 
     @Override
-    public void insertRows(String catalog, String table,
-            List<Map<String, String>> events) throws Throwable {
-        Connection connection = currentJt.getDataSource().getConnection();
-        String identifierQuoteString = connection.getMetaData()
+    public void createTable(final String catalog, final String table)
+            throws Throwable {
+        final Connection connection = currentJt.getDataSource().getConnection();
+        final String identifierQuoteString = connection.getMetaData()
                 .getIdentifierQuoteString();
-        String catalogSeparator = connection.getMetaData()
+        final String catalogSeparator = connection.getMetaData()
+                .getCatalogSeparator();
+        currentJt.execute("drop table if exists " + identifierQuoteString
+                + catalog + identifierQuoteString + catalogSeparator
+                + identifierQuoteString + table + identifierQuoteString);
+
+        final StringBuilder statementBuffer = new StringBuilder();
+        statementBuffer.append("create table ");
+        statementBuffer.append(identifierQuoteString + catalog
+                + identifierQuoteString + catalogSeparator);
+        statementBuffer
+                .append(identifierQuoteString + table + identifierQuoteString);
+        statementBuffer.append(
+                " (ID INT, ACCOUNT VARCHAR(255), DESCRIPTION VARCHAR(255), AMOUNT Decimal(19,4), CONSTRAINT PK_ID PRIMARY KEY (ID))");
+        currentJt.execute(statementBuffer.toString());
+        currentJt.update("DELETE FROM " + identifierQuoteString + catalog
+                + identifierQuoteString + catalogSeparator
+                + identifierQuoteString + table + identifierQuoteString);
+        final DatabaseMetaData md = connection.getMetaData();
+        final ResultSet rs = md.getTables(null, null, "%", null);
+        while (rs.next()) {
+            LOGGER.debug("TABLE: {}", rs.getString(3));
+        }
+        connection.close();
+    }
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Override
+    public void ensureStarted() throws Throwable {
+        createApplicationProperties();
+        // ../../gradlew -p ../..
+        final ProcessBuilder pb = new ProcessBuilder("sh", "./gradlew",
+                "-Dspring.config.location=" + APPLICATION_YML, "bootRun")
+                        .inheritIO();
+        server = pb.start();
+        testConfig.setPort(8443);
+        ryvrConfig.setPort(8443);
+
+        final URI baseUri = ryvrConfig.getBaseUri();
+        final String host = baseUri.getHost();
+        final int port = baseUri.getPort();
+
+        LOGGER.info("Waiting for server to start: {}:{}", host, port);
+        for (int i = 0; i < 30 && server.isAlive(); ++i) {
+            try {
+                if (hostAvailable(host, port)) {
+                    break;
+                }
+            } catch (final UnknownHostException e) {
+                throw new RuntimeException(e);
+            }
+            Thread.sleep(1000);
+        }
+        assertTrue(server.isAlive());
+        LOGGER.info("Connected to server: {}:{}", host, port);
+
+        LOGGER.info("Waiting for UP status: {}:{}", host, port);
+
+        for (int i = 0; i < 30 && server.isAlive(); ++i) {
+            try {
+                final ResponseEntity<Health> health = restTemplate
+                        .getForEntity(baseUri.resolve("/health"), Health.class);
+                LOGGER.info("Status Response: {}", health);
+                LOGGER.info("Status: {}", health.getBody().status);
+                if (Status.UP.equals(health.getBody().status)) {
+                    return;
+                }
+            } catch (final Exception e) {
+                LOGGER.info("Status: {}", e.getMessage());
+            }
+            Thread.sleep(1000);
+        }
+        assertTrue(server.isAlive());
+
+        throw new TimeoutException("timeout waiting for server to start");
+    }
+
+    private boolean hostAvailable(final String host, final int port)
+            throws UnknownHostException {
+        try (Socket s = new Socket(host, port)) {
+            s.close();
+            return true;
+        } catch (final IOException e) {
+            LOGGER.info("Status: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public void insertRows(final String catalog, final String table,
+            final List<Map<String, String>> events) throws Throwable {
+        final Connection connection = currentJt.getDataSource().getConnection();
+        final String identifierQuoteString = connection.getMetaData()
+                .getIdentifierQuoteString();
+        final String catalogSeparator = connection.getMetaData()
                 .getCatalogSeparator();
 
         currentJt.batchUpdate(
@@ -177,58 +285,10 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
         connection.close();
     }
 
-    @Override
-    public void createTable(String catalog, String table) throws Throwable {
-        Connection connection = currentJt.getDataSource().getConnection();
-        String identifierQuoteString = connection.getMetaData()
-                .getIdentifierQuoteString();
-        String catalogSeparator = connection.getMetaData()
-                .getCatalogSeparator();
-        currentJt.execute("drop table if exists " + identifierQuoteString
-                + catalog + identifierQuoteString + catalogSeparator
-                + identifierQuoteString + table + identifierQuoteString);
-
-        final StringBuilder statementBuffer = new StringBuilder();
-        statementBuffer.append("create table ");
-        statementBuffer.append(identifierQuoteString + catalog
-                + identifierQuoteString + catalogSeparator);
-        statementBuffer
-                .append(identifierQuoteString + table + identifierQuoteString);
-        statementBuffer.append(
-                " (ID INT, ACCOUNT VARCHAR(255), DESCRIPTION VARCHAR(255), AMOUNT Decimal(19,4), CONSTRAINT PK_ID PRIMARY KEY (ID))");
-        currentJt.execute(statementBuffer.toString());
-        currentJt.update("DELETE FROM " + identifierQuoteString + catalog
-                + identifierQuoteString + catalogSeparator
-                + identifierQuoteString + table + identifierQuoteString);
-        DatabaseMetaData md = connection.getMetaData();
-        ResultSet rs = md.getTables(null, null, "%", null);
-        while (rs.next()) {
-            LOGGER.debug("TABLE: {}", rs.getString(3));
-        }
-        connection.close();
-    }
-
-    @Override
-    public void _before(Scenario scenario) {
-        clearRyvrs();
-    }
-
-    @Override
-    public void clearRyvrs() {
-        stop();
-        dataSourcesRyvrConfigs.clear();
-    }
-
-    @Autowired
-    TestConfiguration testConfig;
-
-    @Autowired
-    RyvrConfiguration ryvrConfig;
-
     @PostConstruct
     private void postConstruct() {
-        BootRunRyvrConfigClient config = this;
-        Thread closeChildThread = new Thread() {
+        final BootRunRyvrConfigClient config = this;
+        final Thread closeChildThread = new Thread() {
             @Override
             public void run() {
                 config.stop();
@@ -238,214 +298,6 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
         Runtime.getRuntime().addShutdownHook(closeChildThread);
     }
 
-    @Autowired
-    private SslConfig sslConfig;
-
-    @Autowired
-    private TrustStoreManager trustStoreManager;
-
-    @Value("${server.ssl.key-alias}")
-    private String keyAlias;
-
-    @Autowired
-    private SSLContext sslContext;
-
-    @Autowired
-    private TrustManagerFactory trustManagerFactory;
-
-    private Certificate cert;
-
-    private boolean hostAvailable(String host, int port)
-            throws UnknownHostException {
-        try (Socket s = new Socket(host, port)) {
-            s.close();
-            return true;
-        } catch (IOException e) {
-            LOGGER.info("Status: {}", e.getMessage());
-            return false;
-        }
-    }
-
-    @Override
-    public void ensureStarted() throws Throwable {
-        createApplicationProperties();
-        // ../../gradlew -p ../..
-        ProcessBuilder pb = new ProcessBuilder("sh", "./gradlew",
-                "-Dspring.config.location=" + APPLICATION_YML, "bootRun")
-                        .inheritIO();
-        server = pb.start();
-        testConfig.setPort(8443);
-        ryvrConfig.setPort(8443);
-
-        URI baseUri = ryvrConfig.getBaseUri();
-        String host = baseUri.getHost();
-        int port = baseUri.getPort();
-
-        LOGGER.info("Waiting for server to start: {}:{}", host, port);
-        for (int i = 0; i < 30 && server.isAlive(); ++i) {
-            try {
-                if (hostAvailable(host, port)) {
-                    break;
-                }
-            } catch (UnknownHostException e) {
-                throw new RuntimeException(e);
-            }
-            Thread.sleep(1000);
-        }
-        assertTrue(server.isAlive());
-        LOGGER.info("Connected to server: {}:{}", host, port);
-
-        cert = sslConfig.cert();
-
-        RestTemplate restTemplate = new RestTemplate(httpClientFactory());
-
-        LOGGER.info("Waiting for UP status: {}:{}", host, port);
-
-        for (int i = 0; i < 30 && server.isAlive(); ++i) {
-            try {
-                ResponseEntity<Health> health = restTemplate
-                        .getForEntity(baseUri.resolve("/health"), Health.class);
-                LOGGER.info("Status Response: {}", health);
-                LOGGER.info("Status: {}", health.getBody().status);
-                if (Status.UP.equals(health.getBody().status)) {
-                    return;
-                }
-            } catch (Exception e) {
-                LOGGER.info("Status: {}", e.getMessage());
-            }
-            Thread.sleep(1000);
-        }
-        assertTrue(server.isAlive());
-
-        throw new TimeoutException("timeout waiting for server to start");
-    }
-
-    private void createApplicationProperties() throws IOException {
-        new File(RUN_DIR).mkdirs();
-        new File(APPLICATION_YML).delete();
-        FileWriter fileWriter = new FileWriter(APPLICATION_YML);
-        StringWriter writer = new StringWriter();
-        writer.write("server:\n");
-        // writer.write(" port: 8443\n");
-        writer.write("  ssl:\n");
-        writer.write("    key-store: build/bootrun/keystore.jks\n");
-        // writer.write(" key-store-password: secret\n");
-        // writer.write(" key-password: secret\n");
-        // writer.write(" key-alias: selfSigned\n");
-        writer.write("au.com.mountainpass.ryvr:\n");
-        // writer.write(" ssl:\n");
-        // writer.write(" hostname: localhost\n");
-        // writer.write(" genCert: selfSigned\n");
-        writer.write("  data-sources:\n");
-        writer.write("    - url: " + springDatasourceUrl + "\n");
-        writer.write("      username: " + springDatasourceUsername + "\n");
-        writer.write("      password: " + springDatasourcePassword + "\n");
-        if (!dataSourcesRyvrConfigs.isEmpty()) {
-            writer.write("      ryvrs:\n");
-            for (Map<String, String> config : dataSourcesRyvrConfigs) {
-                writer.write("        " + config.get("name") + ":\n");
-                writer.write("          page-size: " + config.get("page size")
-                        + "\n");
-                writer.write(
-                        "          catalog: " + config.get("database") + "\n");
-                writer.write("          table: " + config.get("table") + "\n");
-                writer.write("          ordered-by: " + config.get("ordered by")
-                        + "\n");
-            }
-        }
-        writer.close();
-        LOGGER.info("CONFIG:\r\n{}", writer.getBuffer().toString());
-        fileWriter.write(writer.getBuffer().toString());
-        fileWriter.close();
-    }
-
-    public HttpComponentsClientHttpRequestFactory httpClientFactory()
-            throws Exception {
-        final HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(
-                httpClient());
-        factory.setReadTimeout(200000);
-        return factory;
-    }
-
-    public CloseableHttpClient httpClient() throws Exception {
-        return httpClientBuilder().build();
-    }
-
-    public HttpClientBuilder httpClientBuilder() throws Exception {
-        final HttpClientConnectionManager connectionManager = httpClientConnectionManager();
-        final RequestConfig config = httpClientRequestConfig();
-        return HttpClientBuilder.create()
-                .setConnectionManager(connectionManager)
-                .setDefaultRequestConfig(config)
-                .setSSLSocketFactory(sslSocketFactory())
-                .setSslcontext(sslContext()).disableRedirectHandling();
-    }
-
-    public HttpClientConnectionManager httpClientConnectionManager()
-            throws Exception {
-        final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
-                httpConnectionSocketFactoryRegistry());
-        connectionManager.setMaxTotal(proxyMaxConnectionsTotal);
-        connectionManager.setDefaultMaxPerRoute(proxyMaxConnectionsRoute);
-        return connectionManager;
-    }
-
-    public RequestConfig httpClientRequestConfig() {
-        final RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(proxyReadTimeoutMs).build();
-        return config;
-    }
-
-    public SSLConnectionSocketFactory sslSocketFactory() throws Exception {
-        final SSLConnectionSocketFactory sf = new SSLConnectionSocketFactory(
-                sslContext());
-        return sf;
-    }
-
-    public SSLContext sslContext() throws Exception {
-        sslContext = SSLContext.getInstance(sslProtocol);
-        final TrustManagerFactory tmf = trustManagerFactory();
-        final KeyStore ks = trustStoreManager().getKeyStore();
-        tmf.init(ks);
-        sslContext.init(null, tmf.getTrustManagers(), null);
-        return sslContext;
-    }
-
-    public Registry<ConnectionSocketFactory> httpConnectionSocketFactoryRegistry()
-            throws Exception {
-        return RegistryBuilder.<ConnectionSocketFactory> create()
-                .register("http",
-                        PlainConnectionSocketFactory.getSocketFactory())
-                .register("https", sslSocketFactory()).build();
-    }
-
-    TrustManagerFactory trustManagerFactory() throws NoSuchAlgorithmException {
-        final TrustManagerFactory tmf = TrustManagerFactory
-                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        return tmf;
-    }
-
-    public TrustStoreManager trustStoreManager() throws KeyStoreException,
-            NoSuchAlgorithmException, CertificateException, IOException {
-        TrustStoreManager trustStoreManager = new TrustStoreManager(
-                trustStoreFile, trustStoreType, trustStorePassword);
-        if (trustStoreManager.isSystemDefaultTrustStore()) {
-            LOGGER.warn(
-                    "Trust Store location {} appears to be set to system default. The Self signed cert for testing will not be added and the tests will likely fail.",
-                    trustStoreManager.getTrustStoreLocation());
-        } else {
-            LOGGER.info("Adding certificate to trust store: {}\n{}", keyAlias,
-                    cert);
-            trustStoreManager.addCert(keyAlias, cert);
-        }
-        return trustStoreManager;
-    }
-
-    @Override
-    public void _after(Scenario scenario) {
-        stop();
-    }
-
     public void stop() {
         if (server != null) {
             server.destroy();
@@ -453,13 +305,13 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
                 LOGGER.info("Waiting for server to terminate...");
                 try {
                     Thread.sleep(1000);
-                } catch (InterruptedException e) {
+                } catch (final InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             }
-            URI baseUri = ryvrConfig.getBaseUri();
-            String host = baseUri.getHost();
-            int port = baseUri.getPort();
+            final URI baseUri = ryvrConfig.getBaseUri();
+            final String host = baseUri.getHost();
+            final int port = baseUri.getPort();
 
             LOGGER.info("Waiting for server to stop listening: {}:{}", host,
                     port);
