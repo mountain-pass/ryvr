@@ -1,4 +1,3 @@
-@current
 Feature: DB Ryvr
     In order create projections from the events that have happened in a DB
     As a user
@@ -45,7 +44,6 @@ Scenario: Get Ryvr - Multiple Pages - Current Page
     And it will *not* have the following links
       | next    |
 
-@current
 Scenario: Get Ryvr - Multiple Pages - Follow Prev Link
     When the "transactions" ryvr is retrieved
     And the previous page is requested

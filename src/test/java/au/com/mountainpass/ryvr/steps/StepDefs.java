@@ -70,6 +70,7 @@ public class StepDefs {
 
     @When("^a request is made to the server's base URL$")
     public void aRequestIsMadeToTheServersBaseURL() throws Throwable {
+        configClient.ensureStarted();
         rootResponseFuture = client.getRoot();
     }
 
@@ -195,6 +196,7 @@ public class StepDefs {
 
     @When("^the ryvrs list is retrieved$")
     public void theRyvrsListIsRetrieved() throws Throwable {
+        configClient.ensureStarted();
         ryvrsCollectionResponse = client.getRyvrsCollection();
     }
 

@@ -3,6 +3,7 @@ Feature: DB Ryvr
     As a user
     I want to get a paginated list of events from the DB
 
+@current
 Scenario: Find Ryvr in Collection
     Given a database "TEST_DB" 
     And it has a table "TRANSACTIONS" with the following events
