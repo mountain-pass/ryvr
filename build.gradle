@@ -212,6 +212,8 @@ testClasses.each { File testClass ->
             append = false
             destinationFile = file("${coverageDir}/jacoco/${baseName}.exec")
         }
+
+        ignoreFailures = true
     }
     tasks["test${baseName}"].finalizedBy jacocoTestReport
 }
