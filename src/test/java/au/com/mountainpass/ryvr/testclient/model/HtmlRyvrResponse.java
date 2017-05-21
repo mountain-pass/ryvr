@@ -26,10 +26,7 @@ public class HtmlRyvrResponse implements RyvrResponse {
 
     @Override
     public void assertHasItems(List<Map<String, String>> events) {
-        List<String> headings = webDriver.findElement(By.id("items"))
-                .findElements(By.className("itemHeading")).stream()
-                .map(heading -> heading.getText()).collect(Collectors.toList());
-
+        HtmlRyvrClient.waitTillLoaded(webDriver, 5);
         List<WebElement> items = webDriver.findElement(By.id("items"))
                 .findElements(By.className("itemRow"));
 
