@@ -11,6 +11,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 
 import org.apache.catalina.startup.Tomcat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -24,6 +26,8 @@ import au.com.mountainpass.ssl.KeyStoreManager;
 
 @Configuration
 public class SslConfig {
+
+    public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     @Value("${au.com.mountainpass.ryvr.ssl.hostname}")
     private String sslHostname;
@@ -43,7 +47,9 @@ public class SslConfig {
             NoSuchProviderException, InvalidKeyException, IllegalStateException,
             SignatureException, KeyStoreException, IOException {
         Certificate cert = keyStoreManager.getCertificate();
-        if (cert == null) {
+        if (cert != null) {
+            cert.verify(cert.getPublicKey());
+        } else {
             if ("false".equals(genCert)) {
                 throw new CertificateNotFoundException(
                         keyStoreManager.getKeyAlias());
@@ -56,6 +62,7 @@ public class SslConfig {
 
             keyStoreManager.addCertificate(keyPair, cert);
         }
+        LOGGER.info("using cert:\r\n{}", cert);
         return cert;
     }
 

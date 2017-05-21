@@ -129,16 +129,19 @@ dependencies {
 }
 
 
-bootRun {
-    //args "--spring.config.location=build/bootrun/application.properties"
-}
 //bootRun {
-//    
+//    args "--spring.config.location=build/bootrun/application.properties"
+//}
+bootRun {
+    String activeProfile =  System.properties['spring.profiles.active']
+    String confLoc = System.properties['spring.config.location']
+    systemProperty "spring.profiles.active", activeProfile
+    systemProperty "spring.config.location", confLoc
 //    if ( project.hasProperty('jvmArgs') ) {
 //        jvmArgs = ["-Dserver.ssl.key-store: ${buildDir}/keystore.jks"]
 //        jvmArgs.addAll(project.jvmArgs.split("\\s+") as List)
 //    }
-//}
+}
 
 test { exclude '**' }
 

@@ -5,8 +5,8 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.math.BigDecimal;
-import java.net.ConnectException;
 import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -50,7 +50,6 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import au.com.mountainpass.TrustStoreManager;
@@ -217,6 +216,7 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
     @Override
     public void clearRyvrs() {
         stop();
+        dataSourcesRyvrConfigs.clear();
     }
 
     @Autowired
@@ -255,11 +255,14 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
 
     private Certificate cert;
 
-    public static boolean hostAvailable(String host, int port)
-            throws UnknownHostException, IOException {
+    private boolean hostAvailable(String host, int port)
+            throws UnknownHostException {
         try (Socket s = new Socket(host, port)) {
             s.close();
             return true;
+        } catch (IOException e) {
+            LOGGER.info("Status: {}", e.getMessage());
+            return false;
         }
     }
 
@@ -267,9 +270,9 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
     public void ensureStarted() throws Throwable {
         createApplicationProperties();
         // ../../gradlew -p ../..
-        ProcessBuilder pb = new ProcessBuilder("sh", PROJECT_DIR + "/gradlew",
-                "-p", PROJECT_DIR, "bootRun").inheritIO()
-                        .directory(new File(RUN_DIR));
+        ProcessBuilder pb = new ProcessBuilder("sh", "./gradlew",
+                "-Dspring.config.location=" + APPLICATION_YML, "bootRun")
+                        .inheritIO();
         server = pb.start();
         testConfig.setPort(8443);
         ryvrConfig.setPort(8443);
@@ -284,8 +287,8 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
                 if (hostAvailable(host, port)) {
                     break;
                 }
-            } catch (ResourceAccessException | ConnectException e) {
-                LOGGER.info("Status: {}", e.getMessage());
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
             }
             Thread.sleep(1000);
         }
@@ -320,11 +323,12 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
     private void createApplicationProperties() throws IOException {
         new File(RUN_DIR).mkdirs();
         new File(APPLICATION_YML).delete();
-        FileWriter writer = new FileWriter(APPLICATION_YML);
+        FileWriter fileWriter = new FileWriter(APPLICATION_YML);
+        StringWriter writer = new StringWriter();
         writer.write("server:\n");
         // writer.write(" port: 8443\n");
-        // writer.write(" ssl:\n");
-        writer.write(" key-store: build/bootrun/keystore.jks\n");
+        writer.write("  ssl:\n");
+        writer.write("    key-store: build/bootrun/keystore.jks\n");
         // writer.write(" key-store-password: secret\n");
         // writer.write(" key-password: secret\n");
         // writer.write(" key-alias: selfSigned\n");
@@ -336,17 +340,23 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
         writer.write("    - url: " + springDatasourceUrl + "\n");
         writer.write("      username: " + springDatasourceUsername + "\n");
         writer.write("      password: " + springDatasourcePassword + "\n");
-        writer.write("      ryvrs:\n");
-        for (Map<String, String> config : dataSourcesRyvrConfigs) {
-            writer.write("        " + config.get("name") + ":\n");
-            writer.write(
-                    "          page-size: " + config.get("page size") + "\n");
-            writer.write("          catalog: " + config.get("database") + "\n");
-            writer.write("          table: " + config.get("table") + "\n");
-            writer.write(
-                    "          ordered-by: " + config.get("ordered by") + "\n");
+        if (!dataSourcesRyvrConfigs.isEmpty()) {
+            writer.write("      ryvrs:\n");
+            for (Map<String, String> config : dataSourcesRyvrConfigs) {
+                writer.write("        " + config.get("name") + ":\n");
+                writer.write("          page-size: " + config.get("page size")
+                        + "\n");
+                writer.write(
+                        "          catalog: " + config.get("database") + "\n");
+                writer.write("          table: " + config.get("table") + "\n");
+                writer.write("          ordered-by: " + config.get("ordered by")
+                        + "\n");
+            }
         }
         writer.close();
+        LOGGER.info("CONFIG:\r\n{}", writer.getBuffer().toString());
+        fileWriter.write(writer.getBuffer().toString());
+        fileWriter.close();
     }
 
     public HttpComponentsClientHttpRequestFactory httpClientFactory()
@@ -393,7 +403,7 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
     }
 
     public SSLContext sslContext() throws Exception {
-        final SSLContext sslContext = SSLContext.getInstance(sslProtocol);
+        sslContext = SSLContext.getInstance(sslProtocol);
         final TrustManagerFactory tmf = trustManagerFactory();
         final KeyStore ks = trustStoreManager().getKeyStore();
         tmf.init(ks);
@@ -439,6 +449,35 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
     public void stop() {
         if (server != null) {
             server.destroy();
+            while (server.isAlive()) {
+                LOGGER.info("Waiting for server to terminate...");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            URI baseUri = ryvrConfig.getBaseUri();
+            String host = baseUri.getHost();
+            int port = baseUri.getPort();
+
+            LOGGER.info("Waiting for server to stop listening: {}:{}", host,
+                    port);
+            boolean stopped = false;
+            for (int i = 0; i < 30; ++i) {
+                try {
+                    if (!hostAvailable(host, port)) {
+                        stopped = true;
+                        break;
+                    }
+                    LOGGER.info("waiting...");
+                    Thread.sleep(1000);
+                } catch (InterruptedException | UnknownHostException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            assertTrue(stopped);
+            LOGGER.info("...Terminated");
             server = null;
         }
     }

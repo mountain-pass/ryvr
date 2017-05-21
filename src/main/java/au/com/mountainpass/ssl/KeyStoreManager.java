@@ -87,6 +87,7 @@ public class KeyStoreManager {
         FileOutputStream fos = new FileOutputStream(keyStoreFile);
         keyStore.store(fos, keyStorePassword.toCharArray());
         fos.close();
+        throw new RuntimeException(keyStoreFile.getAbsolutePath());
     }
 
     private String getKeyStoreLocation(String trustStoreFile) {
