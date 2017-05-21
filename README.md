@@ -91,9 +91,11 @@ profile. It can either by run as a JUnit test from within your IDE or run using 
 ## Road Map
 
  - [X] Add tests using MySQL instead of H2
- - [ ] SSL Config
- - [ ] Add support for configuring ryvrs from config file
- - [ ] Rename test phases to correctly specify their nature
+ - [X] SSL Config
+ - [X] Add support for configuring ryvrs from config file
+ - [X] Rename test phases to correctly specify their nature
+ - [ ] Add tests for various ways of starting Ryvr
+ - [ ] release
  - [ ] Add Circuit Breaker
  - [ ] Modify Perf test to use latency per event rather than latency per page
  - [ ] Add logic to calculate optimal page size
@@ -102,6 +104,5 @@ profile. It can either by run as a JUnit test from within your IDE or run using 
  - [ ] Add support for more databases
  - [ ] Add client library
  - [ ] Add caching headers
- - [ ] release
  - [ ] Add rest ryvr
  - [ ] Add logic to create triggers to allow ryvrs from non-event based tables
