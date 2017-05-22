@@ -153,6 +153,8 @@ new ByteArrayOutputStream().withStream { os ->
     ext.whoami = os.toString().trim()
 }
 
+import java.util.Properties;
+
 if(file("gradle-${whoami}.properties").exists()) {
     file("gradle-${whoami}.properties").withReader { reader ->
         def userProps = new Properties()
