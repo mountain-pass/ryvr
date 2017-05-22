@@ -17,7 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RyvrTestDbClientImpl implements RyvrTestDbClient {
+public class RyvrTestDbDriverImpl implements RyvrTestDbDriver {
     public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     @Autowired

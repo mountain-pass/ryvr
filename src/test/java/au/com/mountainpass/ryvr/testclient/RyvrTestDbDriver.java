@@ -3,7 +3,7 @@ package au.com.mountainpass.ryvr.testclient;
 import java.util.List;
 import java.util.Map;
 
-public interface RyvrTestDbClient {
+public interface RyvrTestDbDriver {
 
     void createDatabase(String dbName) throws Throwable;
 

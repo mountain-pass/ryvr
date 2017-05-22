@@ -22,7 +22,7 @@ import au.com.mountainpass.ryvr.Application;
 import au.com.mountainpass.ryvr.config.TestConfiguration;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 import au.com.mountainpass.ryvr.testclient.RyvrTestConfigClient;
-import au.com.mountainpass.ryvr.testclient.RyvrTestDbClient;
+import au.com.mountainpass.ryvr.testclient.RyvrTestDbDriver;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
@@ -47,7 +47,7 @@ public class StepDefs {
     private RyvrTestConfigClient configClient;
 
     @Autowired
-    private RyvrTestDbClient dbClient;
+    private RyvrTestDbDriver dbClient;
 
     private RootResponse rootResponseFuture;
 
