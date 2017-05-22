@@ -15,7 +15,7 @@ import cucumber.api.Scenario;
 
 @Component
 @Profile(value = { "integrationTest" })
-public class JavaRyvrConfigClient implements RyvrTestConfigClient {
+public class RyvrTestEmbeddedServerAdminDriver implements RyvrTestServerAdminDriver {
     @Autowired
     private JdbcTemplate currentJt;
 

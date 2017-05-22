@@ -21,7 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import au.com.mountainpass.ryvr.Application;
 import au.com.mountainpass.ryvr.config.TestConfiguration;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
-import au.com.mountainpass.ryvr.testclient.RyvrTestConfigClient;
+import au.com.mountainpass.ryvr.testclient.RyvrTestServerAdminDriver;
 import au.com.mountainpass.ryvr.testclient.RyvrTestDbDriver;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
@@ -44,7 +44,7 @@ public class StepDefs {
     private RyvrTestClient client;
 
     @Autowired
-    private RyvrTestConfigClient configClient;
+    private RyvrTestServerAdminDriver configClient;
 
     @Autowired
     private RyvrTestDbDriver dbClient;

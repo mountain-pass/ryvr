@@ -4,7 +4,7 @@ import java.util.Map;
 
 import cucumber.api.Scenario;
 
-public interface RyvrTestConfigClient {
+public interface RyvrTestServerAdminDriver {
 
     void createDataSourceRyvr(Map<String, String> config) throws Throwable;
 

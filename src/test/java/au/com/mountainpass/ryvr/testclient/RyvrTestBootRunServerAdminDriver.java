@@ -34,7 +34,7 @@ import cucumber.api.Scenario;
 
 @Component
 @Profile(value = { "systemTest" })
-public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
+public class RyvrTestBootRunServerAdminDriver implements RyvrTestServerAdminDriver {
 
     private static final String RUN_DIR = "build/bootrun";
     private static final String APPLICATION_YML = RUN_DIR + "/application.yml";
@@ -183,7 +183,7 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
 
     @PostConstruct
     private void postConstruct() {
-        final BootRunRyvrConfigClient config = this;
+        final RyvrTestBootRunServerAdminDriver config = this;
         final Thread closeChildThread = new Thread() {
             @Override
             public void run() {
