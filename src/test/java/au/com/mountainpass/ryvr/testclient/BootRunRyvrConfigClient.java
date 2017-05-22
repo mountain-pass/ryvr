@@ -192,7 +192,7 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
     public void ensureStarted() throws Throwable {
         createApplicationProperties();
         // ../../gradlew -p ../..
-        final ProcessBuilder pb = new ProcessBuilder("sh", "./gradlew",
+        final ProcessBuilder pb = new ProcessBuilder("bash", "./gradlew",
                 "-Dspring.config.location=" + APPLICATION_YML, "bootRun")
                         .inheritIO();
         server = pb.start();
