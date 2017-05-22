@@ -4,9 +4,9 @@ Feature: DB Ryvr
     I want to get a paginated list of events from the DB
 
 Background:
-    Given a database "TEST_DB" 
-    And it has a table "TRANSACTIONS" with the following events
-      | ID  | ACCOUNT | DESCRIPTION    | AMOUNT   |
+    Given a database "test_db" 
+    And it has a table "transactions" with the following events
+      | id  | account | description    | amount   |
       | 0   | 7786543 | ATM Withdrawal | -10.00   | 
       | 1   | 7786543 | ATM Withdrawal | -20.00   | 
       | 2   | 7786543 | ATM Withdrawal | -30.00   | 
@@ -22,15 +22,15 @@ Background:
       | 12  | 7786543 | ATM Withdrawal | -130.00  | 
     And a database ryvr with the following configuration
       | name        | transactions  |
-      | database    | TEST_DB       |
-      | table       | TRANSACTIONS  |
-      | ordered by  | ID            |
+      | database    | test_db       |
+      | table       | transactions  |
+      | ordered by  | id            |
       | page size   | 10            |
   
 Scenario: Get Ryvr - Multiple Pages - Current Page
     When the "transactions" ryvr is retrieved
     Then it will contain
-      | ID  | ACCOUNT | DESCRIPTION    | AMOUNT   |
+      | id  | account | description    | amount   |
       | 10  | 7786543 | ATM Withdrawal | -110.00  | 
       | 11  | 7786543 | ATM Withdrawal | -120.00  | 
       | 12  | 7786543 | ATM Withdrawal | -130.00  | 
@@ -48,7 +48,7 @@ Scenario: Get Ryvr - Multiple Pages - Follow Prev Link
     When the "transactions" ryvr is retrieved
     And the previous page is requested
     Then it will contain
-      | ID  | ACCOUNT | DESCRIPTION    | AMOUNT   |
+      | id  | account | description    | amount   |
       | 0   | 7786543 | ATM Withdrawal | -10.00   | 
       | 1   | 7786543 | ATM Withdrawal | -20.00   | 
       | 2   | 7786543 | ATM Withdrawal | -30.00   | 
@@ -72,7 +72,7 @@ Scenario: Get Ryvr - Multiple Pages - Follow First Link
     When the "transactions" ryvr is retrieved
     And the first page is requested
     Then it will contain
-      | ID  | ACCOUNT | DESCRIPTION    | AMOUNT   |
+      | id  | account | description    | amount   |
       | 0   | 7786543 | ATM Withdrawal | -10.00   | 
       | 1   | 7786543 | ATM Withdrawal | -20.00   | 
       | 2   | 7786543 | ATM Withdrawal | -30.00   | 
@@ -96,7 +96,7 @@ Scenario: Get Ryvr - Multiple Pages - Current Page
     When the "transactions" ryvr is retrieved
     And the current page is requested
     Then it will contain
-      | ID  | ACCOUNT | DESCRIPTION    | AMOUNT   |
+      | id  | account | description    | amount   |
       | 10  | 7786543 | ATM Withdrawal | -110.00  | 
       | 11  | 7786543 | ATM Withdrawal | -120.00  | 
       | 12  | 7786543 | ATM Withdrawal | -130.00  | 
@@ -114,7 +114,7 @@ Scenario: Get Ryvr - Multiple Pages - Previous Then Current Page
     And the previous page is requested
     And the current page is requested
     Then it will contain
-      | ID  | ACCOUNT | DESCRIPTION    | AMOUNT   |
+      | id  | account | description    | amount   |
       | 10  | 7786543 | ATM Withdrawal | -110.00  | 
       | 11  | 7786543 | ATM Withdrawal | -120.00  | 
       | 12  | 7786543 | ATM Withdrawal | -130.00  | 
@@ -132,7 +132,7 @@ Scenario: Get Ryvr - Multiple Pages - Previous Then Next Page
     And the previous page is requested
     And the next page is requested
     Then it will contain
-      | ID  | ACCOUNT | DESCRIPTION    | AMOUNT   |
+      | id  | account | description    | amount   |
       | 10  | 7786543 | ATM Withdrawal | -110.00  | 
       | 11  | 7786543 | ATM Withdrawal | -120.00  | 
       | 12  | 7786543 | ATM Withdrawal | -130.00  | 
@@ -151,7 +151,7 @@ Scenario: Get Ryvr - Multiple Pages - Previous Then Self Link
     And the first page is requested
     And the self link is requested
     Then it will contain
-      | ID  | ACCOUNT | DESCRIPTION    | AMOUNT   |
+      | id  | account | description    | amount   |
       | 0   | 7786543 | ATM Withdrawal | -10.00   | 
       | 1   | 7786543 | ATM Withdrawal | -20.00   | 
       | 2   | 7786543 | ATM Withdrawal | -30.00   | 

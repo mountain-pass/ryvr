@@ -24,7 +24,7 @@ au.com.mountainpass.ryvr:
       ryvrs:
         transactions:
           page-size: 10
-          catalog: TEST_DB
+          catalog: test_db
           table: TRANSACTIONS
           ordered-by: ID
     

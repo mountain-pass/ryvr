@@ -120,9 +120,11 @@ dependencies {
     testCompile group: 'io.prometheus', name: 'simpleclient', version: '0.0.21'
 
 
-    runtime('com.h2database:h2')
-    runtime group: 'mysql', name: 'mysql-connector-java', version: '5.1.39'
-
+    compile('com.h2database:h2')
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.39'
+    compile group: 'org.postgresql', name: 'postgresql', version: '42.1.1'
+    
+    
 
 
     codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.10'
@@ -152,8 +154,6 @@ new ByteArrayOutputStream().withStream { os ->
     }
     ext.whoami = os.toString().trim()
 }
-
-import java.util.Properties;
 
 if(file("gradle-${whoami}.properties").exists()) {
     file("gradle-${whoami}.properties").withReader { reader ->

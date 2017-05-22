@@ -43,7 +43,7 @@ array of data sources. For example
         - url: jdbc:mysql://db_host_1
           username: dbuser1
           password: dbpass1
-        - url: jdbc:mysql://db_host_2
+        - url: jdbc:postgresql://localhost/postgres
           username: dbuser2
           password: dbpass2
 
@@ -71,12 +71,12 @@ These properties can be set using an `application.yml` file within the same dire
           ryvrs:
             transactions:
               page-size: 10
-              catalog: TEST_DB
-              table: TRANSACTIONS
-              ordered-by: ID
+              catalog: test_db
+              table: transactions
+              ordered-by: id
 
 
-**NOTE:** At this time, only MySQL and H2 Ryvrs are supported.
+**NOTE:** At this time, only MySQL, PostGresSQL and H2 Ryvrs are supported.
 
 See the [Externalized Configuration section of the Spring Boot documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html) for other ways to set application properties.
 

@@ -46,7 +46,6 @@ public class DataSourceRyvr extends Ryvr {
         this.orderedBy = orderedBy;
         this.jt = jt;
         Connection connection = this.jt.getDataSource().getConnection();
-        connection.setCatalog(catalog);
         connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
         this.pageSize = pageSize;
         String identifierQuoteString = connection.getMetaData()
@@ -66,8 +65,11 @@ public class DataSourceRyvr extends Ryvr {
         return "select * from " + identifierQuoteString + database
                 + identifierQuoteString + catalogSeparator
                 + identifierQuoteString + table + identifierQuoteString
-                + " ORDER BY " + identifierQuoteString + orderedBy
-                + identifierQuoteString + " ASC";
+                + " ORDER BY " + identifierQuoteString + database
+                + identifierQuoteString + catalogSeparator
+                + identifierQuoteString + table + identifierQuoteString + "."
+                + identifierQuoteString + orderedBy + identifierQuoteString
+                + " ASC";
     }
 
     public String generateCountQuery(String database, String table,

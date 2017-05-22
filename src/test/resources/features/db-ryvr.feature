@@ -4,15 +4,15 @@ Feature: DB Ryvr
     I want to get a paginated list of events from the DB
 
 Scenario: Find Ryvr in Collection
-    Given a database "TEST_DB" 
-    And it has a table "TRANSACTIONS" with the following events
-      | ID | ACCOUNT | DESCRIPTION    | AMOUNT  |
+    Given a database "test_db" 
+    And it has a table "transactions" with the following events
+      | id | account | description    | amount  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 | 
     And a database ryvr with the following configuration
       | name        | transactions  |
-      | database    | TEST_DB       |
-      | table       | TRANSACTIONS  |
-      | ordered by  | ID            |
+      | database    | test_db       |
+      | table       | transactions  |
+      | ordered by  | id            |
       | page size   | 10            |
     When the ryvrs list is retrieved
     Then the count of ryvrs will be 1
@@ -21,19 +21,19 @@ Scenario: Find Ryvr in Collection
     
 
 Scenario: Get Ryvr
-    Given a database "TEST_DB" 
-    And it has a table "TRANSACTIONS" with the following events
-      | ID | ACCOUNT | DESCRIPTION    | AMOUNT  |
+    Given a database "test_db" 
+    And it has a table "transactions" with the following events
+      | id | account | description    | amount  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 | 
     And a database ryvr with the following configuration
       | name        | transactions  |
-      | database    | TEST_DB       |
-      | table       | TRANSACTIONS  |
-      | ordered by  | ID            |
+      | database    | test_db       |
+      | table       | transactions  |
+      | ordered by  | id            |
       | page size   | 10            |
     When the "transactions" ryvr is retrieved
     Then it will contain
-      | ID | ACCOUNT | DESCRIPTION    | AMOUNT  |
+      | id | account | description    | amount  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 | 
     And it will have the following links
       | self    |
@@ -45,9 +45,9 @@ Scenario: Get Ryvr
       | next    |
 
 Scenario: Get Ryvr - Multiple Transactions
-    Given a database "TEST_DB" 
-    And it has a table "TRANSACTIONS" with the following events
-      | ID  | ACCOUNT | DESCRIPTION    | AMOUNT  |
+    Given a database "test_db" 
+    And it has a table "transactions" with the following events
+      | id  | account | description    | amount  |
       | 0   | 7786543 | ATM Withdrawal | -10.00  | 
       | 1   | 7786543 | ATM Withdrawal | -20.00  | 
       | 2   | 7786543 | ATM Withdrawal | -30.00  | 
@@ -57,13 +57,13 @@ Scenario: Get Ryvr - Multiple Transactions
       | 6   | 7786543 | ATM Withdrawal | -70.00  | 
     And a database ryvr with the following configuration
       | name        | transactions  |
-      | database    | TEST_DB       |
-      | table       | TRANSACTIONS  |
-      | ordered by  | ID            |
+      | database    | test_db       |
+      | table       | transactions  |
+      | ordered by  | id            |
       | page size   | 10            |
     When the "transactions" ryvr is retrieved
     Then it will contain
-      | ID  | ACCOUNT | DESCRIPTION    | AMOUNT  |
+      | id  | account | description    | amount  |
       | 0   | 7786543 | ATM Withdrawal | -10.00  | 
       | 1   | 7786543 | ATM Withdrawal | -20.00  | 
       | 2   | 7786543 | ATM Withdrawal | -30.00  | 

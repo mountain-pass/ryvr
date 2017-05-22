@@ -5,15 +5,15 @@ Feature: DB Ryvr
     I want to get a paginated list of events from the DB
 
 Background:
-    Given a database "TEST_DB" 
-    And it has a table "TRANSACTIONS" with the following structure
-      | ID  | ACCOUNT | DESCRIPTION    | AMOUNT   |
+    Given a database "test_db" 
+    And it has a table "transactions" with the following structure
+      | id  | account | description    | amount   |
     And it has 100000 events
     And a database ryvr with the following configuration
       | name        | transactions  |
-      | database    | TEST_DB       |
-      | table       | TRANSACTIONS  |
-      | ordered by  | ID            |
+      | database    | test_db       |
+      | table       | transactions  |
+      | ordered by  | id            |
       | page size   | 2048          |
   
 

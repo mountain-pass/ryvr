@@ -12,21 +12,21 @@ au.com.mountainpass.ryvr:
     hostname: localhost
     genCert: selfSigned
 #  data-sources:
-#    - url: jdbc:h2:mem:TEST_DB;DB_CLOSE_ON_EXIT=FALSE;TRACE_LEVEL_FILE=4;
+#    - url: jdbc:h2:mem:test_db;DB_CLOSE_ON_EXIT=FALSE;TRACE_LEVEL_FILE=4;
 #      username: sa
 #      password: ""
 #      ryvrs:
 #        transactions:
 #          page-size: 10
-#          catalog: TEST_DB
+#          catalog: test_db
 #          table: TRANSACTIONS
 #          ordered-by: ID
 #        transactions2:
 #          page-size: 10
-#          catalog: TEST_DB2
+#          catalog: test_db2
 #          table: TRANSACTIONS2
 #          ordered-by: ID
-#    - url: jdbc:h2:mem:TEST_DB2;DB_CLOSE_ON_EXIT=FALSE;TRACE_LEVEL_FILE=4;
+#    - url: jdbc:h2:mem:test_db2;DB_CLOSE_ON_EXIT=FALSE;TRACE_LEVEL_FILE=4;
 #      username: sa
 #      password: ""
 
@@ -40,6 +40,6 @@ spring.jackson.serialization.indent_output: false
 
 # used for to create tables and data for the tests
 spring.datasource:
-  url: jdbc:h2:mem:TEST_DB;DB_CLOSE_ON_EXIT=FALSE;TRACE_LEVEL_FILE=4;
+  url: jdbc:h2:mem:test_db;DB_CLOSE_ON_EXIT=FALSE;TRACE_LEVEL_FILE=4;
   username: sa
   password: ""

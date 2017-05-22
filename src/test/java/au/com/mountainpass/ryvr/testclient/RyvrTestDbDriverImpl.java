@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,16 +35,20 @@ public class RyvrTestDbDriverImpl implements RyvrTestDbDriver {
         LOGGER.info("dbProductName: {}", dbProductName);
         switch (dbProductName) {
         case "H2":
-            currentJt.execute(
-                    "CREATE SCHEMA IF NOT EXISTS " + identifierQuoteString
-                            + dbName + identifierQuoteString + ";");
-            break;
         case "MySQL":
-            currentJt.execute(
-                    "CREATE DATABASE IF NOT EXISTS " + identifierQuoteString
-                            + dbName + identifierQuoteString + ";");
+            currentJt.execute("DROP SCHEMA IF EXISTS " + identifierQuoteString
+                    + dbName + identifierQuoteString + " ;");
             break;
+        case "PostgreSQL":
+            currentJt.execute("DROP SCHEMA IF EXISTS " + identifierQuoteString
+                    + dbName + identifierQuoteString + " CASCADE;");
+            break;
+        default:
+            throw new NotImplementedException(dbProductName);
         }
+        currentJt.execute("CREATE SCHEMA " + identifierQuoteString + dbName
+                + identifierQuoteString + ";");
+
         connection.setCatalog(dbName);
         connection.close();
     }
@@ -58,7 +63,8 @@ public class RyvrTestDbDriverImpl implements RyvrTestDbDriver {
                 .getCatalogSeparator();
         currentJt.execute("drop table if exists " + identifierQuoteString
                 + catalog + identifierQuoteString + catalogSeparator
-                + identifierQuoteString + table + identifierQuoteString);
+                + identifierQuoteString + table + identifierQuoteString
+                + " CASCADE");
 
         final StringBuilder statementBuffer = new StringBuilder();
         statementBuffer.append("create table ");
@@ -66,8 +72,15 @@ public class RyvrTestDbDriverImpl implements RyvrTestDbDriver {
                 + identifierQuoteString + catalogSeparator);
         statementBuffer
                 .append(identifierQuoteString + table + identifierQuoteString);
-        statementBuffer.append(
-                " (ID INT, ACCOUNT VARCHAR(255), DESCRIPTION VARCHAR(255), AMOUNT Decimal(19,4), CONSTRAINT PK_ID PRIMARY KEY (ID))");
+        statementBuffer.append(" (" + identifierQuoteString + "id"
+                + identifierQuoteString + " INT, " + identifierQuoteString
+                + "account" + identifierQuoteString + " VARCHAR(255), "
+                + identifierQuoteString + "description" + identifierQuoteString
+                + " VARCHAR(255), " + identifierQuoteString + "amount"
+                + identifierQuoteString + " Decimal(19,4), CONSTRAINT "
+                + identifierQuoteString + "pk_id" + identifierQuoteString
+                + " PRIMARY KEY (" + identifierQuoteString + "id"
+                + identifierQuoteString + "))");
         currentJt.execute(statementBuffer.toString());
         currentJt.update("DELETE FROM " + identifierQuoteString + catalog
                 + identifierQuoteString + catalogSeparator
@@ -89,11 +102,14 @@ public class RyvrTestDbDriverImpl implements RyvrTestDbDriver {
         final String catalogSeparator = connection.getMetaData()
                 .getCatalogSeparator();
 
-        currentJt.batchUpdate(
-                "insert into " + identifierQuoteString + catalog
-                        + identifierQuoteString + catalogSeparator
-                        + identifierQuoteString + table + identifierQuoteString
-                        + "(ID, ACCOUNT, DESCRIPTION, AMOUNT) values (?, ?, ?, ?)",
+        currentJt.batchUpdate("insert into " + identifierQuoteString + catalog
+                + identifierQuoteString + catalogSeparator
+                + identifierQuoteString + table + identifierQuoteString + "("
+                + identifierQuoteString + "id" + identifierQuoteString + ", "
+                + identifierQuoteString + "account" + identifierQuoteString
+                + ", " + identifierQuoteString + "description"
+                + identifierQuoteString + ", " + identifierQuoteString
+                + "amount" + identifierQuoteString + ") values (?, ?, ?, ?)",
                 new BatchPreparedStatementSetter() {
 
                     @Override
@@ -106,10 +122,10 @@ public class RyvrTestDbDriverImpl implements RyvrTestDbDriver {
                             final int i) throws SQLException {
                         // TODO Auto-generated method stub
                         final Map<String, String> row = events.get(i);
-                        ps.setInt(1, Integer.parseInt(row.get("ID")));
-                        ps.setString(2, row.get("ACCOUNT"));
-                        ps.setString(3, row.get("DESCRIPTION"));
-                        ps.setBigDecimal(4, new BigDecimal(row.get("AMOUNT")));
+                        ps.setInt(1, Integer.parseInt(row.get("id")));
+                        ps.setString(2, row.get("account"));
+                        ps.setString(3, row.get("description"));
+                        ps.setBigDecimal(4, new BigDecimal(row.get("amount")));
                     }
 
                 });

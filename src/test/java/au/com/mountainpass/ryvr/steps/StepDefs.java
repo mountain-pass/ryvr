@@ -21,8 +21,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import au.com.mountainpass.ryvr.Application;
 import au.com.mountainpass.ryvr.config.TestConfiguration;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
-import au.com.mountainpass.ryvr.testclient.RyvrTestServerAdminDriver;
 import au.com.mountainpass.ryvr.testclient.RyvrTestDbDriver;
+import au.com.mountainpass.ryvr.testclient.RyvrTestServerAdminDriver;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
@@ -61,10 +61,13 @@ public class StepDefs {
 
     public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
+    private String databaseName;
+
     @Given("^a database \"([^\"]*)\"$")
     public void aDatabase(final String dbName) throws Throwable {
 
         dbClient.createDatabase(dbName);
+        databaseName = dbName;
     }
 
     @When("^a request is made for the API Docs$")
@@ -104,9 +107,9 @@ public class StepDefs {
     @Given("^it has a table \"([^\"]*)\" with the following events$")
     public void itHasATableWithTheFollowingEvents(final String table,
             final List<Map<String, String>> events) throws Throwable {
-        createTable("TEST_DB", table);
+        createTable(databaseName, table);
 
-        insertRows("TEST_DB", table, events);
+        insertRows(databaseName, table, events);
     }
 
     public void insertRows(final String catalog, final String table,
@@ -249,7 +252,7 @@ public class StepDefs {
     @Given("^it has a table \"([^\"]*)\" with the following structure$")
     public void itHasATableWithTheFollowingStructure(final String table,
             final List<String> structure) throws Throwable {
-        createTable("TEST_DB", table);
+        createTable("test_db", table);
         this.currentTable = table;
     }
 
@@ -258,14 +261,14 @@ public class StepDefs {
         List<Map<String, String>> events = new ArrayList<>(noOfEvents);
         for (int i = 0; i < noOfEvents; ++i) {
             Map<String, String> event = new HashMap<>(4);
-            event.put("ID", Integer.toString(i));
-            event.put("ACCOUNT", "78901234");
-            event.put("DESCRIPTION", "Buying Stuff");
-            event.put("AMOUNT", Double.toString(i * -20.00 - i));
+            event.put("id", Integer.toString(i));
+            event.put("account", "78901234");
+            event.put("description", "Buying Stuff");
+            event.put("amount", Double.toString(i * -20.00 - i));
             events.add(event);
         }
         this.currentEvents = events;
-        insertRows("TEST_DB", this.currentTable, events);
+        insertRows("test_db", this.currentTable, events);
     }
 
     @Then("^it will have the following structure$")
