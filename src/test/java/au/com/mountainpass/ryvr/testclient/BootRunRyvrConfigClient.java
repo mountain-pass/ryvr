@@ -6,15 +6,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.math.BigDecimal;
 import java.net.Socket;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +23,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -47,12 +39,12 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
     private static final String RUN_DIR = "build/bootrun";
     private static final String APPLICATION_YML = RUN_DIR + "/application.yml";
 
-    @Autowired
-    private JdbcTemplate currentJt;
-
     private final List<Map<String, String>> dataSourcesRyvrConfigs = new ArrayList<>();
 
     public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     @Autowired
     private RyvrConfiguration ryvrConfig;
@@ -123,70 +115,10 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
     }
 
     @Override
-    public void createDatabase(final String dbName) throws Throwable {
-        final Connection connection = currentJt.getDataSource().getConnection();
-        final String identifierQuoteString = connection.getMetaData()
-                .getIdentifierQuoteString();
-
-        final String dbProductName = connection.getMetaData()
-                .getDatabaseProductName();
-        LOGGER.info("dbProductName: {}", dbProductName);
-        switch (dbProductName) {
-        case "H2":
-            currentJt.execute(
-                    "CREATE SCHEMA IF NOT EXISTS " + identifierQuoteString
-                            + dbName + identifierQuoteString + ";");
-            break;
-        case "MySQL":
-            currentJt.execute(
-                    "CREATE DATABASE IF NOT EXISTS " + identifierQuoteString
-                            + dbName + identifierQuoteString + ";");
-            break;
-        }
-        connection.setCatalog(dbName);
-        connection.close();
-    }
-
-    @Override
     public void createDataSourceRyvr(final Map<String, String> config)
             throws Throwable {
         this.dataSourcesRyvrConfigs.add(config);
     }
-
-    @Override
-    public void createTable(final String catalog, final String table)
-            throws Throwable {
-        final Connection connection = currentJt.getDataSource().getConnection();
-        final String identifierQuoteString = connection.getMetaData()
-                .getIdentifierQuoteString();
-        final String catalogSeparator = connection.getMetaData()
-                .getCatalogSeparator();
-        currentJt.execute("drop table if exists " + identifierQuoteString
-                + catalog + identifierQuoteString + catalogSeparator
-                + identifierQuoteString + table + identifierQuoteString);
-
-        final StringBuilder statementBuffer = new StringBuilder();
-        statementBuffer.append("create table ");
-        statementBuffer.append(identifierQuoteString + catalog
-                + identifierQuoteString + catalogSeparator);
-        statementBuffer
-                .append(identifierQuoteString + table + identifierQuoteString);
-        statementBuffer.append(
-                " (ID INT, ACCOUNT VARCHAR(255), DESCRIPTION VARCHAR(255), AMOUNT Decimal(19,4), CONSTRAINT PK_ID PRIMARY KEY (ID))");
-        currentJt.execute(statementBuffer.toString());
-        currentJt.update("DELETE FROM " + identifierQuoteString + catalog
-                + identifierQuoteString + catalogSeparator
-                + identifierQuoteString + table + identifierQuoteString);
-        final DatabaseMetaData md = connection.getMetaData();
-        final ResultSet rs = md.getTables(null, null, "%", null);
-        while (rs.next()) {
-            LOGGER.debug("TABLE: {}", rs.getString(3));
-        }
-        connection.close();
-    }
-
-    @Autowired
-    private RestTemplate restTemplate;
 
     @Override
     public void ensureStarted() throws Throwable {
@@ -247,42 +179,6 @@ public class BootRunRyvrConfigClient implements RyvrTestConfigClient {
             LOGGER.info("Status: {}", e.getMessage());
             return false;
         }
-    }
-
-    @Override
-    public void insertRows(final String catalog, final String table,
-            final List<Map<String, String>> events) throws Throwable {
-        final Connection connection = currentJt.getDataSource().getConnection();
-        final String identifierQuoteString = connection.getMetaData()
-                .getIdentifierQuoteString();
-        final String catalogSeparator = connection.getMetaData()
-                .getCatalogSeparator();
-
-        currentJt.batchUpdate(
-                "insert into " + identifierQuoteString + catalog
-                        + identifierQuoteString + catalogSeparator
-                        + identifierQuoteString + table + identifierQuoteString
-                        + "(ID, ACCOUNT, DESCRIPTION, AMOUNT) values (?, ?, ?, ?)",
-                new BatchPreparedStatementSetter() {
-
-                    @Override
-                    public int getBatchSize() {
-                        return events.size();
-                    }
-
-                    @Override
-                    public void setValues(final PreparedStatement ps,
-                            final int i) throws SQLException {
-                        // TODO Auto-generated method stub
-                        final Map<String, String> row = events.get(i);
-                        ps.setInt(1, Integer.parseInt(row.get("ID")));
-                        ps.setString(2, row.get("ACCOUNT"));
-                        ps.setString(3, row.get("DESCRIPTION"));
-                        ps.setBigDecimal(4, new BigDecimal(row.get("AMOUNT")));
-                    }
-
-                });
-        connection.close();
     }
 
     @PostConstruct

@@ -22,6 +22,7 @@ import au.com.mountainpass.ryvr.Application;
 import au.com.mountainpass.ryvr.config.TestConfiguration;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 import au.com.mountainpass.ryvr.testclient.RyvrTestConfigClient;
+import au.com.mountainpass.ryvr.testclient.RyvrTestDbClient;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
@@ -41,8 +42,12 @@ public class StepDefs {
 
     @Autowired
     private RyvrTestClient client;
+
     @Autowired
     private RyvrTestConfigClient configClient;
+
+    @Autowired
+    private RyvrTestDbClient dbClient;
 
     private RootResponse rootResponseFuture;
 
@@ -59,7 +64,7 @@ public class StepDefs {
     @Given("^a database \"([^\"]*)\"$")
     public void aDatabase(final String dbName) throws Throwable {
 
-        configClient.createDatabase(dbName);
+        dbClient.createDatabase(dbName);
     }
 
     @When("^a request is made for the API Docs$")
@@ -106,7 +111,7 @@ public class StepDefs {
 
     public void insertRows(final String catalog, final String table,
             final List<Map<String, String>> events) throws Throwable {
-        configClient.insertRows(catalog, table, events);
+        dbClient.insertRows(catalog, table, events);
 
     }
 
@@ -117,7 +122,7 @@ public class StepDefs {
                 throws SQLException {
             ResultSet rs = dbmd.getTables(dbmd.getUserName(), null, null,
                     new String[] { "TABLE" });
-            ArrayList l = new ArrayList();
+            ArrayList<String> l = new ArrayList<>();
             while (rs.next()) {
                 l.add(rs.getString(3));
             }
@@ -127,7 +132,7 @@ public class StepDefs {
 
     public void createTable(String catalog, final String table)
             throws Throwable {
-        configClient.createTable(catalog, table);
+        dbClient.createTable(catalog, table);
 
     }
 
