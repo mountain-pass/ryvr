@@ -21,7 +21,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
@@ -29,7 +31,9 @@ import au.com.mountainpass.ryvr.config.TestConfiguration;
 import au.com.mountainpass.ryvr.testclient.model.Health;
 import cucumber.api.Scenario;
 
-public abstract class RyvrTestExternalServerAdminDriver
+@Component
+@Profile(value = { "systemTest" })
+public class RyvrTestExternalServerAdminDriver
         implements RyvrTestServerAdminDriver {
 
     private static final String RUN_DIR = "build/bootrun";
@@ -59,6 +63,9 @@ public abstract class RyvrTestExternalServerAdminDriver
 
     @Autowired
     private TestConfiguration testConfig;
+
+    @Autowired
+    RyvrTestServerProcessBuilder processBuilder;
 
     @Override
     public void _after(final Scenario scenario) {
@@ -163,7 +170,9 @@ public abstract class RyvrTestExternalServerAdminDriver
         throw new TimeoutException("timeout waiting for server to start");
     }
 
-    protected abstract ProcessBuilder getProcessBuilder();
+    protected ProcessBuilder getProcessBuilder() {
+        return processBuilder.getProcessBuilder(APPLICATION_YML);
+    }
 
     private boolean hostAvailable(final String host, final int port)
             throws UnknownHostException {
@@ -223,10 +232,6 @@ public abstract class RyvrTestExternalServerAdminDriver
             LOGGER.info("...Terminated");
             server = null;
         }
-    }
-
-    protected static String getApplicationYmlLocation() {
-        return APPLICATION_YML;
     }
 
 }

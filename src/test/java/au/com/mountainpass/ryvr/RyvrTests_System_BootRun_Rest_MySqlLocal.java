@@ -10,7 +10,7 @@ import cucumber.api.CucumberOptions;
 @CucumberOptions(plugin = { "pretty" }, features = {
         "src/test/resources/features/" }, strict = false, glue = {
                 "au.com.mountainpass.ryvr" }, tags = { "~@performance" })
-@ActiveProfiles({ "systemTest", "ui", "mysql", "chrome" })
-public class RyvrTests_System_Ui_MySqlLocal_ChromeLocal {
+@ActiveProfiles({ "systemTest", "bootRun", "restApi", "mysql" })
+public class RyvrTests_System_BootRun_Rest_MySqlLocal {
 
 }
