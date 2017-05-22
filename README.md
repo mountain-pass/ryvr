@@ -52,7 +52,8 @@ For each data source, you can configure one or more ryvrs as a map under the
 
 The key of the map specifies the name of the ryvr, which must be unique.
 
-|| Property || Description ||
+| Property | Description |
+| -------- | ----------- |
 | page-size | Specifies how many records to include in each page. You will need to tune this. Try 1024 to start with. |
 | catalog | The name of the schema/database your table/view is in |
 | table | The name of the table containing the records |
