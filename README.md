@@ -27,6 +27,58 @@ The Spring Boot Actuator end-points are available here:
 
 - [https://localhost:8443/info](http://localhost:8443/info)
 
+## Ryvrs
+
+Ryvrs are configured using application properties.
+
+**NOTE:** At this time, only Database Ryvrs can be configured.
+
+### Database Ryvrs
+
+Database Ryvrs are configured as [spring data sources|https://docs.spring.io/spring-boot/docs/current/reference/html/howto-data-access.html] under the property prefix `au.com.mountainpass.ryvr.data-sources`. This property expects an
+array of data sources. For example
+
+    au.com.mountainpass.ryvr:
+      data-sources:
+        - url: jdbc:mysql://db_host_1
+          username: dbuser1
+          password: dbpass1
+        - url: jdbc:mysql://db_host_2
+          username: dbuser2
+          password: dbpass2
+
+For each data source, you can configure one or more ryvrs as a map under the
+`au.com.mountainpass.ryvr.data-sources[*].ryvrs` property prefix.
+
+The key of the map specifies the name of the ryvr, which must be unique.
+
+|| Property || Description ||
+| page-size | Specifies how many records to include in each page. You will need to tune this. Try 1024 to start with. |
+| catalog | The name of the schema/database your table/view is in |
+| table | The name of the table containing the records |
+| ordered-by | The name of the column in the table, which can be used for sorting the records into order. |
+
+These properties can be set using an `application.yml` file within the same directory as Ryvr.
+
+#### Example
+
+    au.com.mountainpass.ryvr:
+      data-sources:
+        - url: jdbc:mysql://localhost
+          username: dbuser
+          password: dbpass
+          ryvrs:
+            transactions:
+              page-size: 10
+              catalog: TEST_DB
+              table: TRANSACTIONS
+              ordered-by: ID
+
+
+**NOTE:** At this time, only MySQL and H2 Ryvrs are supported.
+
+See the [Externalized Configuration section of the Spring Boot documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html) for other ways to set application properties.
+
 ## HTTPS
 
 Ryvr is configured to enable HTTPS and disable HTTP, in order to ensure that all traffic is encrypted.
@@ -59,34 +111,39 @@ Tests for the three layers can be executed by running `./gradlew test`
 
 #### Unit Tests
 
-The Unit tests are run with the `integrationTest` Spring profile, which enables the
-`au.com.mountainpass.ryvr.testclient.JavaRyvrClient` client.
+Ryvr does not have unit test in the traditional sense. Unit test will verify if the unit behaves as we
+expected, but it does not verify if the unit behaves as we need in the context of the full application.
 
-The `RyvrintegrationTests` is used to run the tests against the Java layer and automatically activates the `integrationTest` Spring
-profile. It can either by run as a JUnit test from within your IDE or run using `./gradlew integrationTest`.
+#### Integration Tests
 
-`./gradlew integrationTest` will record test results in `build/test-results-ut`
+The integration tests verify that Ryvr behaves as we expect as an integrated application.
+
+The integration tests are run with the `integrationTest` Spring profile, which uses @SpringBootTest to run launch
+Ryvr in the same JVM as our tests.
 
 #### System Tests
 
-The System tests are run with the `systemTest` Spring profile, which enables the
-`au.com.mountainpass.ryvr.testclient.RestRyvrClient` client.
+The system tests verify that Ryvr behaves as we expect when it's run as a seperate application.
 
-The `RyvrSystemTests` is used to run the tests against the Java layer and automatically activates the `systemTest` Spring
-profile. It can either by run as a JUnit test from within your IDE or run using `./gradlew systemTest`
+The System tests are run with the `systemTest` Spring profile, which launches
+Ryvr in a separate.
 
-`./gradlew systemTest` will record test results in `build/test-results-st`
+At this time, Ryvr is launched using the `bootRun` gradle task. Other profiles will be 
 
-#### UI Tests
+#### Profiles
 
-The UI tests are run with the `uiTest` Spring profile, which enables the
-`au.com.mountainpass.ryvr.testclient.HtmlRyvrClient` client.
+The `javaApi` spring profile is used to verify the behaviour of Ryvr's internal Java API. This profile is only used (and only makes sense) when running integration tests. It cannot be used during system tests as Ryvr is 
+running in a separate JVM.
 
-The `RyvrUiTests` is used to run the tests against the Java layer and automatically activates the `uiTest` Spring
-profile. It can either by run as a JUnit test from within your IDE or run using `./gradlew uiTest`
+The `restApi` spring profile is used to verify the behaviour of Ryvr's REST API.
 
-`./gradlew uiTest` will record test results in `build/test-results-ui`
+The `ui` spring profile is used to verify the behaviour of Ryvr's User Interface.
 
+The `h2` spring profile is used to verify the behaviour of Ryvr's using a H2 embedded database. This profile is only used (and only makes sense) when running integration tests. It cannot be used during system tests as Ryvr is 
+running in a separate JVM and therefore the database is running in a separate JVM, preventing us from setting up the
+test data. We could configure H2 to accept connections from seperate processes, but we see no point.
+
+The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MySQL database
 
 ## Road Map
 
