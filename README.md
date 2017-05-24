@@ -156,8 +156,9 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [X] SSL Config
  - [X] Add support for configuring ryvrs from config file
  - [X] Rename test phases to correctly specify their nature
- - [ ] Add tests for various ways of starting Ryvr
- - [ ] release
+ - [X] Add tests for various ways of starting Ryvr
+ - [X] release
+ - [ ] Add authentication
  - [ ] Add Circuit Breaker
  - [ ] Modify Perf test to use latency per event rather than latency per page
  - [ ] Add logic to calculate optimal page size
