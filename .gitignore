@@ -1,8 +1,5 @@
-/bin/
-/.gradle/
 .project
 
 .classpath
 /.settings/
-/build/
-/shippable/
+_site
