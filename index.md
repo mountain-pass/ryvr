@@ -1,4 +1,5 @@
-![Ryvr](assets/images/white_logo_transparent_background_small.png)
+---
+---
 
 ## Ryvr 
 _**- Let Your Data Flow**_
