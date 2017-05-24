@@ -3,13 +3,3 @@
 
 @import "{{ site.theme }}";
 
-
-body > section.page-header > h1 {
-    background: url(../images/white_logo_transparent_background_small.png);
-    background-repeat: no-repeat;
-    background-position-x: 50%;
-    background-position-y: top;
-    height: 101px;
-    padding-top: 101px;
-    overflow: hidden;
-}
