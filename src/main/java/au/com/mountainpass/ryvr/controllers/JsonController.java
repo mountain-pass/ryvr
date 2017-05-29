@@ -3,6 +3,7 @@ package au.com.mountainpass.ryvr.controllers;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -10,7 +11,9 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.stereotype.Component;
 
 import au.com.mountainpass.ryvr.model.Root;
@@ -25,6 +28,18 @@ public class JsonController {
 
     @Value("${spring.application.name}")
     private String applicationName;
+
+    @Value("${au.com.mountainpass.ryvr.cache.archive-page-max-age}")
+    private long archivePageMaxAge;
+
+    @Value("${au.com.mountainpass.ryvr.cache.archive-page-max-age-unit}")
+    private TimeUnit archivePageMaxAgeUnit;
+
+    @Value("${au.com.mountainpass.ryvr.cache.current-page-max-age}")
+    private long currentPageMaxAge;
+
+    @Value("${au.com.mountainpass.ryvr.cache.current-page-max-age-unit}")
+    private TimeUnit currentPageMaxAgeUnit;
 
     @Autowired
     private RyvrsCollection ryvrsCollection;
@@ -63,8 +78,17 @@ public class JsonController {
         if (ryvr == null) {
             return ResponseEntity.notFound().build();
         }
-        ryvr.refreshPage(page);
-        return ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE)
-                .body(ryvr);
+        boolean cachable = ryvr.refreshPage(page);
+        BodyBuilder responseBuilder = ResponseEntity.ok()
+                .contentType(APPLICATION_HAL_JSON_TYPE);
+        if (cachable) {
+            responseBuilder.cacheControl(CacheControl.maxAge(archivePageMaxAge,
+                    archivePageMaxAgeUnit));
+        } else {
+            responseBuilder.cacheControl(CacheControl.maxAge(currentPageMaxAge,
+                    currentPageMaxAgeUnit));
+        }
+        responseBuilder.eTag(Long.toHexString(ryvr.getEtag()));
+        return responseBuilder.body(ryvr);
     }
 }

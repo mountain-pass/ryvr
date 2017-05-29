@@ -12,6 +12,10 @@ import java.security.cert.CertificateException;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.apache.http.HttpException;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -21,6 +25,8 @@ import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.cache.CacheConfig;
+import org.apache.http.impl.client.cache.CachingHttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
@@ -31,6 +37,7 @@ import org.apache.http.nio.conn.NHttpClientConnectionManager;
 import org.apache.http.nio.conn.NoopIOSessionStrategy;
 import org.apache.http.nio.conn.SchemeIOSessionStrategy;
 import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
+import org.apache.http.protocol.HttpContext;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,11 +142,26 @@ public class TestConfiguration implements
     public HttpClientBuilder httpClientBuilder() throws Exception {
         final HttpClientConnectionManager connectionManager = httpClientConnectionManager();
         final RequestConfig config = httpClientRequestConfig();
-        return HttpClientBuilder.create()
+        CacheConfig cacheConfig = CacheConfig.custom()
+                .setMaxCacheEntries(100000).setMaxObjectSize(8192 * 1024)
+                .build();
+
+        return CachingHttpClients.custom().setCacheConfig(cacheConfig)
                 .setConnectionManager(connectionManager)
                 .setDefaultRequestConfig(config)
                 .setSSLSocketFactory(sslSocketFactory())
-                .setSslcontext(sslContext()).disableRedirectHandling();
+                .setSslcontext(sslContext()).disableRedirectHandling()
+                .addInterceptorLast(new HttpResponseInterceptor() {
+
+                    @Override
+                    public void process(HttpResponse response,
+                            HttpContext context)
+                            throws HttpException, IOException {
+                        long length = response.getEntity().getContentLength();
+                        response.setHeader(HttpHeaders.CONTENT_LENGTH,
+                                Long.toString(length));
+                    }
+                });
     }
 
     @Bean
@@ -198,7 +220,8 @@ public class TestConfiguration implements
     @Bean
     @Profile(value = { "restApi", "systemTest" })
     public RestTemplate restTemplate() throws Exception {
-        return new RestTemplate(httpClientFactory());
+        RestTemplate restTemplate = new RestTemplate(httpClientFactory());
+        return restTemplate;
     }
 
     public void setPort(final int port) {

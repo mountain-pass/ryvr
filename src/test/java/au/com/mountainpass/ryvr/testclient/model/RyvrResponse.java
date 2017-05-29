@@ -24,4 +24,6 @@ public interface RyvrResponse {
 
     public void assertLoadedWithin(int percentile, int maxMs);
 
+    public void clearMetrics();
+
 }

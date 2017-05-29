@@ -38,6 +38,7 @@ public class DataSourceRyvr extends Ryvr {
     private String rowsQuery;
     private String table;
     private String orderedBy;
+    private long count = 0;
 
     public DataSourceRyvr(String title, JdbcTemplate jt, String catalog,
             String table, String orderedBy, long pageSize) throws SQLException {
@@ -164,9 +165,9 @@ public class DataSourceRyvr extends Ryvr {
     }
 
     @Override
-    public void refreshPage(long requestedPage) {
+    public boolean refreshPage(long requestedPage) {
         if (pages < 0l || requestedPage < 0l || requestedPage >= pages) {
-            long count = jt.queryForObject(countQuery, Long.class);
+            count = jt.queryForObject(countQuery, Long.class);
             pages = ((count - 1l) / pageSize) + 1l;
         }
         if (requestedPage > pages) {
@@ -199,7 +200,7 @@ public class DataSourceRyvr extends Ryvr {
         // break;
         // }
         // }
-
+        return page != pages;
     }
 
     @Override
@@ -251,6 +252,15 @@ public class DataSourceRyvr extends Ryvr {
 
     public long getPageSize() {
         return pageSize;
+    }
+
+    @Override
+    public long getEtag() {
+        if (getPage() == null || getPage() == pages) {
+            return count;
+        } else {
+            return page;
+        }
     }
 
 }

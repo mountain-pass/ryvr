@@ -13,6 +13,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import au.com.mountainpass.ryvr.model.Ryvr;
@@ -57,8 +58,9 @@ public class RestRyvrsCollectionResponse implements RyvrsCollectionResponse {
     public RyvrResponse followRyvrLink(String name) {
         try {
             URI ryvrUri = contextUrl.toURI().resolve("/ryvrs/" + name);
-            Ryvr ryvr = restTemplate.getForEntity(ryvrUri, Ryvr.class)
-                    .getBody();
+            ResponseEntity<Ryvr> responseEntity = restTemplate
+                    .getForEntity(ryvrUri, Ryvr.class);
+            Ryvr ryvr = responseEntity.getBody();
             return new RestRyvrResponse(traverson, ryvrUri.toURL(), ryvr,
                     restTemplate);
         } catch (MalformedURLException | URISyntaxException e) {

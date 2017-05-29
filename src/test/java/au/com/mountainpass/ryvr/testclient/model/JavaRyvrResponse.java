@@ -22,10 +22,14 @@ public class JavaRyvrResponse implements RyvrResponse {
     public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     private Ryvr ryvr;
-    static final Summary requestLatency = Summary.build().quantile(0.5, 0.01)
-            .quantile(0.95, 0.01).quantile(1, 0.01)
+
+    static protected final Summary requestLatency = Summary.build()
+            .quantile(0.5, 0.01).quantile(0.95, 0.01).quantile(1, 0.01)
             .name("requests_latency_seconds")
             .help("Request latency in seconds.").register();
+    static protected final Summary receivedBytes = Summary.build()
+            .name("requests_size_bytes").help("Request size in bytes.")
+            .register();
 
     public JavaRyvrResponse(Ryvr ryvr) {
         this(ryvr, null);
@@ -122,6 +126,30 @@ public class JavaRyvrResponse implements RyvrResponse {
             response = response.followLink("next");
             requestTimer.observeDuration();
         }
+        double byteCount = receivedBytes.collect().get(0).samples.stream()
+                .filter(sample -> "requests_size_bytes_sum".equals(sample.name))
+                .findAny().get().value;
+        double latencySeconds = requestLatency.collect().get(0).samples.stream()
+                .filter(sample -> "requests_latency_seconds_sum"
+                        .equals(sample.name))
+                .findAny().get().value;
+        LOGGER.info("latency: {}s", latencySeconds);
+        LOGGER.info("bytes: {}B", byteCount);
+        LOGGER.info("bytes: {}KB", byteCount / 1024.0);
+        LOGGER.info("bytes: {}MB", byteCount / 1024.0 / 1024.0);
+        LOGGER.info("latency: {}B/s", byteCount / latencySeconds);
+        LOGGER.info("latency: {}KB/s", byteCount / 1024.0 / latencySeconds);
+        LOGGER.info("latency: {}MB/s",
+                byteCount / 1024.0 / 1024.0 / latencySeconds);
+
+        //
+        // Optional<MetricFamilySamples> sizeSamples = metrics.stream()
+        // .filter(sample -> "requests_size_bytes".equals(sample.name))
+        // .flatmap(sample -> sample.samples).collect(Collectors.toList());
+        // if (sizeSamples.isPresent()) {
+        // sizeSamples.get().samples.stream().forEach(sample -> LOGGER
+        // .info("{}: {}b", sample.name, sample.value));
+        // }
         List<MetricFamilySamples> results = requestLatency.collect();
         Stream<Sample> quantiles = results.get(0).samples.stream()
                 .filter(sample -> sample.labelNames.contains("quantile"));
@@ -149,4 +177,9 @@ public class JavaRyvrResponse implements RyvrResponse {
         assertThat(result.value * 1000.0, lessThan(maxMs * 1.0));
     }
 
+    @Override
+    public void clearMetrics() {
+        requestLatency.clear();
+        receivedBytes.clear();
+    }
 }

@@ -17,8 +17,16 @@ Background:
       | page size   | 2048          |
   
 
-Scenario: Get Ryvr - Multiple Pages - Current Page
+Scenario: Get Ryvr First Hit
     When the "transactions" ryvr is retrieved
     And all the events are retrieved
     Then 95% of the pages should be loaded within 50ms
     And 100% of the pages should be loaded within 700ms
+
+Scenario: Get Ryvr Multiple Hits
+    When the "transactions" ryvr is retrieved
+    And all the events are retrieved
+    And all the events are retrieved again
+    Then on the second retrieve, 95% of the pages should be loaded within 10ms
+    And on the second retrieve, 100% of the pages should be loaded within 70ms
+    

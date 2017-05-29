@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import au.com.mountainpass.ryvr.model.Ryvr;
@@ -30,8 +31,11 @@ public class RestRyvrResponse extends JavaRyvrResponse {
         try {
             URI ryvrUri = contextUrl.toURI()
                     .resolve(getRyvr().getLinks().get(rel).getHref());
-            Ryvr ryvr = restTemplate.getForEntity(ryvrUri, Ryvr.class)
-                    .getBody();
+            ResponseEntity<Ryvr> entityResponse = restTemplate
+                    .getForEntity(ryvrUri, Ryvr.class);
+            Ryvr ryvr = entityResponse.getBody();
+            receivedBytes
+                    .observe(entityResponse.getHeaders().getContentLength());
             return new RestRyvrResponse(traverson, ryvrUri.toURL(), ryvr,
                     restTemplate);
         } catch (MalformedURLException | URISyntaxException e) {
@@ -40,5 +44,4 @@ public class RestRyvrResponse extends JavaRyvrResponse {
             throw new NotImplementedException();
         }
     }
-
 }

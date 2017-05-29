@@ -10,6 +10,8 @@ server:
 spring:
   application:
     name: ryvr
+  resources:
+    cache-period: 86400
 
 server.tomcat.access-log-enabled: true
 
@@ -23,8 +25,13 @@ au.com.mountainpass.ryvr:
       password: dbpass
       ryvrs:
         transactions:
-          page-size: 10
+          page-size: 128
           catalog: test_db
           table: TRANSACTIONS
           ordered-by: ID
+  cache:
+    archive-page-max-age: 30
+    archive-page-max-age-unit: DAYS
+    current-page-max-age: 0
+    current-page-max-age-unit: MILLISECONDS
     

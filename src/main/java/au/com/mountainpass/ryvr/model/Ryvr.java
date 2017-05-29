@@ -28,7 +28,7 @@ public class Ryvr {
         return title;
     }
 
-    public void refreshPage(long page) {
+    public boolean refreshPage(long page) {
         throw new NotImplementedException();
     }
 
@@ -83,6 +83,11 @@ public class Ryvr {
 
     public void self() {
         refreshPage(page);
+    }
+
+    @JsonIgnore
+    public long getEtag() {
+        throw new NotImplementedException();
     }
 
 }

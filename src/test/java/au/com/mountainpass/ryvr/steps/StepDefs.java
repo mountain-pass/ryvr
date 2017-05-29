@@ -289,9 +289,21 @@ public class StepDefs {
         ryvrResponse.retrieveAllEvents();
     }
 
+    @When("^all the events are retrieved again$")
+    public void all_the_events_are_retrieved_again() throws Throwable {
+        ryvrResponse.clearMetrics();
+        ryvrResponse.retrieveAllEvents();
+    }
+
     @Then("^(\\d+)% of the pages should be loaded within (\\d+)ms$")
     public void of_the_pages_should_be_loaded_within_ms(int percentile,
             int maxMs) throws Throwable {
+        ryvrResponse.assertLoadedWithin(percentile, maxMs);
+    }
+
+    @Then("^on the second retrieve, (\\d+)% of the pages should be loaded within (\\d+)ms$")
+    public void on_the_second_retrieve_of_the_pages_should_be_loaded_within_ms(
+            int percentile, int maxMs) throws Throwable {
         ryvrResponse.assertLoadedWithin(percentile, maxMs);
     }
 

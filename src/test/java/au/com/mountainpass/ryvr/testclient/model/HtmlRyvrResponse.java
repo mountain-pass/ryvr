@@ -111,4 +111,9 @@ public class HtmlRyvrResponse implements RyvrResponse {
         throw new PendingException();
     }
 
+    @Override
+    public void clearMetrics() {
+        throw new PendingException();
+    }
+
 }
