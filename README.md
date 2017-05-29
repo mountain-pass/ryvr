@@ -159,8 +159,10 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [X] Add tests for various ways of starting Ryvr
  - [X] release
  - [ ] Add authentication
- - [ ] Add Circuit Breaker
  - [ ] Modify Perf test to use latency per event rather than latency per page
+ - [ ] Examine faster options than deserialisation with Jackson
+ - [ ] Compare performance to [Kafka](https://engineering.linkedin.com/kafka/benchmarking-apache-kafka-2-million-writes-second-three-cheap-machines)
+ - [ ] Add Circuit Breaker
  - [ ] Add logic to calculate optimal page size
  - [ ] Switch to async io
  - [ ] Change rest of ryvr response to use StringBuilder
