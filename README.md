@@ -158,8 +158,11 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [X] Rename test phases to correctly specify their nature
  - [X] Add tests for various ways of starting Ryvr
  - [X] release
+ - [ ] release as zip/tarball with example properties
  - [ ] Add authentication
  - [ ] Modify Perf test to use latency per event rather than latency per page
+ - [ ] Switch to [Link headers](https://tools.ietf.org/html/rfc5988#page-6) rather than HAL links, which would allow
+    navigation without having to parse the body and URL rewriting without having to parse the body
  - [ ] Examine faster options than deserialisation with Jackson
  - [ ] Compare performance to [Kafka](https://engineering.linkedin.com/kafka/benchmarking-apache-kafka-2-million-writes-second-three-cheap-machines)
  - [ ] Add Circuit Breaker
