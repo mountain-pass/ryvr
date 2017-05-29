@@ -61,7 +61,7 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
     controller.error = {};
     controller.lastForm = null;
     controller.href = $window.location.href;
-    controller.debug = true;
+    controller.debug = false;
 
     controller.processNavClick = function(event) {
         return false;
@@ -198,7 +198,9 @@ app.controller('ResourceController', function($scope, $http, $location, $window)
             }
             controller.load(getLocation(href));
         } else {
-            $http(request).then(controller.successCallback, controller.errorCallback);
+            $http(request, {
+                cache : false
+            }).then(controller.successCallback, controller.errorCallback);
         }
         return false;
     };
