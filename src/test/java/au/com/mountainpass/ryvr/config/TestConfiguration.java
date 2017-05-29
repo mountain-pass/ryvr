@@ -16,6 +16,8 @@ import org.apache.http.HttpException;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
+import org.apache.http.client.cache.CacheResponseStatus;
+import org.apache.http.client.cache.HttpCacheContext;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -143,7 +145,7 @@ public class TestConfiguration implements
         final HttpClientConnectionManager connectionManager = httpClientConnectionManager();
         final RequestConfig config = httpClientRequestConfig();
         CacheConfig cacheConfig = CacheConfig.custom()
-                .setMaxCacheEntries(100000).setMaxObjectSize(8192 * 1024)
+                .setMaxCacheEntries(1000000).setMaxObjectSize(8192 * 1024)
                 .build();
 
         return CachingHttpClients.custom().setCacheConfig(cacheConfig)
@@ -157,6 +159,25 @@ public class TestConfiguration implements
                     public void process(HttpResponse response,
                             HttpContext context)
                             throws HttpException, IOException {
+                        CacheResponseStatus cacheResponseStatus = (CacheResponseStatus) context
+                                .getAttribute(
+                                        HttpCacheContext.CACHE_RESPONSE_STATUS);
+                        String xCacheString;
+                        switch (cacheResponseStatus) {
+                        case CACHE_HIT:
+                            xCacheString = "HIT";
+                            break;
+                        case VALIDATED:
+                            xCacheString = "VALIDATED";
+                            break;
+                        case CACHE_MISS:
+                        case CACHE_MODULE_RESPONSE:
+                            xCacheString = "MISS";
+                            break;
+                        default:
+                            xCacheString = cacheResponseStatus.toString();
+                        }
+                        response.addHeader("X-Cache", xCacheString);
                         long length = response.getEntity().getContentLength();
                         response.setHeader(HttpHeaders.CONTENT_LENGTH,
                                 Long.toString(length));

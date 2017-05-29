@@ -27,7 +27,6 @@ import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
-import cucumber.api.PendingException;
 import cucumber.api.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
@@ -307,10 +306,13 @@ public class StepDefs {
         ryvrResponse.assertLoadedWithin(percentile, maxMs);
     }
 
-    @Then("^(\\d+)% of the pages should be loaded successfully$")
-    public void of_the_pages_should_be_loaded_successfully(int arg1)
-            throws Throwable {
-        // Write code here that turns the phrase above into concrete actions
-        throw new PendingException();
+    @Then("^it will come from cache$")
+    public void it_will_come_from_cache() throws Throwable {
+        ryvrResponse.assertFromCache();
+    }
+
+    @Then("^it will not come from cache$")
+    public void it_will_not_come_from_cache() throws Throwable {
+        ryvrResponse.assertNotFromCache();
     }
 }

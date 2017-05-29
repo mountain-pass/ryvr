@@ -116,4 +116,18 @@ public class HtmlRyvrResponse implements RyvrResponse {
         throw new PendingException();
     }
 
+    @Override
+    public void assertFromCache() {
+        // TODO: add something to the page to indicate if the response was
+        // cached or not
+        throw new PendingException();
+    }
+
+    @Override
+    public void assertNotFromCache() {
+        // TODO: add something to the page to indicate if the response was
+        // cached or not
+        throw new PendingException();
+    }
+
 }

@@ -182,4 +182,15 @@ public class JavaRyvrResponse implements RyvrResponse {
         requestLatency.clear();
         receivedBytes.clear();
     }
+
+    @Override
+    public void assertFromCache() {
+        // do nothing as caching is implemented at the REST layer
+    }
+
+    @Override
+    public void assertNotFromCache() {
+        // do nothing as caching is implemented at the REST layer
+    }
+
 }

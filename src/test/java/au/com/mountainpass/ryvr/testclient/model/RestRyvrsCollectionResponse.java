@@ -62,7 +62,7 @@ public class RestRyvrsCollectionResponse implements RyvrsCollectionResponse {
                     .getForEntity(ryvrUri, Ryvr.class);
             Ryvr ryvr = responseEntity.getBody();
             return new RestRyvrResponse(traverson, ryvrUri.toURL(), ryvr,
-                    restTemplate);
+                    restTemplate, responseEntity.getHeaders());
         } catch (MalformedURLException | URISyntaxException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

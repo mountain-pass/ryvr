@@ -26,4 +26,8 @@ public interface RyvrResponse {
 
     public void clearMetrics();
 
+    public void assertFromCache();
+
+    public void assertNotFromCache();
+
 }

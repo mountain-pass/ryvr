@@ -1,4 +1,4 @@
-Feature: DB Ryvr Caching
+Feature: DB Ryvr
     In order create projections from the events that have happened in a DB
     As a user
     I want to get a paginated list of events from the DB
@@ -15,18 +15,13 @@ Background:
       | ordered by  | id            |
       | page size   | 10            |
 
-Scenario: Get Ryvr - Multiple Pages - Current Page
+Scenario: Get Ryvr - Multiple Pages - Cached
     When the "transactions" ryvr is retrieved
-    Then it will have the following structure
-      | id  | account | description    | amount   | 
-    And it will have the last 6 events
-    And it will have the following links
-      | self    |
-      | first   |
-      | last    |
-      | current |
-      | prev    |
-    And it will *not* have the following links
-      | next    |
+    And the previous page is requested
+    And the previous page is requested
+    And the next page is requested
+    Then it will come from cache
 
-      
+Scenario: Get Ryvr - Multiple Pages - Current Page Not Cached
+    When the "transactions" ryvr is retrieved
+    Then it will not come from cache
