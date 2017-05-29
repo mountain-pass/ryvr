@@ -28,5 +28,5 @@ Scenario: Get Ryvr Multiple Hits
     And all the events are retrieved
     And all the events are retrieved again
     Then on the second retrieve, 95% of the pages should be loaded within 10ms
-    And on the second retrieve, 100% of the pages should be loaded within 70ms
+    And on the second retrieve, 100% of the pages should be loaded within 200ms
     
