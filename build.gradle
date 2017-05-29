@@ -25,11 +25,19 @@ group = 'au.com.mountainpass'
 
 import org.apache.commons.lang.NotImplementedException;
 
-def shippable = System.env.SHIPPABLE != 'true'
+println "System.env.SHIPPABLE: ${System.env.SHIPPABLE}"
+def shippable = System.env.SHIPPABLE == 'true'
 if( shippable ) {
     try {
         new URL("https://api.github.com/repos/mountain-pass/ryvr/releases/latest").withInputStream{ i ->
-            throw new NotImplementedException();
+            def slurper = new groovy.json.JsonSlurper().setType(groovy.json.JsonParserType.INDEX_OVERLAY);
+            def result = slurper.parseText(i.getText())
+            def latestVersion = result.tag_name
+            println "latestVersion: ${latestVersion}"
+            def splitVerison = latestVersion.split("\\.")
+            splitVerison[1] = (splitVerison[1] as Integer) + 1
+            project.version = "${splitVerison[0]}.${splitVerison[1]}.${splitVerison[2]}"
+            i.close()
         }
     }
     catch(e) {
@@ -42,6 +50,10 @@ else {
 }
 
 println "${project.name} version: ${project.version}"
+
+ext {
+    releaseNotes = new File("RELEASE_NOTES-v${project.version}.md")
+}
 
 task printVersion << { println "${project.name} version: ${getNextVersion()}" }
 
@@ -114,7 +126,9 @@ dependencies {
     compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.1'
 
     compile('org.apache.httpcomponents:httpasyncclient')
-
+    compile('org.apache.httpcomponents:httpclient-cache:4.5.3')
+    
+    
     compile('org.webjars:bootstrap:3.3.7-1')
     compile('org.webjars:jquery:3.1.1-1')
     compile('org.webjars.bower:angularjs:1.6.0')
@@ -338,7 +352,7 @@ task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
 jar {
     manifest {
         attributes("Implementation-Title": "Ryvr",
-        "Implementation-Version": version)
+        "Implementation-Version": project.version)
     }
 }
 
@@ -349,7 +363,8 @@ github {
     tagName = "${project.version}"
     targetCommitish = 'master'
     name = "v${project.version}"
-    body = file("RELEASE_NOTES-v${project.version}.md").text
+
+    body = project.releaseNotes.exists() ? file(releaseNotes.path).text : "TBC"
     assets = [
         "build/libs/ryvr-1.0.0.jar"
     ]
@@ -357,6 +372,15 @@ github {
     draft = false
 }
 
+task checkReleaseNotes(group: 'Verification') {
+    doLast {
+        if( !project.releaseNotes.exists() ) {
+            throw new GradleException("Please document the changes for ${project.name} v${project.version}, in ./RELEASE_NOTES-v${project.version}.md")
+        }
+    }
+}
+
+githubRelease.dependsOn checkReleaseNotes
 
 githubRelease.dependsOn bootRepackage
 
