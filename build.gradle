@@ -40,8 +40,7 @@ if( shippable ) {
             i.close()
         }
     }
-    catch(e) {
-        println "Error Getting Latest version for ${name}: ${e}"
+    catch( java.io.FileNotFoundException e ) {
         project.version = '1.0.0'
     }
 }
@@ -54,10 +53,6 @@ println "${project.name} version: ${project.version}"
 ext {
     releaseNotes = new File("RELEASE_NOTES-v${project.version}.md")
 }
-
-task printVersion << { println "${project.name} version: ${getNextVersion()}" }
-
-
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -217,9 +212,7 @@ def testClasses = fileTree("src/test/java") {
 }
 
 testClasses.each { File testClass ->
-    println testClass
     def baseName = testClass.name.replace('.java', '')
-    println baseName
     task "test${baseName}"(type: Test, group: 'verification', description: "run ${baseName}") {
         testClassesDir = sourceSets.test.output.classesDir
         classpath = sourceSets.test.runtimeClasspath
@@ -231,6 +224,7 @@ testClasses.each { File testClass ->
         systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
         systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
         systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
+        systemProperty 'au.com.mountainpass.ryvr.test.jar', jar.outputs.files.singleFile
         jacoco {
             append = false
             destinationFile = file("${coverageDir}/jacoco/${baseName}.exec")
@@ -366,10 +360,10 @@ github {
 
     body = project.releaseNotes.exists() ? file(releaseNotes.path).text : "TBC"
     assets = [
-        "build/libs/ryvr-1.0.0.jar"
+        "build/libs/ryvr-${project.version}.jar"
     ]
-    prerelease = false
-    draft = false
+    prerelease = true
+    draft = true
 }
 
 task checkReleaseNotes(group: 'Verification') {
@@ -383,6 +377,12 @@ task checkReleaseNotes(group: 'Verification') {
 githubRelease.dependsOn checkReleaseNotes
 
 githubRelease.dependsOn bootRepackage
+
+task printOutputs(group: 'build') {
+    doLast {
+        println jar.outputs.files.singleFile
+    }
+}
 
 gradle.taskGraph.afterTask { Task task, TaskState state ->
     if (state.failure) {
