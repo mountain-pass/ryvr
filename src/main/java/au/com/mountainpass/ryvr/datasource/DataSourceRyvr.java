@@ -207,18 +207,18 @@ public class DataSourceRyvr extends Ryvr {
 
   @JsonIgnore
   @Override
-  public Map<String, Link> getLinks() {
-    Map<String, Link> links = new HashMap<>();
-    links.put("current", new Link("/ryvrs/" + getTitle()));
-    links.put("self", new Link("/ryvrs/" + getTitle() + "?page=" + page));
-    links.put("first", new Link("/ryvrs/" + getTitle() + "?page=" + 1));
+  public Map<String, Link[]> getLinks() {
+    Map<String, Link[]> links = new HashMap<>();
+    links.put("current", new Link[] { new Link("/ryvrs/" + getTitle()) });
+    links.put("self", new Link[] { new Link("/ryvrs/" + getTitle() + "?page=" + page) });
+    links.put("first", new Link[] { new Link("/ryvrs/" + getTitle() + "?page=1") });
     if (page > 1) {
-      links.put("prev", new Link("/ryvrs/" + getTitle() + "?page=" + (page - 1L)));
+      links.put("prev", new Link[] { new Link("/ryvrs/" + getTitle() + "?page=" + (page - 1L)) });
     }
     if (page < pages) {
-      links.put("next", new Link("/ryvrs/" + getTitle() + "?page=" + (page + 1L)));
+      links.put("next", new Link[] { new Link("/ryvrs/" + getTitle() + "?page=" + (page + 1L)) });
     } else {
-      links.put("last", new Link("/ryvrs/" + getTitle() + "?page=" + (pages)));
+      links.put("last", new Link[] { new Link("/ryvrs/" + getTitle() + "?page=" + (pages)) });
     }
     return links;
   }

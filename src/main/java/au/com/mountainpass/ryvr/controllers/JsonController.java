@@ -3,6 +3,8 @@ package au.com.mountainpass.ryvr.controllers;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,11 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.stereotype.Component;
 
+import au.com.mountainpass.ryvr.model.Link;
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
@@ -60,7 +64,10 @@ public class JsonController {
   }
 
   public ResponseEntity<?> getRyvrsCollection(HttpServletRequest req) {
-    return ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE).body(ryvrsCollection);
+    BodyBuilder responseBuilder = ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE);
+    addLinks(responseBuilder, ryvrsCollection.getLinks());
+
+    return responseBuilder.body(ryvrsCollection);
   }
 
   public ResponseEntity<?> getRoot(HttpServletRequest req) {
@@ -76,6 +83,7 @@ public class JsonController {
       return ResponseEntity.notFound().build();
     }
     boolean cachable = ryvr.refreshPage(page);
+
     BodyBuilder responseBuilder = ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE);
     if (cachable) {
       responseBuilder.cacheControl(CacheControl.maxAge(archivePageMaxAge, archivePageMaxAgeUnit));
@@ -83,6 +91,20 @@ public class JsonController {
       responseBuilder.cacheControl(CacheControl.maxAge(currentPageMaxAge, currentPageMaxAgeUnit));
     }
     responseBuilder.eTag(ryvr.getEtag());
+
+    addLinks(responseBuilder, ryvr.getLinks());
     return responseBuilder.body(ryvr);
+  }
+
+  public void addLinks(BodyBuilder responseBuilder, Map<String, Link[]> links) {
+    for (Entry<String, Link[]> entry : links.entrySet()) {
+      for (Link link : entry.getValue()) {
+        String headerValue = "<" + link.getHref() + ">; rel=\"" + entry.getKey() + "\"";
+        if (link.getTitle() != null) {
+          headerValue += "; title=\"" + link.getTitle() + "\"";
+        }
+        responseBuilder.header(HttpHeaders.LINK, headerValue);
+      }
+    }
   }
 }

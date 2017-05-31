@@ -15,7 +15,7 @@ public class Ryvr {
   protected long page = -1l;
   protected long pages = -1l;
   protected Map<String, List<Map<String, Object>>> rows = new HashMap<>();
-  protected Map<String, Link> links = new HashMap<>();
+  protected Map<String, Link[]> links = new HashMap<>();
 
   private Ryvr() {
   }
@@ -41,8 +41,8 @@ public class Ryvr {
     return rows;
   }
 
-  @JsonProperty("_links")
-  public Map<String, Link> getLinks() {
+  @JsonIgnore
+  public Map<String, Link[]> getLinks() {
     return links;
   }
 
