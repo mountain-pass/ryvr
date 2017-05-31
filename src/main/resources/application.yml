@@ -11,7 +11,7 @@ spring:
   application:
     name: ryvr
   resources:
-    cache-period: 86400
+    cache-period: 2592000
 
 server.tomcat.access-log-enabled: true
 
@@ -32,6 +32,6 @@ au.com.mountainpass.ryvr:
   cache:
     archive-page-max-age: 30
     archive-page-max-age-unit: DAYS
-    current-page-max-age: 0
+    current-page-max-age: 100
     current-page-max-age-unit: MILLISECONDS
     

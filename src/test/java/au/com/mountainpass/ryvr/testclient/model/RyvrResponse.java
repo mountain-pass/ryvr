@@ -6,28 +6,26 @@ import java.util.Map;
 
 public interface RyvrResponse {
 
-    public void assertHasItems(List<Map<String, String>> events)
-            throws URISyntaxException;
+  public void assertDoesntHaveLinks(List<String> links);
 
-    public void assertHasLinks(List<String> links);
+  public void assertFromCache();
 
-    public void assertDoesntHaveLinks(List<String> links);
+  public void assertHasItems(List<Map<String, String>> events) throws URISyntaxException;
 
-    public RyvrResponse followLink(String rel) throws URISyntaxException;
+  public void assertHasLinks(List<String> links);
 
-    public void assertItemsHaveStructure(List<String> structure)
-            throws URISyntaxException;
+  public void assertItemsHaveStructure(List<String> structure) throws URISyntaxException;
 
-    public void retrieveAllEvents() throws URISyntaxException;
+  public void assertLoadedWithin(int percentile, int maxMs);
 
-    public boolean hasLink(String rel);
+  public void assertNotFromCache();
 
-    public void assertLoadedWithin(int percentile, int maxMs);
+  public void clearMetrics();
 
-    public void clearMetrics();
+  public RyvrResponse followLink(String rel) throws URISyntaxException;
 
-    public void assertFromCache();
+  public boolean hasLink(String rel);
 
-    public void assertNotFromCache();
+  public void retrieveAllEvents() throws URISyntaxException;
 
 }

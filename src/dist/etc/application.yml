@@ -1,0 +1,39 @@
+server:
+  port: 8443
+  ssl:
+    key-store: ../etc/keystore.jks
+    key-store-password: secret
+    key-password: secret
+    key-alias: selfSigned
+
+server.tomcat:
+  basedir: ../var
+  accesslog:
+    enabled: true
+    request-attributes-enabled: true 
+
+logging:
+  file: ryvr.log
+  path: ../var/logs
+
+au.com.mountainpass.ryvr:
+  ssl:
+    hostname: localhost
+    genCert: selfSigned
+  cache:
+    archive-page-max-age: 30
+    archive-page-max-age-unit: DAYS
+    current-page-max-age: 100
+    current-page-max-age-unit: MILLISECONDS
+#  data-sources:
+#    - url: jdbc:mysql://localhost
+#      username: dbuser
+#      password: dbpass
+#      ryvrs:
+#        transactions:
+#          page-size: 128
+#          catalog: test_db
+#          table: TRANSACTIONS
+#          ordered-by: ID
+    
+    

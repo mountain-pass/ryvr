@@ -19,7 +19,7 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'announce'
 apply plugin: 'jacoco'
 apply plugin: 'co.riiid.gradle'
-
+apply plugin: 'application'
 
 group = 'au.com.mountainpass'
 
@@ -60,6 +60,8 @@ targetCompatibility = 1.8
 compileJava.options.compilerArgs.add '-parameters'
 compileTestJava.options.compilerArgs.add '-parameters'
 
+
+
 repositories {
     mavenLocal()
     jcenter()
@@ -88,6 +90,18 @@ springBoot  { buildInfo() }
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
+}
+
+
+applicationDistribution.from("LICENSE") {
+  into "."
+}
+
+applicationDefaultJvmArgs = ["-Dspring.config.location=file:../etc/application.yml", "-Dlogging.config=file:../etc/logback-spring.xml"]
+
+distTar {
+    compression Compression.GZIP
+    extension "tar.gz"
 }
 
 artifacts { archives sourcesJar  }
@@ -122,8 +136,8 @@ dependencies {
 
     compile('org.apache.httpcomponents:httpasyncclient')
     compile('org.apache.httpcomponents:httpclient-cache:4.5.3')
-    
-    
+
+
     compile('org.webjars:bootstrap:3.3.7-1')
     compile('org.webjars:jquery:3.1.1-1')
     compile('org.webjars.bower:angularjs:1.6.0')
@@ -157,19 +171,11 @@ dependencies {
     codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.10'
 }
 
-
-//bootRun {
-//    args "--spring.config.location=build/bootrun/application.properties"
-//}
 bootRun {
     String activeProfile =  System.properties['spring.profiles.active']
     String confLoc = System.properties['spring.config.location']
     systemProperty "spring.profiles.active", activeProfile
     systemProperty "spring.config.location", confLoc
-    //    if ( project.hasProperty('jvmArgs') ) {
-    //        jvmArgs = ["-Dserver.ssl.key-store: ${buildDir}/keystore.jks"]
-    //        jvmArgs.addAll(project.jvmArgs.split("\\s+") as List)
-    //    }
 }
 
 test { exclude '**' }

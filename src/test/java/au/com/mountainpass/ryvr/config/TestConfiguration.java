@@ -26,8 +26,8 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.cache.CacheConfig;
+import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
 import org.apache.http.impl.client.cache.CachingHttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
@@ -137,18 +137,21 @@ public class TestConfiguration implements
 
     @Bean
     public CloseableHttpClient httpClient() throws Exception {
-        return httpClientBuilder().build();
+
+        CloseableHttpClient client = httpClientBuilder().build();
+        return client;
     }
 
     @Bean
-    public HttpClientBuilder httpClientBuilder() throws Exception {
+    public CachingHttpClientBuilder httpClientBuilder() throws Exception {
         final HttpClientConnectionManager connectionManager = httpClientConnectionManager();
         final RequestConfig config = httpClientRequestConfig();
         CacheConfig cacheConfig = CacheConfig.custom()
                 .setMaxCacheEntries(1000000).setMaxObjectSize(8192 * 1024)
                 .build();
 
-        return CachingHttpClients.custom().setCacheConfig(cacheConfig)
+        return (CachingHttpClientBuilder) CachingHttpClients.custom()
+                .setCacheConfig(cacheConfig)
                 .setConnectionManager(connectionManager)
                 .setDefaultRequestConfig(config)
                 .setSSLSocketFactory(sslSocketFactory())
