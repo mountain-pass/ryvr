@@ -82,7 +82,7 @@ public class JsonController {
     } else {
       responseBuilder.cacheControl(CacheControl.maxAge(currentPageMaxAge, currentPageMaxAgeUnit));
     }
-    responseBuilder.eTag(Long.toHexString(ryvr.getEtag()));
+    responseBuilder.eTag(ryvr.getEtag());
     return responseBuilder.body(ryvr);
   }
 }
