@@ -35,72 +35,64 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 /*
  * _ @Import({ AuditAutoConfiguration.class, DataSourceAutoConfiguration.class,
  * DataSourcePoolMetadataProvidersConfiguration.class,
- * DataSourceTransactionManagerAutoConfiguration.class,
- * DispatcherServletAutoConfiguration.class,
- * EmbeddedServletContainerAutoConfiguration.class,
- * EndpointAutoConfiguration.class, EndpointMBeanExportAutoConfiguration.class,
- * EndpointWebMvcAutoConfiguration.class,
- * EndpointWebMvcManagementContextConfiguration.class,
- * ErrorMvcAutoConfiguration.class, HttpEncodingAutoConfiguration.class,
- * HttpMessageConvertersAutoConfiguration.class, //
+ * DataSourceTransactionManagerAutoConfiguration.class, DispatcherServletAutoConfiguration.class,
+ * EmbeddedServletContainerAutoConfiguration.class, EndpointAutoConfiguration.class,
+ * EndpointMBeanExportAutoConfiguration.class, EndpointWebMvcAutoConfiguration.class,
+ * EndpointWebMvcManagementContextConfiguration.class, ErrorMvcAutoConfiguration.class,
+ * HttpEncodingAutoConfiguration.class, HttpMessageConvertersAutoConfiguration.class, //
  * InfoContributorAutoConfiguration.class, JacksonAutoConfiguration.class,
  * JdbcTemplateAutoConfiguration.class, // JmxAutoConfiguration.class,
- * ManagementServerPropertiesAutoConfiguration.class, //
- * MetricExportAutoConfiguration.class, // MetricFilterAutoConfiguration.class,
- * // MetricRepositoryAutoConfiguration.class, MultipartAutoConfiguration.class,
- * PersistenceExceptionTranslationAutoConfiguration.class, //
- * ProjectInfoAutoConfiguration.class,
- * PropertyPlaceholderAutoConfiguration.class, //
- * PublicMetricsAutoConfiguration.class,
- * ServerPropertiesAutoConfiguration.class, //
- * TraceRepositoryAutoConfiguration.class, //
- * TraceWebFilterAutoConfiguration.class, TransactionAutoConfiguration.class, //
- * ValidationAutoConfiguration.class, WebClientAutoConfiguration.class,
- * WebMvcAutoConfiguration.class })
+ * ManagementServerPropertiesAutoConfiguration.class, // MetricExportAutoConfiguration.class, //
+ * MetricFilterAutoConfiguration.class, // MetricRepositoryAutoConfiguration.class,
+ * MultipartAutoConfiguration.class, PersistenceExceptionTranslationAutoConfiguration.class, //
+ * ProjectInfoAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class, //
+ * PublicMetricsAutoConfiguration.class, ServerPropertiesAutoConfiguration.class, //
+ * TraceRepositoryAutoConfiguration.class, // TraceWebFilterAutoConfiguration.class,
+ * TransactionAutoConfiguration.class, // ValidationAutoConfiguration.class,
+ * WebClientAutoConfiguration.class, WebMvcAutoConfiguration.class })
  */
 @EnableAutoConfiguration
 @Configuration
 @ComponentScan(value = "au.com.mountainpass")
 public class Application {
-    public static void main(final String[] args) {
-        SpringApplication.run(Application.class, args);
-    }
+  public static void main(final String[] args) {
+    SpringApplication.run(Application.class, args);
+  }
 
-    /**
-     * <a href=
-     * "http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cors.html#_filter_based_cors_support">
-     * Filter based CORS support</a>
-     *
-     * @return corsFilter
-     */
-    @Bean
-    public FilterRegistrationBean corsFilter() {
-        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        final CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("*");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-        source.registerCorsConfiguration("/**", config);
-        final FilterRegistrationBean bean = new FilterRegistrationBean(
-                new CorsFilter(source));
-        bean.setOrder(0);
-        return bean;
-    }
+  /**
+   * <a href=
+   * "http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cors.html#_filter_based_cors_support">
+   * Filter based CORS support</a>
+   *
+   * @return corsFilter
+   */
+  @Bean
+  public FilterRegistrationBean corsFilter() {
+    final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    final CorsConfiguration config = new CorsConfiguration();
+    config.setAllowCredentials(true);
+    config.addAllowedOrigin("*");
+    config.addAllowedHeader("*");
+    config.addAllowedMethod("*");
+    source.registerCorsConfiguration("/**", config);
+    final FilterRegistrationBean bean = new FilterRegistrationBean(new CorsFilter(source));
+    bean.setOrder(0);
+    return bean;
+  }
 
-    @Bean
-    public LocaleResolver localeResolver() {
-        final SessionLocaleResolver slr = new SessionLocaleResolver();
-        slr.setDefaultLocale(Locale.ENGLISH);
-        return slr;
-    }
+  @Bean
+  public LocaleResolver localeResolver() {
+    final SessionLocaleResolver slr = new SessionLocaleResolver();
+    slr.setDefaultLocale(Locale.ENGLISH);
+    return slr;
+  }
 
-    @Bean
-    public ReloadableResourceBundleMessageSource messageSource() {
-        final ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasename("classpath:locale/messages");
-        messageSource.setCacheSeconds(3600); // refresh cache once per hour
-        return messageSource;
-    }
+  @Bean
+  public ReloadableResourceBundleMessageSource messageSource() {
+    final ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
+    messageSource.setBasename("classpath:locale/messages");
+    messageSource.setCacheSeconds(3600); // refresh cache once per hour
+    return messageSource;
+  }
 
 }

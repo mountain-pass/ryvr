@@ -10,14 +10,12 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 
-import org.apache.catalina.startup.Tomcat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainer;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.undertow.UndertowEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -63,20 +61,39 @@ public class SslConfig {
     return cert;
   }
 
+  // @Bean
+  // public TomcatEmbeddedServletContainerFactory tomcatFactory() throws Exception {
+  // cert();
+  // return new TomcatEmbeddedServletContainerFactory() {
+  //
+  // @Override
+  // protected TomcatEmbeddedServletContainer getTomcatEmbeddedServletContainer(
+  // final Tomcat tomcat) {
+  // TomcatEmbeddedServletContainer tomcatEmbeddedServletContainer =
+  // super.getTomcatEmbeddedServletContainer(
+  // tomcat);
+  // return tomcatEmbeddedServletContainer;
+  // }
+  //
+  // };
+  // }
+
   @Bean
-  public TomcatEmbeddedServletContainerFactory tomcatFactory() throws Exception {
+  public UndertowEmbeddedServletContainerFactory embeddedServletContainerFactory()
+      throws InvalidKeyException, CertificateException, NoSuchAlgorithmException,
+      NoSuchProviderException, IllegalStateException, SignatureException, KeyStoreException,
+      IOException {
     cert();
-    return new TomcatEmbeddedServletContainerFactory() {
-
-      @Override
-      protected TomcatEmbeddedServletContainer getTomcatEmbeddedServletContainer(
-          final Tomcat tomcat) {
-        TomcatEmbeddedServletContainer tomcatEmbeddedServletContainer = super.getTomcatEmbeddedServletContainer(
-            tomcat);
-        return tomcatEmbeddedServletContainer;
-      }
-
-    };
+    UndertowEmbeddedServletContainerFactory factory = new UndertowEmbeddedServletContainerFactory();
+    // factory.addBuilderCustomizers(new UndertowBuilderCustomizer() {
+    //
+    // @Override
+    // public void customize(Builder builder) {
+    // builder.se
+    // }
+    //
+    // });
+    return factory;
   }
 
 }

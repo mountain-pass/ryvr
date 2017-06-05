@@ -117,7 +117,8 @@ dependencies {
     compile('commons-io:commons-io:2.5')
 
     compile('org.springframework.boot:spring-boot-starter-actuator')
-    compile('org.springframework.boot:spring-boot-starter-web') //{ exclude(module: 'spring-boot-starter-tomcat') } compile('org.springframework.boot:spring-boot-starter-undertow')
+    compile('org.springframework.boot:spring-boot-starter-web') { exclude(module: 'spring-boot-starter-tomcat') } 
+    compile('org.springframework.boot:spring-boot-starter-undertow')
     compile('org.springframework.boot:spring-boot-starter-jdbc')
     compile('org.springframework.boot:spring-boot-autoconfigure')
 
