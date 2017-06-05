@@ -1,8 +1,15 @@
 package au.com.mountainpass.ryvr.datasource;
 
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,8 +33,8 @@ public class DataSourceRyvr extends Ryvr {
   @JsonIgnore
   public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-  @Min(0)
-  private long pageSize = 10; // as of 2017/05/02, optimal page size is
+  @Min(1)
+  private int pageSize = 10; // as of 2017/05/02, optimal page size is
   // 2048 when using h2
   @JsonIgnore
   private JdbcTemplate jt;
@@ -40,8 +47,10 @@ public class DataSourceRyvr extends Ryvr {
   private String orderedBy;
   private long count = 0;
 
+  private int[] columnTypes;
+
   public DataSourceRyvr(String title, JdbcTemplate jt, String catalog, String table,
-      String orderedBy, long pageSize) throws SQLException {
+      String orderedBy, int pageSize) throws SQLException {
     super(title);
     this.table = table;
     this.orderedBy = orderedBy;
@@ -77,17 +86,17 @@ public class DataSourceRyvr extends Ryvr {
     refreshPage(-1L);
   }
 
-  @JsonRawValue
-  @JsonProperty("_embedded")
-  public String getRawEmbedded() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("{ \"item\": [");
+  public void embeddedToJson(StringBuilder builder) {
+    builder.append("{\"item\":[");
     for (int i = 0; i < pageSize; ++i) {
       builder.append("{");
       for (int j = 0; j < columnNames.length; ++j) {
+        if (j != 0) {
+          builder.append(",");
+        }
         builder.append("\"");
         builder.append(columnNames[j]);
-        builder.append("\": ");
+        builder.append("\":");
         Object value = rowSet.getObject(j + 1);
         if (value instanceof String) {
           builder.append("\"");
@@ -95,9 +104,6 @@ public class DataSourceRyvr extends Ryvr {
           builder.append("\"");
         } else {
           builder.append(value);
-        }
-        if (j + 1 < columnNames.length) {
-          builder.append(",");
         }
       }
       builder.append("}");
@@ -109,7 +115,6 @@ public class DataSourceRyvr extends Ryvr {
       }
     }
     builder.append("]}");
-    return builder.toString();
   }
 
   @JsonProperty("_links")
@@ -168,15 +173,21 @@ public class DataSourceRyvr extends Ryvr {
 
     page = requestedPage < 0L ? pages : requestedPage;
 
+    return page != pages;
+  }
+
+  public void refreshRowSet() {
+
     if (rowSet == null || page == pages) {
-      jt.setFetchSize((int) pageSize);
+      jt.setFetchSize(pageSize);
       rowSet = jt.queryForRowSet(rowsQuery);
       columnNames = rowSet.getMetaData().getColumnNames();
-    }
-    // hmmm... what happens when there are more rows than MAX_INT?
-    rowSet.absolute((int) ((page - 1L) * pageSize + 1L));
+      columnTypes = new int[columnNames.length];
+      for (int i = 0; i < columnNames.length; ++i) {
+        columnTypes[i] = rowSet.getMetaData().getColumnType(i + 1);
+      }
 
-    return page != pages;
+    }
   }
 
   @Override
@@ -194,7 +205,7 @@ public class DataSourceRyvr extends Ryvr {
       }
       List<Map<String, Object>> itemRows = rows.get("item");
       if (itemRows == null) {
-        itemRows = new ArrayList<Map<String, Object>>((int) pageSize);
+        itemRows = new ArrayList<Map<String, Object>>(pageSize);
       }
       itemRows.add(row);
       rows.put("item", itemRows);
@@ -223,19 +234,129 @@ public class DataSourceRyvr extends Ryvr {
     return links;
   }
 
-  public long getPageSize() {
+  public int getPageSize() {
     return pageSize;
   }
 
   @Override
   public String getEtag() {
-    if (getPage() == null || getPage() == pages) {
-      return Long.toHexString(count) + "." + Long.toHexString(pageSize) + "."
-          + columnNames.hashCode();
+    if (getPage() < 0L || getPage() == pages) {
+      return Long.toHexString(count) + "." + Long.toHexString(pageSize);
     } else {
-      return Long.toHexString(page) + "." + Long.toHexString(pageSize) + "."
-          + columnNames.hashCode();
+      return Long.toHexString(page) + "." + Long.toHexString(pageSize);
     }
   }
 
+  @Override
+  public void toJson(OutputStream outputStream) throws IOException {
+    refreshRowSet();
+
+    // hmmm... what happens when there are more rows than MAX_INT?
+    rowSet.absolute((int) ((page - 1L) * pageSize + 1L));
+    // toJsonWithBuilder();
+    toJsonWithWriter(outputStream);
+
+  }
+
+  private ByteArrayOutputStream baos = new ByteArrayOutputStream(pageSize * 1024);
+  private Writer writer = new BufferedWriter(new OutputStreamWriter(baos), pageSize * 1024);
+
+  public void toJsonWithWriter(OutputStream outputStream) throws IOException {
+    baos.reset();
+    writer.write("{\"title\":\"", 0, 10);
+    writer.write(getTitle());
+    writer.write("\",\"page\":", 0, 9);
+    writer.write(Long.toString(getPage()));
+
+    writer.write(",\"pageSize\":", 0, 12);
+    writer.write(Integer.toString(getPageSize()));
+    writer.write(",\"columns\":[", 0, 12);
+    for (int i = 0; i < columnNames.length; ++i) {
+      if (i != 0) {
+        writer.write(',');
+      }
+      writer.write('"');
+      writer.write(columnNames[i]);
+      writer.write('"');
+    }
+    writer.write("],\"rows\":[", 0, 10);
+
+    for (int i = 0; i < pageSize; ++i) {
+      if (i != 0) {
+        writer.write(',');
+      }
+      writer.write('[');
+      for (int j = 0; j < columnNames.length; ++j) {
+        if (j != 0) {
+          writer.write(',');
+        }
+        String value = rowSet.getString(j + 1);
+        if (columnTypes[j] == Types.VARCHAR) {
+          writer.write('"');
+          writer.write(value);
+          writer.write('"');
+        } else {
+          writer.write(value);
+        }
+      }
+      writer.write(']');
+      if (!rowSet.next()) {
+        break;
+      }
+    }
+    writer.write(']');
+    writer.write('}');
+    writer.flush();
+
+    outputStream.write(baos.toByteArray());
+    outputStream.flush();
+  }
+
+  public void toJsonWithBuilder() {
+    StringBuilder builder = new StringBuilder();
+
+    builder.append("{\"title\":\"");
+    builder.append(getTitle());
+    builder.append("\",\"page\":");
+    builder.append(Long.toString(getPage()));
+
+    builder.append(",\"pageSize\":");
+    builder.append(Long.toString(getPageSize()));
+    builder.append(",\"columns\":[");
+    for (int i = 0; i < columnNames.length; ++i) {
+      if (i != 0) {
+        builder.append(',');
+      }
+      builder.append('"');
+      builder.append(columnNames[i]);
+      builder.append('"');
+    }
+    builder.append("],\"rows\":[");
+
+    for (int i = 0; i < pageSize; ++i) {
+      if (i != 0) {
+        builder.append(',');
+      }
+      builder.append('[');
+      for (int j = 0; j < columnNames.length; ++j) {
+        if (j != 0) {
+          builder.append(',');
+        }
+        String value = rowSet.getString(j + 1);
+        if (columnTypes[j] == Types.VARCHAR) {
+          builder.append('"');
+          builder.append(value);
+          builder.append('"');
+        } else {
+          builder.append(value);
+        }
+      }
+      builder.append(']');
+      if (!rowSet.next()) {
+        break;
+      }
+    }
+    builder.append(']');
+    builder.append('}');
+  }
 }

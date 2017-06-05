@@ -66,293 +66,272 @@ import au.com.mountainpass.ryvr.testclient.RestRyvrClient;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 
 @Configuration
-public class TestConfiguration implements
-        ApplicationListener<EmbeddedServletContainerInitializedEvent> {
+public class TestConfiguration
+    implements ApplicationListener<EmbeddedServletContainerInitializedEvent> {
 
-    @Value("${server.ssl.protocol:TLS}")
-    private String sslProtocol;
+  @Value("${server.ssl.protocol:TLS}")
+  private String sslProtocol;
 
-    @Value("${javax.net.ssl.trustStorePassword:changeit}")
-    private String trustStorePassword;
+  @Value("${javax.net.ssl.trustStorePassword:changeit}")
+  private String trustStorePassword;
 
-    @Value("${javax.net.ssl.trustStoreType:JKS}")
-    private String trustStoreType;
+  @Value("${javax.net.ssl.trustStoreType:JKS}")
+  private String trustStoreType;
 
-    public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+  public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private ObjectMapper objectMapper;
+  @Autowired
+  private ObjectMapper objectMapper;
 
-    private int port;
+  private int port;
 
-    @Value("${au.com.mountainpass.ryvr.proxy.max.connections.route:20}")
-    private int proxyMaxConnectionsRoute;
+  @Value("${au.com.mountainpass.ryvr.proxy.max.connections.route:20}")
+  private int proxyMaxConnectionsRoute;
 
-    @Value("${au.com.mountainpass.ryvr.proxy.max.connections.total:100}")
-    private int proxyMaxConnectionsTotal;
+  @Value("${au.com.mountainpass.ryvr.proxy.max.connections.total:100}")
+  private int proxyMaxConnectionsTotal;
 
-    @Value("${au.com.mountainpass.ryvr.proxy.read.timeout.ms:60000}")
-    private int proxyReadTimeoutMs;
+  @Value("${au.com.mountainpass.ryvr.proxy.read.timeout.ms:60000}")
+  private int proxyReadTimeoutMs;
 
-    @Value("${au.com.mountainpass.ryvr.ssl.hostname}")
-    private String sslHostname;
+  @Value("${au.com.mountainpass.ryvr.ssl.hostname}")
+  private String sslHostname;
 
-    @Value("${javax.net.ssl.trustStore:build/truststore.jks}")
-    private String trustStoreFile;
+  @Value("${javax.net.ssl.trustStore:build/truststore.jks}")
+  private String trustStoreFile;
 
-    @Autowired(required = false)
-    private WebDriverFactory webDriverFactory;
+  @Autowired(required = false)
+  private WebDriverFactory webDriverFactory;
 
-    @Bean
-    public CloseableHttpAsyncClient asyncHttpClient() throws Exception {
-        return asyncHttpClientBuilder().build();
+  @Bean
+  public CloseableHttpAsyncClient asyncHttpClient() throws Exception {
+    return asyncHttpClientBuilder().build();
+  }
+
+  @Bean
+  public HttpAsyncClientBuilder asyncHttpClientBuilder() throws Exception {
+    final NHttpClientConnectionManager connectionManager = nHttpClientConntectionManager();
+    final RequestConfig config = httpClientRequestConfig();
+    return HttpAsyncClientBuilder.create().setConnectionManager(connectionManager)
+        .setConnectionManagerShared(true).setDefaultRequestConfig(config)
+        .setSSLContext(sslContext());
+  }
+
+  @Bean
+  public AsyncClientHttpRequestFactory asyncHttpClientFactory() throws Exception {
+    final HttpComponentsAsyncClientHttpRequestFactory factory = new HttpComponentsAsyncClientHttpRequestFactory(
+        httpClient(), asyncHttpClient());
+    factory.setReadTimeout(200000);
+    return factory;
+  }
+
+  public URI getBaseUri() {
+    return URI.create("https://" + sslHostname + ":" + getPort());
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+  @Bean
+  public CloseableHttpClient httpClient() throws Exception {
+
+    CloseableHttpClient client = httpClientBuilder().build();
+    return client;
+  }
+
+  @Bean
+  public CachingHttpClientBuilder httpClientBuilder() throws Exception {
+    final HttpClientConnectionManager connectionManager = httpClientConnectionManager();
+    final RequestConfig config = httpClientRequestConfig();
+    CacheConfig cacheConfig = CacheConfig.custom().setMaxCacheEntries(10000000)
+        .setMaxObjectSize(8192 * 1024).build();
+
+    return (CachingHttpClientBuilder) CachingHttpClients.custom().setCacheConfig(cacheConfig)
+        .setConnectionManager(connectionManager).setDefaultRequestConfig(config)
+        .setSSLSocketFactory(sslSocketFactory()).setSslcontext(sslContext())
+        .disableRedirectHandling().addInterceptorLast(new HttpResponseInterceptor() {
+
+          @Override
+          public void process(HttpResponse response, HttpContext context)
+              throws HttpException, IOException {
+            CacheResponseStatus cacheResponseStatus = (CacheResponseStatus) context
+                .getAttribute(HttpCacheContext.CACHE_RESPONSE_STATUS);
+            String xCacheString;
+            switch (cacheResponseStatus) {
+            case CACHE_HIT:
+              xCacheString = "HIT";
+              break;
+            case VALIDATED:
+              xCacheString = "VALIDATED";
+              break;
+            case CACHE_MISS:
+            case CACHE_MODULE_RESPONSE:
+              xCacheString = "MISS";
+              break;
+            default:
+              xCacheString = cacheResponseStatus.toString();
+            }
+            response.addHeader("X-Cache", xCacheString);
+            long length = response.getEntity().getContentLength();
+            response.setHeader(HttpHeaders.CONTENT_LENGTH, Long.toString(length));
+          }
+        });
+  }
+
+  @Bean
+  public HttpClientConnectionManager httpClientConnectionManager() throws Exception {
+    final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
+        httpConnectionSocketFactoryRegistry());
+    connectionManager.setMaxTotal(proxyMaxConnectionsTotal);
+    connectionManager.setDefaultMaxPerRoute(proxyMaxConnectionsRoute);
+    return connectionManager;
+  }
+
+  @Bean
+  public HttpComponentsClientHttpRequestFactory httpClientFactory() throws Exception {
+    final HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(
+        httpClient());
+    factory.setReadTimeout(200000);
+    return factory;
+  }
+
+  @Bean
+  public Registry<ConnectionSocketFactory> httpConnectionSocketFactoryRegistry() throws Exception {
+    return RegistryBuilder.<ConnectionSocketFactory> create()
+        .register("http", PlainConnectionSocketFactory.getSocketFactory())
+        .register("https", sslSocketFactory()).build();
+  }
+
+  @Bean
+  @Profile(value = { "javaApi" })
+  public RyvrTestClient javaClient() {
+    return new JavaRyvrClient();
+  }
+
+  @Bean
+  public MappingJackson2HttpMessageConverter mappingJacksonHttpMessageConverter() {
+    final MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(
+        objectMapper);
+    return converter;
+  }
+
+  @Override
+  public void onApplicationEvent(final EmbeddedServletContainerInitializedEvent event) {
+    this.port = event.getEmbeddedServletContainer().getPort();
+  }
+
+  @Bean
+  @Profile(value = { "restApi" })
+  public RyvrTestClient restClient() {
+    return new RestRyvrClient();
+  }
+
+  @Bean
+  @Profile(value = { "restApi", "systemTest" })
+  public RestTemplate restTemplate() throws Exception {
+    RestTemplate restTemplate = new RestTemplate(httpClientFactory());
+    return restTemplate;
+  }
+
+  public void setPort(final int port) {
+    this.port = port;
+  }
+
+  @Bean
+  @Profile(value = { "ui" })
+  public RyvrTestClient uiClient() {
+    return new HtmlRyvrClient();
+  }
+
+  @Bean
+  @Profile("ui")
+  public WebDriver webDriver() throws ClassNotFoundException, NoSuchMethodException,
+      SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException,
+      InvocationTargetException, IOException {
+    final WebDriver webDriver = webDriverFactory.createWebDriver();
+    return webDriver;
+  }
+
+  @Bean // (destroyMethod = "close")
+  public CloseableHttpAsyncClient httpAsyncClient() throws Exception {
+    final CloseableHttpAsyncClient client = httpAsyncClientBuilder().build();
+    client.start();
+    return client;
+  }
+
+  @Bean
+  public HttpAsyncClientBuilder httpAsyncClientBuilder() throws Exception {
+    return HttpAsyncClientBuilder.create().setSSLContext(sslContext())
+        .setConnectionManager(nHttpClientConntectionManager())
+        .setDefaultRequestConfig(httpClientRequestConfig());
+  }
+
+  @Bean
+  public RequestConfig httpClientRequestConfig() {
+    final RequestConfig config = RequestConfig.custom().setConnectTimeout(proxyReadTimeoutMs)
+        .build();
+    return config;
+  }
+
+  @Autowired
+  private Certificate cert;
+
+  @Value("${server.ssl.key-alias}")
+  private String keyAlias;
+
+  @Bean
+  public TrustStoreManager trustStoreManager()
+      throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+    TrustStoreManager trustStoreManager = new TrustStoreManager(trustStoreFile, trustStoreType,
+        trustStorePassword);
+    if (trustStoreManager.isSystemDefaultTrustStore()) {
+      LOGGER.warn(
+          "Trust Store location {} appears to be set to system default. The Self signed cert for testing will not be added and the tests will likely fail.",
+          trustStoreManager.getTrustStoreLocation());
+    } else {
+      trustStoreManager.addCert(keyAlias, cert);
     }
+    return trustStoreManager;
+  }
 
-    @Bean
-    public HttpAsyncClientBuilder asyncHttpClientBuilder() throws Exception {
-        final NHttpClientConnectionManager connectionManager = nHttpClientConntectionManager();
-        final RequestConfig config = httpClientRequestConfig();
-        return HttpAsyncClientBuilder.create()
-                .setConnectionManager(connectionManager)
-                .setConnectionManagerShared(true)
-                .setDefaultRequestConfig(config).setSSLContext(sslContext());
-    }
+  @Bean
+  public NHttpClientConnectionManager nHttpClientConntectionManager() throws Exception {
+    final PoolingNHttpClientConnectionManager connectionManager = new PoolingNHttpClientConnectionManager(
+        new DefaultConnectingIOReactor(IOReactorConfig.DEFAULT), schemeIOSessionStrategyRegistry());
+    connectionManager.setMaxTotal(proxyMaxConnectionsTotal);
+    connectionManager.setDefaultMaxPerRoute(proxyMaxConnectionsRoute);
+    return connectionManager;
+  }
 
-    @Bean
-    public AsyncClientHttpRequestFactory asyncHttpClientFactory()
-            throws Exception {
-        final HttpComponentsAsyncClientHttpRequestFactory factory = new HttpComponentsAsyncClientHttpRequestFactory(
-                httpClient(), asyncHttpClient());
-        factory.setReadTimeout(200000);
-        return factory;
-    }
+  @Bean
+  Registry<SchemeIOSessionStrategy> schemeIOSessionStrategyRegistry() throws Exception {
+    return RegistryBuilder.<SchemeIOSessionStrategy> create()
+        .register("http", NoopIOSessionStrategy.INSTANCE)
+        .register("https", new SSLIOSessionStrategy(sslContext())).build();
+  }
 
-    public URI getBaseUri() {
-        return URI.create("https://" + sslHostname + ":" + getPort());
-    }
+  @Bean
+  public SSLContext sslContext() throws Exception {
+    final SSLContext sslContext = SSLContext.getInstance(sslProtocol);
+    final TrustManagerFactory tmf = trustManagerFactory();
+    final KeyStore ks = trustStoreManager().getKeyStore();
+    tmf.init(ks);
+    sslContext.init(null, tmf.getTrustManagers(), null);
+    return sslContext;
+  }
 
-    public int getPort() {
-        return port;
-    }
+  @Bean
+  public SSLConnectionSocketFactory sslSocketFactory() throws Exception {
+    final SSLConnectionSocketFactory sf = new SSLConnectionSocketFactory(sslContext());
+    return sf;
+  }
 
-    @Bean
-    public CloseableHttpClient httpClient() throws Exception {
-
-        CloseableHttpClient client = httpClientBuilder().build();
-        return client;
-    }
-
-    @Bean
-    public CachingHttpClientBuilder httpClientBuilder() throws Exception {
-        final HttpClientConnectionManager connectionManager = httpClientConnectionManager();
-        final RequestConfig config = httpClientRequestConfig();
-        CacheConfig cacheConfig = CacheConfig.custom()
-                .setMaxCacheEntries(1000000).setMaxObjectSize(8192 * 1024)
-                .build();
-
-        return (CachingHttpClientBuilder) CachingHttpClients.custom()
-                .setCacheConfig(cacheConfig)
-                .setConnectionManager(connectionManager)
-                .setDefaultRequestConfig(config)
-                .setSSLSocketFactory(sslSocketFactory())
-                .setSslcontext(sslContext()).disableRedirectHandling()
-                .addInterceptorLast(new HttpResponseInterceptor() {
-
-                    @Override
-                    public void process(HttpResponse response,
-                            HttpContext context)
-                            throws HttpException, IOException {
-                        CacheResponseStatus cacheResponseStatus = (CacheResponseStatus) context
-                                .getAttribute(
-                                        HttpCacheContext.CACHE_RESPONSE_STATUS);
-                        String xCacheString;
-                        switch (cacheResponseStatus) {
-                        case CACHE_HIT:
-                            xCacheString = "HIT";
-                            break;
-                        case VALIDATED:
-                            xCacheString = "VALIDATED";
-                            break;
-                        case CACHE_MISS:
-                        case CACHE_MODULE_RESPONSE:
-                            xCacheString = "MISS";
-                            break;
-                        default:
-                            xCacheString = cacheResponseStatus.toString();
-                        }
-                        response.addHeader("X-Cache", xCacheString);
-                        long length = response.getEntity().getContentLength();
-                        response.setHeader(HttpHeaders.CONTENT_LENGTH,
-                                Long.toString(length));
-                    }
-                });
-    }
-
-    @Bean
-    public HttpClientConnectionManager httpClientConnectionManager()
-            throws Exception {
-        final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
-                httpConnectionSocketFactoryRegistry());
-        connectionManager.setMaxTotal(proxyMaxConnectionsTotal);
-        connectionManager.setDefaultMaxPerRoute(proxyMaxConnectionsRoute);
-        return connectionManager;
-    }
-
-    @Bean
-    public HttpComponentsClientHttpRequestFactory httpClientFactory()
-            throws Exception {
-        final HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(
-                httpClient());
-        factory.setReadTimeout(200000);
-        return factory;
-    }
-
-    @Bean
-    public Registry<ConnectionSocketFactory> httpConnectionSocketFactoryRegistry()
-            throws Exception {
-        return RegistryBuilder.<ConnectionSocketFactory> create()
-                .register("http",
-                        PlainConnectionSocketFactory.getSocketFactory())
-                .register("https", sslSocketFactory()).build();
-    }
-
-    @Bean
-    @Profile(value = { "javaApi" })
-    public RyvrTestClient javaClient() {
-        return new JavaRyvrClient();
-    }
-
-    @Bean
-    public MappingJackson2HttpMessageConverter mappingJacksonHttpMessageConverter() {
-        final MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(
-                objectMapper);
-        return converter;
-    }
-
-    @Override
-    public void onApplicationEvent(
-            final EmbeddedServletContainerInitializedEvent event) {
-        this.port = event.getEmbeddedServletContainer().getPort();
-    }
-
-    @Bean
-    @Profile(value = { "restApi" })
-    public RyvrTestClient restClient() {
-        return new RestRyvrClient();
-    }
-
-    @Bean
-    @Profile(value = { "restApi", "systemTest" })
-    public RestTemplate restTemplate() throws Exception {
-        RestTemplate restTemplate = new RestTemplate(httpClientFactory());
-        return restTemplate;
-    }
-
-    public void setPort(final int port) {
-        this.port = port;
-    }
-
-    @Bean
-    @Profile(value = { "ui" })
-    public RyvrTestClient uiClient() {
-        return new HtmlRyvrClient();
-    }
-
-    @Bean
-    @Profile("ui")
-    public WebDriver webDriver()
-            throws ClassNotFoundException, NoSuchMethodException,
-            SecurityException, InstantiationException, IllegalAccessException,
-            IllegalArgumentException, InvocationTargetException, IOException {
-        final WebDriver webDriver = webDriverFactory.createWebDriver();
-        return webDriver;
-    }
-
-    @Bean // (destroyMethod = "close")
-    public CloseableHttpAsyncClient httpAsyncClient() throws Exception {
-        final CloseableHttpAsyncClient client = httpAsyncClientBuilder()
-                .build();
-        client.start();
-        return client;
-    }
-
-    @Bean
-    public HttpAsyncClientBuilder httpAsyncClientBuilder() throws Exception {
-        return HttpAsyncClientBuilder.create().setSSLContext(sslContext())
-                .setConnectionManager(nHttpClientConntectionManager())
-                .setDefaultRequestConfig(httpClientRequestConfig());
-    }
-
-    @Bean
-    public RequestConfig httpClientRequestConfig() {
-        final RequestConfig config = RequestConfig.custom()
-                .setConnectTimeout(proxyReadTimeoutMs).build();
-        return config;
-    }
-
-    @Autowired
-    private Certificate cert;
-
-    @Value("${server.ssl.key-alias}")
-    private String keyAlias;
-
-    @Bean
-    public TrustStoreManager trustStoreManager() throws KeyStoreException,
-            NoSuchAlgorithmException, CertificateException, IOException {
-        TrustStoreManager trustStoreManager = new TrustStoreManager(
-                trustStoreFile, trustStoreType, trustStorePassword);
-        if (trustStoreManager.isSystemDefaultTrustStore()) {
-            LOGGER.warn(
-                    "Trust Store location {} appears to be set to system default. The Self signed cert for testing will not be added and the tests will likely fail.",
-                    trustStoreManager.getTrustStoreLocation());
-        } else {
-            trustStoreManager.addCert(keyAlias, cert);
-        }
-        return trustStoreManager;
-    }
-
-    @Bean
-    public NHttpClientConnectionManager nHttpClientConntectionManager()
-            throws Exception {
-        final PoolingNHttpClientConnectionManager connectionManager = new PoolingNHttpClientConnectionManager(
-                new DefaultConnectingIOReactor(IOReactorConfig.DEFAULT),
-                schemeIOSessionStrategyRegistry());
-        connectionManager.setMaxTotal(proxyMaxConnectionsTotal);
-        connectionManager.setDefaultMaxPerRoute(proxyMaxConnectionsRoute);
-        return connectionManager;
-    }
-
-    @Bean
-    Registry<SchemeIOSessionStrategy> schemeIOSessionStrategyRegistry()
-            throws Exception {
-        return RegistryBuilder.<SchemeIOSessionStrategy> create()
-                .register("http", NoopIOSessionStrategy.INSTANCE)
-                .register("https", new SSLIOSessionStrategy(sslContext()))
-                .build();
-    }
-
-    @Bean
-    public SSLContext sslContext() throws Exception {
-        final SSLContext sslContext = SSLContext.getInstance(sslProtocol);
-        final TrustManagerFactory tmf = trustManagerFactory();
-        final KeyStore ks = trustStoreManager().getKeyStore();
-        tmf.init(ks);
-        sslContext.init(null, tmf.getTrustManagers(), null);
-        return sslContext;
-    }
-
-    @Bean
-    public SSLConnectionSocketFactory sslSocketFactory() throws Exception {
-        final SSLConnectionSocketFactory sf = new SSLConnectionSocketFactory(
-                sslContext());
-        return sf;
-    }
-
-    @Bean
-    TrustManagerFactory trustManagerFactory() throws NoSuchAlgorithmException {
-        final TrustManagerFactory tmf = TrustManagerFactory
-                .getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        return tmf;
-    }
+  @Bean
+  TrustManagerFactory trustManagerFactory() throws NoSuchAlgorithmException {
+    final TrustManagerFactory tmf = TrustManagerFactory
+        .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    return tmf;
+  }
 
 }

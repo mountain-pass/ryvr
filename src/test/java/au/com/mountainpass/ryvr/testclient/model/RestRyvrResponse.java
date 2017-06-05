@@ -3,15 +3,21 @@ package au.com.mountainpass.ryvr.testclient.model;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import au.com.mountainpass.ryvr.model.Ryvr;
@@ -23,10 +29,15 @@ public class RestRyvrResponse extends JavaRyvrResponse {
   private URL contextUrl;
   private RestTemplate restTemplate;
   private final HttpHeaders httpHeaders;
+  private CloseableHttpAsyncClient httpAsyncClient;
+  private CloseableHttpClient httpClient;
 
-  public RestRyvrResponse(Traverson traverson, URL contextUrl, Ryvr ryvr, RestTemplate restTemplate,
+  public RestRyvrResponse(CloseableHttpClient httpClient, CloseableHttpAsyncClient httpAsyncClient,
+      Traverson traverson, URL contextUrl, Ryvr ryvr, RestTemplate restTemplate,
       HttpHeaders httpHeaders) {
     super(ryvr);
+    this.httpClient = httpClient;
+    this.httpAsyncClient = httpAsyncClient;
     this.traverson = traverson;
     this.contextUrl = contextUrl;
     this.restTemplate = restTemplate;
@@ -56,17 +67,45 @@ public class RestRyvrResponse extends JavaRyvrResponse {
 
   @Override
   public RyvrResponse followLink(String rel) {
+    URI ryvrUri;
     try {
-      URI ryvrUri = contextUrl.toURI()
-          .resolve(extractURIByRel(httpHeaders.get(HttpHeaders.LINK), rel));
-      ResponseEntity<Ryvr> entityResponse = restTemplate.getForEntity(ryvrUri, Ryvr.class);
-      Ryvr ryvr = entityResponse.getBody();
-      receivedBytes.observe(entityResponse.getHeaders().getContentLength());
-      return new RestRyvrResponse(traverson, ryvrUri.toURL(), ryvr, restTemplate,
-          entityResponse.getHeaders());
-    } catch (MalformedURLException | URISyntaxException exception) {
-      exception.printStackTrace();
-      throw new NotImplementedException(exception);
+      ryvrUri = contextUrl.toURI().resolve(extractURIByRel(httpHeaders.get(HttpHeaders.LINK), rel));
+    } catch (URISyntaxException ex) {
+      throw new NotImplementedException(ex);
+    }
+
+    final HttpGet httpget = new HttpGet(ryvrUri);
+    httpget.addHeader("Accept", "application/hal+json, application/json");
+    CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<HttpResponse>();
+
+    CloseableHttpResponse response;
+    try {
+      response = httpClient.execute(httpget);
+    } catch (IOException ex) {
+      throw new NotImplementedException(ex);
+    }
+    HttpHeaders headers = new HttpHeaders();
+    for (Header header : response.getAllHeaders()) {
+      headers.add(header.getName(), header.getValue());
+    }
+    long length = headers.getContentLength();
+    if (length < 0L) {
+      length = response.getEntity().getContentLength();
+    }
+    if (length < 0L) {
+      try {
+        length = response.getEntity().getContent().available();
+      } catch (Exception ex) {
+        throw new NotImplementedException(ex);
+      }
+    }
+
+    receivedBytes.observe(length);
+    try {
+      return new RestRyvrResponse(httpClient, httpAsyncClient, traverson, ryvrUri.toURL(), null,
+          restTemplate, headers);
+    } catch (Exception ex) {
+      throw new NotImplementedException(ex);
     }
   }
 
@@ -94,5 +133,10 @@ public class RestRyvrResponse extends JavaRyvrResponse {
       String ryvrUri = extractURIByRel(httpHeaders.get(HttpHeaders.LINK), rel);
       assertThat(ryvrUri, nullValue());
     });
+  }
+
+  @Override
+  public boolean hasLink(String rel) {
+    return extractURIByRel(httpHeaders.get(HttpHeaders.LINK), rel) != null;
   }
 }

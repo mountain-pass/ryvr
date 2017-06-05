@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -32,121 +33,120 @@ import de.otto.edison.hal.traverson.Traverson;
 import io.swagger.parser.SwaggerParser;
 
 public class RestRyvrClient implements RyvrTestClient {
-    private Logger logger = LoggerFactory.getLogger(RestRyvrClient.class);
+  private Logger logger = LoggerFactory.getLogger(RestRyvrClient.class);
 
-    @Autowired
-    private RestTemplate restTemplate;
+  @Autowired
+  private RestTemplate restTemplate;
 
-    @Autowired
-    private RyvrConfiguration config;
+  @Autowired
+  private RyvrConfiguration config;
 
-    private String lastResponse;
+  private String lastResponse;
 
-    private SwaggerParser swaggerParser = new SwaggerParser();
+  private SwaggerParser swaggerParser = new SwaggerParser();
 
-    @Override
-    public SwaggerResponse getApiDocs() throws InterruptedException,
-            ExecutionException, URISyntaxException {
+  @Autowired
+  private CloseableHttpAsyncClient httpAsyncClient;
 
-        Traverson traverson = getTraverson();
-        HalRepresentation root = traverson.getResource().get();
-        String docsHref = root.getLinks().getLinkBy("describedby").get()
-                .getHref();
-        Link docsLink = Link.link("describedby", traverson
-                .getCurrentContextUrl().toURI().resolve(docsHref).toString());
-        String swagger = httpGet(docsLink);
+  @Autowired
+  private CloseableHttpClient httpClient;
 
-        return new JavaSwaggerResponse(swaggerParser.parse(swagger));
-    }
+  @Override
+  public SwaggerResponse getApiDocs()
+      throws InterruptedException, ExecutionException, URISyntaxException {
 
-    @Override
-    public RootResponse getRoot() {
-        Traverson startedWith = getTraverson();
-        return new RestRootResponse(traverson(this::httpGet),
-                startedWith.getCurrentContextUrl(),
-                startedWith.getResourceAs(Root.class).get(), restTemplate);
-    }
+    Traverson traverson = getTraverson();
+    HalRepresentation root = traverson.getResource().get();
+    String docsHref = root.getLinks().getLinkBy("describedby").get().getHref();
+    Link docsLink = Link.link("describedby",
+        traverson.getCurrentContextUrl().toURI().resolve(docsHref).toString());
+    String swagger = httpGet(docsLink);
 
-    private Traverson getTraverson() {
-        URI url = config.getBaseUri().resolve("/");
+    return new JavaSwaggerResponse(swaggerParser.parse(swagger));
+  }
 
-        Traverson startedWith = traverson(this::httpGet)
-                .startWith(url.toString());
-        return startedWith;
-    }
+  @Override
+  public RootResponse getRoot() {
+    Traverson startedWith = getTraverson();
+    return new RestRootResponse(httpClient, httpAsyncClient, traverson(this::httpGet),
+        startedWith.getCurrentContextUrl(), startedWith.getResourceAs(Root.class).get(),
+        restTemplate);
+  }
 
-    @Autowired
-    private CloseableHttpAsyncClient httpAsyncClient;
+  private Traverson getTraverson() {
+    URI url = config.getBaseUri().resolve("/");
 
-    public String httpGet(final Link link) {
+    Traverson startedWith = traverson(this::httpGet).startWith(url.toString());
+    return startedWith;
+  }
+
+  public String httpGet(final Link link) {
+    try {
+      final HttpGet httpget = new HttpGet(link.getHref());
+      if (link.getType().isEmpty()) {
+        httpget.addHeader("Accept", "application/hal+json, application/json");
+      } else {
+        httpget.addHeader("Accept", link.getType());
+      }
+      // httpAsyncClient.start();
+      CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<HttpResponse>();
+      httpAsyncClient.execute(httpget, new FutureCallback<HttpResponse>() {
+
+        @Override
+        public void failed(Exception ex) {
+          logger.error(ex.getMessage(), ex);
+          completableFuture.completeExceptionally(ex);
+        }
+
+        @Override
+        public void completed(HttpResponse result) {
+          completableFuture.complete(result);
+        }
+
+        @Override
+        public void cancelled() {
+          completableFuture.cancel(true);
+        }
+      });
+      // TODO create async traverson
+      return completableFuture.thenApply(response -> {
+        String rval = null;
         try {
-            final HttpGet httpget = new HttpGet(link.getHref());
-            if (link.getType().isEmpty()) {
-                httpget.addHeader("Accept",
-                        "application/hal+json, application/json");
-            } else {
-                httpget.addHeader("Accept", link.getType());
-            }
-            // httpAsyncClient.start();
-            CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<HttpResponse>();
-            httpAsyncClient.execute(httpget,
-                    new FutureCallback<HttpResponse>() {
-
-                        @Override
-                        public void failed(Exception ex) {
-                            logger.error(ex.getMessage(), ex);
-                            completableFuture.completeExceptionally(ex);
-                        }
-
-                        @Override
-                        public void completed(HttpResponse result) {
-                            completableFuture.complete(result);
-                        }
-
-                        @Override
-                        public void cancelled() {
-                            completableFuture.cancel(true);
-                        }
-                    });
-            // TODO create async traverson
-            return completableFuture.thenApply(response -> {
-                String rval = null;
-                try {
-                    rval = EntityUtils.toString(response.getEntity());
-                    // httpAsyncClient.close();
-                } catch (Exception e) {
-                    lastResponse = e.getMessage();
-                    logger.error(e.getMessage(), e);
-                    throw new RuntimeException(e.getMessage(), e);
-                }
-                lastResponse = rval;
-                return rval;
-            }).get();
-        } catch (InterruptedException | ExecutionException e) {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e.getMessage(), e);
+          rval = EntityUtils.toString(response.getEntity());
+          // httpAsyncClient.close();
+        } catch (Exception e) {
+          lastResponse = e.getMessage();
+          logger.error(e.getMessage(), e);
+          throw new RuntimeException(e.getMessage(), e);
         }
+        lastResponse = rval;
+        return rval;
+      }).get();
+    } catch (InterruptedException | ExecutionException e) {
+      logger.error(e.getMessage(), e);
+      throw new RuntimeException(e.getMessage(), e);
     }
+  }
 
-    @Override
-    public RyvrsCollectionResponse getRyvrsCollection() {
-        return getRoot().followRyvrsLink();
-    }
+  @Override
+  public RyvrsCollectionResponse getRyvrsCollection() {
+    return getRoot().followRyvrsLink();
+  }
 
-    @Override
-    public RyvrResponse getRyvr(String name) {
-        return getRyvrsCollection().followRyvrLink(name);
-    }
+  @Override
+  public RyvrResponse getRyvr(String name) {
+    return getRyvrsCollection().followRyvrLink(name);
+  }
 
-    @Override
-    public void after(Scenario scenario) {
-        if (lastResponse != null) {
-            scenario.embed(lastResponse.getBytes(), "application/json");
-        }
+  @Override
+  public void after(Scenario scenario) {
+    if (lastResponse != null) {
+      scenario.embed(lastResponse.getBytes(), "application/json");
     }
+  }
 
-    @Override
-    public void before(Scenario scenario) {
-        // nothing
-    }
+  @Override
+  public void before(Scenario scenario) {
+    // nothing
+  }
 }

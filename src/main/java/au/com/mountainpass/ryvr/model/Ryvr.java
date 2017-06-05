@@ -1,5 +1,7 @@
 package au.com.mountainpass.ryvr.model;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,22 +49,22 @@ public class Ryvr {
   }
 
   public void prev() {
-    refreshPage(getPage() - 1l);
+    refreshPage(getPage() - 1L);
   }
 
-  public Long getPage() {
-    if (page < 0l) {
+  public long getPage() {
+    if (page < 0L) {
       return getPages();
     }
     return page;
   }
 
   public void next() {
-    refreshPage(getPage() + 1l);
+    refreshPage(getPage() + 1L);
   }
 
   public void first() {
-    refreshPage(1l);
+    refreshPage(1L);
   }
 
   public void last() {
@@ -70,8 +72,8 @@ public class Ryvr {
   }
 
   @JsonIgnore
-  public Long getPages() {
-    if (pages < 0l) {
+  public long getPages() {
+    if (pages < 0L) {
       refresh();
     }
     return pages;
@@ -87,6 +89,10 @@ public class Ryvr {
 
   @JsonIgnore
   public String getEtag() {
+    throw new NotImplementedException();
+  }
+
+  public void toJson(OutputStream outputStream) throws IOException {
     throw new NotImplementedException();
   }
 

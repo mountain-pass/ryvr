@@ -27,57 +27,56 @@ import au.com.mountainpass.ssl.KeyStoreManager;
 @Configuration
 public class SslConfig {
 
-    public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+  public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-    @Value("${au.com.mountainpass.ryvr.ssl.hostname}")
-    private String sslHostname;
+  @Value("${au.com.mountainpass.ryvr.ssl.hostname}")
+  private String sslHostname;
 
-    @Value("${au.com.mountainpass.ryvr.ssl.genCert:selfSigned}")
-    private String genCert;
+  @Value("${au.com.mountainpass.ryvr.ssl.genCert:selfSigned}")
+  private String genCert;
 
-    @Autowired
-    private KeyStoreManager keyStoreManager;
+  @Autowired
+  private KeyStoreManager keyStoreManager;
 
-    @Autowired
-    AutowireCapableBeanFactory beanFactory;
+  @Autowired
+  AutowireCapableBeanFactory beanFactory;
 
-    @Bean
-    public Certificate cert()
-            throws CertificateException, NoSuchAlgorithmException,
-            NoSuchProviderException, InvalidKeyException, IllegalStateException,
-            SignatureException, KeyStoreException, IOException {
-        Certificate cert = keyStoreManager.getCertificate();
-        if (cert != null) {
-            cert.verify(cert.getPublicKey());
-        } else {
-            if ("false".equals(genCert)) {
-                throw new CertificateNotFoundException(
-                        keyStoreManager.getKeyAlias());
-            }
-            CertificateGenerator certificateGenerator = beanFactory
-                    .getBean(genCert, CertificateGenerator.class);
-            KeyPair keyPair = certificateGenerator.generateKeyPair();
-            cert = certificateGenerator.generateCertificate(keyPair,
-                    sslHostname);
+  @Bean
+  public Certificate cert() throws CertificateException, NoSuchAlgorithmException,
+      NoSuchProviderException, InvalidKeyException, IllegalStateException, SignatureException,
+      KeyStoreException, IOException {
+    Certificate cert = keyStoreManager.getCertificate();
+    if (cert != null) {
+      cert.verify(cert.getPublicKey());
+    } else {
+      if ("false".equals(genCert)) {
+        throw new CertificateNotFoundException(keyStoreManager.getKeyAlias());
+      }
+      CertificateGenerator certificateGenerator = beanFactory.getBean(genCert,
+          CertificateGenerator.class);
+      KeyPair keyPair = certificateGenerator.generateKeyPair();
+      cert = certificateGenerator.generateCertificate(keyPair, sslHostname);
 
-            keyStoreManager.addCertificate(keyPair, cert);
-        }
-        LOGGER.info("using cert:\r\n{}", cert);
-        return cert;
+      keyStoreManager.addCertificate(keyPair, cert);
     }
+    LOGGER.info("using cert:\r\n{}", cert);
+    return cert;
+  }
 
-    @Bean
-    public TomcatEmbeddedServletContainerFactory tomcatFactory()
-            throws Exception {
-        cert();
-        return new TomcatEmbeddedServletContainerFactory() {
+  @Bean
+  public TomcatEmbeddedServletContainerFactory tomcatFactory() throws Exception {
+    cert();
+    return new TomcatEmbeddedServletContainerFactory() {
 
-            @Override
-            protected TomcatEmbeddedServletContainer getTomcatEmbeddedServletContainer(
-                    final Tomcat tomcat) {
-                return super.getTomcatEmbeddedServletContainer(tomcat);
-            }
-        };
-    }
+      @Override
+      protected TomcatEmbeddedServletContainer getTomcatEmbeddedServletContainer(
+          final Tomcat tomcat) {
+        TomcatEmbeddedServletContainer tomcatEmbeddedServletContainer = super.getTomcatEmbeddedServletContainer(
+            tomcat);
+        return tomcatEmbeddedServletContainer;
+      }
+
+    };
+  }
 
 }

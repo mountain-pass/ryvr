@@ -14,7 +14,7 @@ Background:
       | database    | test_db       |
       | table       | transactions  |
       | ordered by  | id            |
-      | page size   | 2048          |
+      | page size   | 8192          |
   
 
 Scenario: Get Ryvr First Hit

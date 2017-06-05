@@ -22,10 +22,10 @@ public interface RyvrResponse {
 
   public void clearMetrics();
 
-  public RyvrResponse followLink(String rel) throws URISyntaxException;
+  public RyvrResponse followLink(String rel);
 
   public boolean hasLink(String rel);
 
-  public void retrieveAllEvents() throws URISyntaxException;
+  public void retrieveAllEvents() throws Throwable;
 
 }

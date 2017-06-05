@@ -1,6 +1,7 @@
 package au.com.mountainpass.ryvr.controllers;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.util.Map;
@@ -19,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import au.com.mountainpass.ryvr.model.Link;
 import au.com.mountainpass.ryvr.model.Root;
@@ -75,8 +77,8 @@ public class JsonController {
     return ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE).body(root);
   }
 
-  public ResponseEntity<?> getRyvr(HttpServletRequest req, String ryvrName, long page)
-      throws URISyntaxException {
+  public ResponseEntity<StreamingResponseBody> getRyvr(HttpServletRequest req, String ryvrName,
+      long page) throws URISyntaxException {
 
     Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
     if (ryvr == null) {
@@ -93,16 +95,18 @@ public class JsonController {
     responseBuilder.eTag(ryvr.getEtag());
 
     addLinks(responseBuilder, ryvr.getLinks());
-    return responseBuilder.body(ryvr);
+    return responseBuilder.body(new StreamingResponseBody() {
+      @Override
+      public void writeTo(OutputStream outputStream) throws IOException {
+        ryvr.toJson(outputStream);
+      }
+    });
   }
 
   public void addLinks(BodyBuilder responseBuilder, Map<String, Link[]> links) {
     for (Entry<String, Link[]> entry : links.entrySet()) {
       for (Link link : entry.getValue()) {
         String headerValue = "<" + link.getHref() + ">; rel=\"" + entry.getKey() + "\"";
-        if (link.getTitle() != null) {
-          headerValue += "; title=\"" + link.getTitle() + "\"";
-        }
         responseBuilder.header(HttpHeaders.LINK, headerValue);
       }
     }
