@@ -158,19 +158,23 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [X] Rename test phases to correctly specify their nature
  - [X] Add tests for various ways of starting Ryvr
  - [X] release
+ - [X] Switch to [Link headers](https://tools.ietf.org/html/rfc5988#page-6) rather than HAL links, which would allow
+    navigation without having to parse the body and URL rewriting without having to parse the body
+ - [X] Examine faster options than deserialisation with Jackson
+ - [X] Change rest of ryvr response to use StringBuilder or OutputStreams
+ - [X] Add caching headers
+ - [ ] Fix test clients and UI after performance tuning improvements
+ - [ ] Performance test with multiple clients
+ - [ ] Performance test with real world dataset 
  - [ ] release as zip/tarball with example properties
  - [ ] Add authentication
  - [ ] Modify Perf test to use latency per event rather than latency per page
- - [ ] Switch to [Link headers](https://tools.ietf.org/html/rfc5988#page-6) rather than HAL links, which would allow
-    navigation without having to parse the body and URL rewriting without having to parse the body
- - [ ] Examine faster options than deserialisation with Jackson
  - [ ] Compare performance to [Kafka](https://engineering.linkedin.com/kafka/benchmarking-apache-kafka-2-million-writes-second-three-cheap-machines)
  - [ ] Add Circuit Breaker
  - [ ] Add logic to calculate optimal page size
  - [ ] Switch to async io
- - [ ] Change rest of ryvr response to use StringBuilder
  - [ ] Add support for more databases
+ - [ ] Add logic to create triggers or use change data capture to allow ryvrs from non-event based tables
+ - [ ] Add support for more non-DB datasources
  - [ ] Add client library
- - [ ] Add caching headers
  - [ ] Add rest ryvr
- - [ ] Add logic to create triggers to allow ryvrs from non-event based tables
