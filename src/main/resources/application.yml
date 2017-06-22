@@ -35,6 +35,6 @@ au.com.mountainpass.ryvr:
   cache:
     archive-page-max-age: 30
     archive-page-max-age-unit: DAYS
-    current-page-max-age: 100
+    current-page-max-age: 1000
     current-page-max-age-unit: MILLISECONDS
     

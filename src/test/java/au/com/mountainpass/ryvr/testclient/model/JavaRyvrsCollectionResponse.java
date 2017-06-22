@@ -11,33 +11,33 @@ import au.com.mountainpass.ryvr.model.RyvrsCollection;
 
 public class JavaRyvrsCollectionResponse implements RyvrsCollectionResponse {
 
-    private RyvrsCollection ryvrsCollection;
+  private RyvrsCollection ryvrsCollection;
 
-    public JavaRyvrsCollectionResponse(RyvrsCollection ryvrsCollection) {
-        this.ryvrsCollection = ryvrsCollection;
-    }
+  public JavaRyvrsCollectionResponse(RyvrsCollection ryvrsCollection) {
+    this.ryvrsCollection = ryvrsCollection;
+  }
 
-    @Override
-    public void assertIsEmpty() {
-        assertThat(ryvrsCollection.getCount(), equalTo(0));
+  @Override
+  public void assertIsEmpty() {
+    assertThat(ryvrsCollection.getCount(), equalTo(0));
 
-    }
+  }
 
-    @Override
-    public void assertCount(int count) {
-        assertThat(ryvrsCollection.getCount(), equalTo(count));
-    }
+  @Override
+  public void assertCount(int count) {
+    assertThat(ryvrsCollection.getCount(), equalTo(count));
+  }
 
-    @Override
-    public void assertHasItem(List<String> names) {
-        Set<String> titles = ryvrsCollection.getRyvrs().keySet();
-        assertThat(titles, containsInAnyOrder(names.toArray()));
-    }
+  @Override
+  public void assertHasItem(List<String> names) {
+    Set<String> titles = ryvrsCollection.getRyvrs().keySet();
+    assertThat(titles, containsInAnyOrder(names.toArray()));
+  }
 
-    @Override
-    public RyvrResponse followRyvrLink(String name) {
-        Ryvr ryvr = ryvrsCollection.getRyvr(name);
-        return new JavaRyvrResponse(ryvr);
-    }
+  @Override
+  public Ryvr followRyvrLink(String name) {
+    Ryvr ryvr = ryvrsCollection.getRyvr(name);
+    return ryvr;
+  }
 
 }

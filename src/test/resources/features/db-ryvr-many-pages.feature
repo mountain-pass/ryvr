@@ -15,18 +15,9 @@ Background:
       | ordered by  | id            |
       | page size   | 10            |
 
+@current
 Scenario: Get Ryvr - Multiple Pages - Current Page
     When the "transactions" ryvr is retrieved
     Then it will have the following structure
       | id  | account | description    | amount   | 
-    And it will have the last 6 events
-    And it will have the following links
-      | self    |
-      | first   |
-      | last    |
-      | current |
-      | prev    |
-    And it will *not* have the following links
-      | next    |
-
-      
+    And it will have 46 events

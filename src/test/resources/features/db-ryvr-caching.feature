@@ -15,13 +15,10 @@ Background:
       | ordered by  | id            |
       | page size   | 10            |
 
-Scenario: Get Ryvr - Multiple Pages - Cached
-    When the "transactions" ryvr is retrieved
-    And the previous page is requested
-    And the previous page is requested
-    And the next page is requested
-    Then it will come from cache
-
-Scenario: Get Ryvr - Multiple Pages - Current Page Not Cached
-    When the "transactions" ryvr is retrieved
-    Then it will not come from cache
+#Scenario: Get Ryvr - Multiple Pages - Cached
+    #When the "transactions" ryvr is retrieved
+    #Then the first page will come from cache
+#
+#Scenario: Get Ryvr - Multiple Pages - Current Page Not Cached
+    #When the "transactions" ryvr is retrieved
+    #Then it will not come from cache

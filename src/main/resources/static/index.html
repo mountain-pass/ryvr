@@ -12,8 +12,8 @@
 <base href="/">
 <title>ryvr</title>
 
-<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/3.3.7-1/css/bootstrap.min.css" />
-<link rel="stylesheet" type="text/css" href="/webjars/angularjs/1.6.0/angular-csp.css" />
+<link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="/webjars/angularjs/angular-csp.css" />
 <link rel="stylesheet" href="/css/style.css">
 
 <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -22,27 +22,26 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-    <link rel="apple-touch-icon-precomposed" sizes="57x57" href="/apple-touch-icon-57x57.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/apple-touch-icon-114x114.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/apple-touch-icon-72x72.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144x144.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="60x60" href="/apple-touch-icon-60x60.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="/apple-touch-icon-120x120.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="76x76" href="/apple-touch-icon-76x76.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="/apple-touch-icon-152x152.png" />
-    <link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196" />
-    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />
-    <link rel="icon" type="image/png" href="/favicon-128.png" sizes="128x128" />
-    <meta name="application-name" content="ryvr"/>
-    <meta name="msapplication-TileColor" content="#28656E" />
-    <meta name="msapplication-TileImage" content="/mstile-144x144.png" />
-    <meta name="msapplication-square70x70logo" content="/mstile-70x70.png" />
-    <meta name="msapplication-square150x150logo" content="/mstile-150x150.png" />
-    <meta name="msapplication-wide310x150logo" content="/mstile-310x150.png" />
-    <meta name="msapplication-square310x310logo" content="/mstile-310x310.png" />
-
+<link rel="apple-touch-icon-precomposed" sizes="57x57" href="/apple-touch-icon-57x57.png" />
+<link rel="apple-touch-icon-precomposed" sizes="114x114" href="/apple-touch-icon-114x114.png" />
+<link rel="apple-touch-icon-precomposed" sizes="72x72" href="/apple-touch-icon-72x72.png" />
+<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144x144.png" />
+<link rel="apple-touch-icon-precomposed" sizes="60x60" href="/apple-touch-icon-60x60.png" />
+<link rel="apple-touch-icon-precomposed" sizes="120x120" href="/apple-touch-icon-120x120.png" />
+<link rel="apple-touch-icon-precomposed" sizes="76x76" href="/apple-touch-icon-76x76.png" />
+<link rel="apple-touch-icon-precomposed" sizes="152x152" href="/apple-touch-icon-152x152.png" />
+<link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196" />
+<link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+<link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+<link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />
+<link rel="icon" type="image/png" href="/favicon-128.png" sizes="128x128" />
+<meta name="application-name" content="ryvr" />
+<meta name="msapplication-TileColor" content="#28656E" />
+<meta name="msapplication-TileImage" content="/mstile-144x144.png" />
+<meta name="msapplication-square70x70logo" content="/mstile-70x70.png" />
+<meta name="msapplication-square150x150logo" content="/mstile-150x150.png" />
+<meta name="msapplication-wide310x150logo" content="/mstile-310x150.png" />
+<meta name="msapplication-square310x310logo" content="/mstile-310x310.png" />
 <body ng-class="{loaded: controller.loaded, loading: controller.loading}">
 
   <div id="overlay">
@@ -63,7 +62,8 @@
               <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/"><img src="/wide_color_logo_transparent_background_164_x_25.png" alt="{{controller.root.title}}"></a>
+            <a class="navbar-brand" href="/"><img src="/wide_color_logo_transparent_background_164_x_25.png"
+              alt="{{controller.root.title}}"></a>
           </div>
           <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav" id="links">
@@ -114,29 +114,24 @@
         </ul>
       </div>
 
-      <div id="items"
-        ng-if="controller.resource.hasOwnProperty('_embedded') && controller.resource._embedded.hasOwnProperty('item') && 
-        [].concat(controller.resource._embedded.item).length > 0">
-        <h2>Items</h2>
+      <div id="items" ng-if="controller.resource.hasOwnProperty('columns') && controller.resource.columns.length > 0">
+        <h2>Records</h2>
         <table class="table">
           <thead>
             <tr>
-              <th ng-repeat="heading in controller.itemHeadings()" class="itemHeading">{{heading}}</th>
+              <th ng-repeat="heading in controller.resource.columns" class="itemHeading">{{heading}}</th>
             </tr>
           </thead>
           <tbody>
-            <tr ng-repeat="item in [].concat(controller.resource._embedded.item)"
-              class="itemRow">
-              <td ng-repeat="heading in controller.itemHeadings()" data-heading="{{heading}}" data-type="{{controller.typeOf(item[heading])}}">{{item[heading]}}</td>
+            <tr ng-repeat="record in controller.resource.rows" class="itemRow">
+              <td ng-repeat="field in record" data-heading="{{controller.resource.columns[$index]}}" data-type="string">{{field}}</td>
             </tr>
           </tbody>
         </table>
         <div class="btn-group" role="group" aria-label="navigation" id="itemNavLinks">
-          <a class="btn btn-default"
-            ng-repeat="rel in ['first', 'prev', 'next', 'current', 'last']"
-            ng-if="controller.resource._links.hasOwnProperty(rel) && controller.resource._links[rel] != null"
-            ng-class="{active: isActive(controller.resource._links[rel].href)}"
-            href="{{controller.resource._links[rel].href}}" rel="{{rel}}">{{controller.resource._links[rel].title ? controller.resource._links[rel].title : rel }}</a>
+          <a class="btn btn-default" ng-repeat="rel in ['first', 'prev', 'next', 'last']"
+            ng-class="{active: controller.resourceLinks.hasOwnProperty(rel) && isActive(controller.resourceLinks[rel][0]), disabled: !controller.resourceLinks.hasOwnProperty(rel)}"
+            href="{{controller.resourceLinks[rel][0]}}" rel="{{rel}}">{{rel}}</a>
         </div>
       </div>
 
@@ -145,10 +140,12 @@
         <h3>Resource</h3>
         <pre>
         <code class="json">{{controller.pretty(controller.resource)}}</code>
+        <code class="json">{{controller.pretty(controller.resourceLinks)}}</code>
       </pre>
         <h3>Root</h3>
         <pre>
         <code class="json">{{controller.pretty(controller.root)}}</code>
+        <code class="json">{{controller.pretty(controller.rootLinks)}}</code>
       </pre>
       </div>
       <div id="initjson" ng-class="{hide: !controller.debug}">
@@ -156,21 +153,27 @@
         <h3>Resource</h3>
         <pre>
         <code class="json" id="init-resource"><%resource%></code>
+        <code class="json" id="init-resource-links"><%resource-links%></code>
       </pre>
         <h3>Root</h3>
         <pre>
         <code class="json" id="init-root"><%root%></code>
+        <code class="json" id="init-root-links"><%root-links%></code>
       </pre>
       </div>
     </section>
   </div>
   <!-- /container -->
 
-  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-  <script src="/webjars/jquery/3.1.1-1/jquery.min.js" type="text/javascript"></script>
-  <!-- Include all compiled plugins (below), or include individual files as needed -->
-  <script type="text/javascript" src="/webjars/bootstrap/3.3.7-1/js/bootstrap.min.js"></script>
-  <script src="/webjars/angularjs/1.6.0/angular.min.js" type="text/javascript"></script>
-  <script src="/js/resource.js" type="text/javascript"></script>
+  <script src="/webjars.js"></script>
+  <script data-main="/js/main" src="/webjars/requirejs/require.min.js"></script>
+  <!--   
+  <script src="/webjars/jquery/jquery.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
+  <script src="/webjars/angularjs/angular.min.js" type="text/javascript"></script>
+  <script src="/webjars/querystring/0.2.0/index.js" type="text/javascript"></script>
+  <script src="/webjars/parse-link-header/index.js" type="text/javascript"></script>
+  <script src="/js/main.js" type="text/javascript"></script>
+ -->
 </body>
 </html>

@@ -32,25 +32,6 @@ import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 @EnableAsync
-/*
- * _ @Import({ AuditAutoConfiguration.class, DataSourceAutoConfiguration.class,
- * DataSourcePoolMetadataProvidersConfiguration.class,
- * DataSourceTransactionManagerAutoConfiguration.class, DispatcherServletAutoConfiguration.class,
- * EmbeddedServletContainerAutoConfiguration.class, EndpointAutoConfiguration.class,
- * EndpointMBeanExportAutoConfiguration.class, EndpointWebMvcAutoConfiguration.class,
- * EndpointWebMvcManagementContextConfiguration.class, ErrorMvcAutoConfiguration.class,
- * HttpEncodingAutoConfiguration.class, HttpMessageConvertersAutoConfiguration.class, //
- * InfoContributorAutoConfiguration.class, JacksonAutoConfiguration.class,
- * JdbcTemplateAutoConfiguration.class, // JmxAutoConfiguration.class,
- * ManagementServerPropertiesAutoConfiguration.class, // MetricExportAutoConfiguration.class, //
- * MetricFilterAutoConfiguration.class, // MetricRepositoryAutoConfiguration.class,
- * MultipartAutoConfiguration.class, PersistenceExceptionTranslationAutoConfiguration.class, //
- * ProjectInfoAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class, //
- * PublicMetricsAutoConfiguration.class, ServerPropertiesAutoConfiguration.class, //
- * TraceRepositoryAutoConfiguration.class, // TraceWebFilterAutoConfiguration.class,
- * TransactionAutoConfiguration.class, // ValidationAutoConfiguration.class,
- * WebClientAutoConfiguration.class, WebMvcAutoConfiguration.class })
- */
 @EnableAutoConfiguration
 @Configuration
 @ComponentScan(value = "au.com.mountainpass")

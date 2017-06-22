@@ -3,6 +3,7 @@ package au.com.mountainpass.ryvr.model;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +12,7 @@ import org.apache.commons.lang.NotImplementedException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Ryvr {
+public abstract class Ryvr {
 
   private String title;
   protected long page = -1l;
@@ -96,4 +97,19 @@ public class Ryvr {
     throw new NotImplementedException();
   }
 
+  public abstract Iterator<Record> iterator();
+
+  public abstract long getCount();
+
+  public abstract int getPageSize();
+
+  public int getCurrentPageSize() {
+    if (page == pages) {
+      return (int) (getCount() % getPageSize());
+    } else {
+      return getPageSize();
+    }
+  }
+
+  public abstract String[] getFieldNames();
 }

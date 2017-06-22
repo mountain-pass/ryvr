@@ -3,7 +3,7 @@ package au.com.mountainpass.ryvr.testclient.model;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -13,13 +13,17 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.client.RestTemplate;
 
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
+import au.com.mountainpass.ryvr.rest.RestRyvr;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.traverson.Traverson;
 
@@ -61,14 +65,23 @@ public class RestRyvrsCollectionResponse implements RyvrsCollectionResponse {
   }
 
   @Override
-  public RyvrResponse followRyvrLink(String name) {
+  public Ryvr followRyvrLink(String name) {
     try {
       URI ryvrUri = contextUrl.toURI().resolve("/ryvrs/" + name);
-      ResponseEntity<Ryvr> responseEntity = restTemplate.getForEntity(ryvrUri, Ryvr.class);
-      Ryvr ryvr = responseEntity.getBody();
-      return new RestRyvrResponse(httpClient, httpAsyncClient, traverson, ryvrUri.toURL(), ryvr,
-          restTemplate, responseEntity.getHeaders());
-    } catch (MalformedURLException | URISyntaxException e) {
+      final HttpGet httpget = new HttpGet(ryvrUri);
+      httpget.reset();
+      httpget.addHeader("Accept", "application/json");
+      CloseableHttpResponse response = httpClient.execute(httpget);
+
+      if (response.getStatusLine().getStatusCode() == HttpStatus.SEE_OTHER.value()) {
+        httpget.reset();
+        httpget.setURI(URI.create(response.getFirstHeader(HttpHeaders.LOCATION).getValue()));
+        response = httpClient.execute(httpget);
+      }
+
+      return new RestRyvr(name, httpClient, httpAsyncClient, traverson, ryvrUri,
+          response.getEntity(), restTemplate, response);
+    } catch (URISyntaxException | IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
       throw new NotImplementedException();

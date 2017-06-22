@@ -18,12 +18,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
 
+import au.com.mountainpass.ClearableBasicHttpCacheStorage;
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.model.Root;
+import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.testclient.model.JavaSwaggerResponse;
 import au.com.mountainpass.ryvr.testclient.model.RestRootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
-import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 import cucumber.api.Scenario;
@@ -50,6 +51,9 @@ public class RestRyvrClient implements RyvrTestClient {
 
   @Autowired
   private CloseableHttpClient httpClient;
+
+  @Autowired
+  private ClearableBasicHttpCacheStorage httpCacheStorage;
 
   @Override
   public SwaggerResponse getApiDocs()
@@ -134,7 +138,7 @@ public class RestRyvrClient implements RyvrTestClient {
   }
 
   @Override
-  public RyvrResponse getRyvr(String name) {
+  public Ryvr getRyvr(String name) {
     return getRyvrsCollection().followRyvrLink(name);
   }
 
@@ -147,6 +151,6 @@ public class RestRyvrClient implements RyvrTestClient {
 
   @Override
   public void before(Scenario scenario) {
-    // nothing
+    httpCacheStorage.clear();
   }
 }

@@ -4,7 +4,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
-public interface RyvrResponse {
+public interface RestRyvr {
 
   public void assertDoesntHaveLinks(List<String> links);
 
@@ -22,7 +22,7 @@ public interface RyvrResponse {
 
   public void clearMetrics();
 
-  public RyvrResponse followLink(String rel);
+  public RestRyvr followLink(String rel);
 
   public boolean hasLink(String rel);
 

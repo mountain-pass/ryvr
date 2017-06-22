@@ -60,8 +60,6 @@ targetCompatibility = 1.8
 compileJava.options.compilerArgs.add '-parameters'
 compileTestJava.options.compilerArgs.add '-parameters'
 
-
-
 repositories {
     mavenLocal()
     jcenter()
@@ -97,7 +95,7 @@ applicationDistribution.from("LICENSE") {
   into "."
 }
 
-applicationDefaultJvmArgs = ["-Dspring.config.location=file:../etc/application.yml", "-Dlogging.config=file:../etc/logback-spring.xml"]
+//applicationDefaultJvmArgs = ["-Dspring.config.location=file:../etc/application.yml", "-Dlogging.config=file:../etc/logback-spring.xml"]
 
 distTar {
     compression Compression.GZIP
@@ -121,6 +119,8 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-undertow')
     compile('org.springframework.boot:spring-boot-starter-jdbc')
     compile('org.springframework.boot:spring-boot-autoconfigure')
+    
+    
 
 
     compile('com.github.spullara.mustache.java:compiler:0.9.2')
@@ -139,13 +139,15 @@ dependencies {
     compile('org.apache.httpcomponents:httpclient-cache:4.5.3')
 
 
+    compile('org.webjars:webjars-locator:0.30')
+    compile 'org.webjars:requirejs:2.3.3'
     compile('org.webjars:bootstrap:3.3.7-1')
     compile('org.webjars:jquery:3.1.1-1')
-    compile('org.webjars.bower:angularjs:1.6.0')
-
+    compile('org.webjars:angularjs:1.6.4')
+    
     compile group: 'org.shredzone.acme4j', name: 'acme4j-client', version: '0.10'
     compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
-
+    compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.2.0'
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'

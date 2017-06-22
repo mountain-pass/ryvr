@@ -16,12 +16,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.model.Link;
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.Ryvr;
@@ -50,6 +52,9 @@ public class JsonController {
 
   @Autowired
   private RyvrsCollection ryvrsCollection;
+
+  @Autowired
+  private RyvrConfiguration config;
 
   public ResponseEntity<?> getApiDocs(HttpServletRequest req, String group) {
     ClassPathResource index = new ClassPathResource("static/swagger.json");
@@ -95,6 +100,7 @@ public class JsonController {
     responseBuilder.eTag(ryvr.getEtag());
 
     addLinks(responseBuilder, ryvr.getLinks());
+    responseBuilder.header("Page-Record-Count", Integer.toString(ryvr.getCurrentPageSize()));
     return responseBuilder.body(new StreamingResponseBody() {
       @Override
       public void writeTo(OutputStream outputStream) throws IOException {
@@ -110,5 +116,16 @@ public class JsonController {
         responseBuilder.header(HttpHeaders.LINK, headerValue);
       }
     }
+  }
+
+  public ResponseEntity<StreamingResponseBody> getRyvr(HttpServletRequest req, String ryvrName) {
+    Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
+    if (ryvr == null) {
+      return ResponseEntity.notFound().build();
+    }
+
+    ryvr.refreshPage(-1);
+    return ResponseEntity.status(HttpStatus.SEE_OTHER)
+        .location(config.getBaseUri().resolve(ryvr.getLinks().get("last")[0].getHref())).build();
   }
 }

@@ -1,9 +1,9 @@
 ${AnsiColor.CYAN}
-________                       
-___  __ \____  ____   _________
-__  /_/ /_  / / /_ | / /_  ___/
-_  _, _/_  /_/ /__ |/ /_  /    
-/_/ |_| _\__, / _____/ /_/     
-        /____/${AnsiColor.BLUE}${application.formatted-version}${AnsiStyle.NORMAL}
-                             
+ _ __ __ ________                       
+    _ ______  __ \____  ____   _________
+       _ __  /_/ /_  / / /_ | / /_  ___/
+         _  _, _/_  /_/ /__ |/ /_  /    
+         /_/ |_| _\__, / _____/ /_/     
+               _ /____/${AnsiColor.BLUE}${application.formatted-version}${AnsiStyle.NORMAL}
+                               
  

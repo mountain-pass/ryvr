@@ -1,12 +1,17 @@
 package au.com.mountainpass.ryvr.steps;
 
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -20,14 +25,20 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import au.com.mountainpass.ryvr.Application;
+import au.com.mountainpass.ryvr.config.HttpThroughputCounter;
 import au.com.mountainpass.ryvr.config.TestConfiguration;
+import au.com.mountainpass.ryvr.model.Field;
+import au.com.mountainpass.ryvr.model.Record;
+import au.com.mountainpass.ryvr.model.Ryvr;
+import au.com.mountainpass.ryvr.rest.RestRyvr;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 import au.com.mountainpass.ryvr.testclient.RyvrTestDbDriver;
 import au.com.mountainpass.ryvr.testclient.RyvrTestServerAdminDriver;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
-import au.com.mountainpass.ryvr.testclient.model.RyvrResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
+import au.com.mountainpass.ryvr.testclient.model.Util;
+import cucumber.api.PendingException;
 import cucumber.api.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
@@ -52,17 +63,19 @@ public class StepDefs {
 
   private RootResponse rootResponseFuture;
 
-  private RyvrResponse ryvrResponse;
+  private Ryvr ryvr;
 
   private RyvrsCollectionResponse ryvrsCollectionResponse;
 
   private SwaggerResponse swaggerResponseFuture;
   private String currentTable;
-  private List<Map<String, String>> currentEvents;
 
-  public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+  private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
   private String databaseName;
+
+  @Autowired(required = false)
+  private HttpThroughputCounter httpThroughputCounter;
 
   @Given("^a database \"([^\"]*)\"$")
   public void aDatabase(final String dbName) throws Throwable {
@@ -139,23 +152,26 @@ public class StepDefs {
 
   @Then("^it will contain$")
   public void itWillContain(final List<Map<String, String>> events) throws Throwable {
-    ryvrResponse.assertHasItems(events);
-  }
-
-  @Then("^it will have the following links$")
-  public void itWillHaveTheFollowingLinks(final List<String> links) throws Throwable {
-    ryvrResponse.assertHasLinks(links);
-  }
-
-  @Then("^it will \\*not\\* have the following links$")
-  public void itWillNotHaveTheFollowingLinks(final List<String> links) throws Throwable {
-    ryvrResponse.assertDoesntHaveLinks(links);
+    Iterator<Record> actualIterator = ryvr.iterator();
+    Iterator<Map<String, String>> expectedIterator = events.iterator();
+    do {
+      Record actualRecord = actualIterator.next();
+      Map<String, String> expectedRecord = expectedIterator.next();
+      for (int i = 0; i < actualRecord.size(); ++i) {
+        Field actualField = actualRecord.getField(i);
+        Object actualValue = actualField.getValue();
+        String expectedValue = expectedRecord.get(actualField.getName());
+        Util.assertEqual(actualValue, expectedValue);
+      }
+    } while (actualIterator.hasNext() && expectedIterator.hasNext());
+    assertThat(actualIterator.hasNext(), equalTo(expectedIterator.hasNext()));
   }
 
   @Before
   public void _before(final Scenario scenario) {
     client.before(scenario);
     configClient._before(scenario);
+    clearMetrics();
   }
 
   @After
@@ -193,7 +209,7 @@ public class StepDefs {
   @When("^the \"([^\"]*)\" ryvr is retrieved$")
   public void theRyvrIsRetrieved(final String name) throws Throwable {
     configClient.ensureStarted();
-    ryvrResponse = client.getRyvr(name);
+    ryvr = client.getRyvr(name);
   }
 
   @When("^the ryvrs list is retrieved$")
@@ -218,31 +234,6 @@ public class StepDefs {
     configClient.clearRyvrs();
   }
 
-  @When("^the previous page is requested$")
-  public void thePreviousPageIsRequested() throws Throwable {
-    ryvrResponse = ryvrResponse.followLink("prev");
-  }
-
-  @When("^the first page is requested$")
-  public void theFirstPageIsRequested() throws Throwable {
-    ryvrResponse = ryvrResponse.followLink("first");
-  }
-
-  @When("^the current page is requested$")
-  public void theCurrentPageIsRequested() throws Throwable {
-    ryvrResponse = ryvrResponse.followLink("current");
-  }
-
-  @When("^the next page is requested$")
-  public void theNextPageIsRequested() throws Throwable {
-    ryvrResponse = ryvrResponse.followLink("next");
-  }
-
-  @When("^the self link is requested$")
-  public void theSelfLinkIsRequested() throws Throwable {
-    ryvrResponse = ryvrResponse.followLink("self");
-  }
-
   @Given("^it has a table \"([^\"]*)\" with the following structure$")
   public void itHasATableWithTheFollowingStructure(final String table, final List<String> structure)
       throws Throwable {
@@ -261,51 +252,101 @@ public class StepDefs {
       event.put("amount", Double.toString(i * -20.00 - i));
       events.add(event);
     }
-    this.currentEvents = events;
     insertRows("test_db", this.currentTable, events);
   }
 
   @Then("^it will have the following structure$")
   public void itWillHaveTheFollowingStructure(List<String> structure) throws Throwable {
-    ryvrResponse.assertItemsHaveStructure(structure);
+    ryvr.getFieldNames();
   }
 
-  @Then("^it will have the last (\\d+) events$")
-  public void itWillHaveTheLastEvents(int noOfEvents) throws Throwable {
-    List<Map<String, String>> lastEvents = currentEvents.subList(currentEvents.size() - noOfEvents,
-        currentEvents.size());
-    ryvrResponse.assertHasItems(lastEvents);
+  @Then("^it will have (\\d+) events$")
+  public void itWillHaveTheEvents(long noOfEvents) throws Throwable {
+    assertThat(ryvr.getCount(), equalTo(noOfEvents));
+    long actualCount = 0;
+    Iterator<Record> iterator = ryvr.iterator();
+    while (iterator.hasNext()) {
+      ++actualCount;
+      iterator.next();
+    }
+    assertThat(actualCount, equalTo(noOfEvents));
   }
 
   @When("^all the events are retrieved$")
   public void all_the_events_are_retrieved() throws Throwable {
-    ryvrResponse.retrieveAllEvents();
+    System.gc();
+    long before = System.nanoTime();
+
+    // URI page = null;
+    Iterator<Record> i = ryvr.iterator();
+    // if (ryvr instanceof RestRyvr) {
+    // RestRyvr restRyvr = (RestRyvr) ryvr;
+    // page = restRyvr.getCurrentUri();
+    // }
+    while (true) {
+      try {
+        // Summary.Timer requestTimer = httpThroughputCounter.startTimer();
+        i.next();
+        // double duration = requestTimer.observeDuration();
+      } catch (NoSuchElementException e) {
+        break;
+      }
+    }
+
+    long after = System.nanoTime();
+    double localLatency = (after - before) / 1000.0;
+    LOGGER.info("total latency: {}µs", localLatency);
+
+    double byteCount = httpThroughputCounter.getBytes();
+    double latencySeconds = httpThroughputCounter.getTotalLatency();
+    LOGGER.info("bytes: {}MB", byteCount / 1024.0 / 1024.0);
+    LOGGER.info("throughput (local): {}MB/s", byteCount / 1024.0 / 1024.0 / localLatency * 1000000);
+    LOGGER.info("throughput: {}MB/s", byteCount / 1024.0 / 1024.0 / latencySeconds);
+    LOGGER.info("total latency(prom): {}µs", latencySeconds * 1000000.0);
+
+    httpThroughputCounter.logLatencies();
+
   }
 
   @When("^all the events are retrieved again$")
   public void all_the_events_are_retrieved_again() throws Throwable {
-    ryvrResponse.clearMetrics();
-    ryvrResponse.retrieveAllEvents();
+    clearMetrics();
+    all_the_events_are_retrieved();
+  }
+
+  private void clearMetrics() {
+    if (httpThroughputCounter != null) {
+      httpThroughputCounter.clear();
+    }
+  }
+
+  public void assertLoadedWithin(int percentile, int maxMs) {
+    assertThat(httpThroughputCounter.getLatency(percentile) * 1000.0, lessThan(maxMs * 1.0));
   }
 
   @Then("^(\\d+)% of the pages should be loaded within (\\d+)ms$")
   public void of_the_pages_should_be_loaded_within_ms(int percentile, int maxMs) throws Throwable {
-    ryvrResponse.assertLoadedWithin(percentile, maxMs);
+    assertLoadedWithin(percentile, maxMs);
   }
 
   @Then("^on the second retrieve, (\\d+)% of the pages should be loaded within (\\d+)ms$")
   public void on_the_second_retrieve_of_the_pages_should_be_loaded_within_ms(int percentile,
       int maxMs) throws Throwable {
-    ryvrResponse.assertLoadedWithin(percentile, maxMs);
+    assertLoadedWithin(percentile, maxMs);
   }
 
   @Then("^it will come from cache$")
   public void it_will_come_from_cache() throws Throwable {
-    ryvrResponse.assertFromCache();
+    throw new PendingException();
+    // ryvr.assertFromCache();
   }
 
   @Then("^it will not come from cache$")
   public void it_will_not_come_from_cache() throws Throwable {
-    ryvrResponse.assertNotFromCache();
+    if (ryvr instanceof RestRyvr) {
+      RestRyvr restRyvr = (RestRyvr) ryvr;
+      Record record = restRyvr.iterator().next();
+      throw new PendingException();
+    }
   }
 }

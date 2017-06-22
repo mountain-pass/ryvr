@@ -10,10 +10,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.function.Consumer;
 
 import javax.validation.constraints.Min;
 
@@ -23,10 +24,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonRawValue;
 
+import au.com.mountainpass.ryvr.model.Field;
 import au.com.mountainpass.ryvr.model.Link;
+import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.Ryvr;
 
 public class DataSourceRyvr extends Ryvr {
@@ -45,7 +46,7 @@ public class DataSourceRyvr extends Ryvr {
   private String rowsQuery;
   private String table;
   private String orderedBy;
-  private long count = 0;
+  private long count = -1;
 
   private int[] columnTypes;
 
@@ -60,6 +61,8 @@ public class DataSourceRyvr extends Ryvr {
     this.pageSize = pageSize;
     String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
     String catalogSeparator = connection.getMetaData().getCatalogSeparator();
+
+    // TODO: combine count query and row query
     countQuery = generateCountQuery(catalog, table, identifierQuoteString, catalogSeparator);
     rowsQuery = generateRowQuery(catalog, table, orderedBy, identifierQuoteString,
         catalogSeparator);
@@ -117,50 +120,6 @@ public class DataSourceRyvr extends Ryvr {
     builder.append("]}");
   }
 
-  @JsonProperty("_links")
-  @JsonRawValue
-  public String getRawLinks() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("{");
-
-    builder.append("\"self\": { \"href\": \"/ryvrs/");
-    builder.append(getTitle());
-    builder.append("?page=");
-    builder.append(page);
-    builder.append("\"},");
-
-    builder.append("\"first\": { \"href\": \"/ryvrs/");
-    builder.append(getTitle());
-    builder.append("?page=");
-    builder.append(1);
-    builder.append("\"},");
-
-    if (page > 1) {
-      builder.append("\"prev\": { \"href\": \"/ryvrs/");
-      builder.append(getTitle());
-      builder.append("?page=");
-      builder.append(page - 1L);
-      builder.append("\"},");
-    }
-    if (page < pages) {
-      builder.append("\"next\": { \"href\": \"/ryvrs/");
-      builder.append(getTitle());
-      builder.append("?page=");
-      builder.append(page + 1L);
-      builder.append("\"},");
-    } else {
-      builder.append("\"last\": { \"href\": \"/ryvrs/");
-      builder.append(getTitle());
-      builder.append("?page=");
-      builder.append(pages);
-      builder.append("\"},");
-    }
-    builder.append("\"current\": { \"href\": \"/ryvrs/");
-    builder.append(getTitle());
-    builder.append("\"}}");
-    return builder.toString();
-  }
-
   @Override
   public boolean refreshPage(long requestedPage) {
     if (pages < 0L || requestedPage < 0L || requestedPage >= pages) {
@@ -177,7 +136,6 @@ public class DataSourceRyvr extends Ryvr {
   }
 
   public void refreshRowSet() {
-
     if (rowSet == null || page == pages) {
       jt.setFetchSize(pageSize);
       rowSet = jt.queryForRowSet(rowsQuery);
@@ -188,32 +146,6 @@ public class DataSourceRyvr extends Ryvr {
       }
 
     }
-  }
-
-  @Override
-  @JsonIgnore
-  public Map<String, List<Map<String, Object>>> getEmbedded() {
-    Map<String, List<Map<String, Object>>> rows = new HashMap<>();
-    if (rowSet == null) {
-      refreshPage(page);
-    }
-    rowSet.absolute((int) ((page - 1L) * pageSize + 1L));
-    for (int i = 0; i < pageSize; ++i) {
-      Map<String, Object> row = new HashMap<>();
-      for (int j = columnNames.length; j > 0; --j) {
-        row.put(columnNames[j - 1], rowSet.getObject(j));
-      }
-      List<Map<String, Object>> itemRows = rows.get("item");
-      if (itemRows == null) {
-        itemRows = new ArrayList<Map<String, Object>>(pageSize);
-      }
-      itemRows.add(row);
-      rows.put("item", itemRows);
-      if (!rowSet.next()) {
-        break;
-      }
-    }
-    return rows;
   }
 
   @JsonIgnore
@@ -234,6 +166,7 @@ public class DataSourceRyvr extends Ryvr {
     return links;
   }
 
+  @Override
   public int getPageSize() {
     return pageSize;
   }
@@ -267,9 +200,12 @@ public class DataSourceRyvr extends Ryvr {
     writer.write(getTitle());
     writer.write("\",\"page\":", 0, 9);
     writer.write(Long.toString(getPage()));
-
     writer.write(",\"pageSize\":", 0, 12);
     writer.write(Integer.toString(getPageSize()));
+    if (getPage() == getPages()) {
+      writer.write(",\"count\":", 0, 9);
+      writer.write(Long.toString(getCount()));
+    }
     writer.write(",\"columns\":[", 0, 12);
     for (int i = 0; i < columnNames.length; ++i) {
       if (i != 0) {
@@ -312,51 +248,108 @@ public class DataSourceRyvr extends Ryvr {
     outputStream.flush();
   }
 
-  public void toJsonWithBuilder() {
-    StringBuilder builder = new StringBuilder();
+  private class RyvrIterator implements Iterator<Record> {
+    long position;
 
-    builder.append("{\"title\":\"");
-    builder.append(getTitle());
-    builder.append("\",\"page\":");
-    builder.append(Long.toString(getPage()));
-
-    builder.append(",\"pageSize\":");
-    builder.append(Long.toString(getPageSize()));
-    builder.append(",\"columns\":[");
-    for (int i = 0; i < columnNames.length; ++i) {
-      if (i != 0) {
-        builder.append(',');
-      }
-      builder.append('"');
-      builder.append(columnNames[i]);
-      builder.append('"');
-    }
-    builder.append("],\"rows\":[");
-
-    for (int i = 0; i < pageSize; ++i) {
-      if (i != 0) {
-        builder.append(',');
-      }
-      builder.append('[');
-      for (int j = 0; j < columnNames.length; ++j) {
-        if (j != 0) {
-          builder.append(',');
-        }
-        String value = rowSet.getString(j + 1);
-        if (columnTypes[j] == Types.VARCHAR) {
-          builder.append('"');
-          builder.append(value);
-          builder.append('"');
-        } else {
-          builder.append(value);
+    @Override
+    public boolean hasNext() {
+      if (position == count - 1 || count < 0) {
+        long newCount = jt.queryForObject(countQuery, Long.class);
+        if (newCount != count) {
+          count = newCount;
+          pages = ((count - 1L) / pageSize) + 1L;
+          refreshRowSet();
         }
       }
-      builder.append(']');
-      if (!rowSet.next()) {
-        break;
+      return position < count;
+    }
+
+    @Override
+    public Record next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+      final Record rval = new Record() {
+
+        private long position;
+
+        @Override
+        public int size() {
+          if (columnNames == null) {
+            refreshRowSet();
+          }
+          return columnNames.length;
+        }
+
+        @Override
+        public Field getField(int fieldIndex) {
+          final Field field = new Field() {
+
+            private int fieldIndex;
+
+            @Override
+            public Object getValue() {
+              rowSet.absolute((int) position);
+              return rowSet.getObject(fieldIndex + 1);
+            }
+
+            @Override
+            public String getName() {
+              return columnNames[fieldIndex];
+            }
+
+            @Override
+            public void setFieldIndex(int fieldIndex) {
+              this.fieldIndex = fieldIndex;
+            }
+          };
+          field.setFieldIndex(fieldIndex);
+          return field;
+        }
+
+        @Override
+        public void setPosition(long position) {
+          this.position = position;
+        }
+      };
+      rval.setPosition(++position);
+      return rval;
+    }
+
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void forEachRemaining(Consumer<? super Record> consumer) {
+      if (!hasNext()) {
+        return;
+      }
+      while (hasNext()) {
+        consumer.accept(next());
       }
     }
-    builder.append(']');
-    builder.append('}');
+  }
+
+  @Override
+  public Iterator<Record> iterator() {
+    final RyvrIterator ryvrIterator = new RyvrIterator();
+    ryvrIterator.position = 0;
+    return ryvrIterator;
+  }
+
+  @Override
+  public long getCount() {
+    if (count == -1L) {
+      refresh();
+    }
+    return count;
+  }
+
+  @Override
+  public String[] getFieldNames() {
+    return columnNames;
   }
 }

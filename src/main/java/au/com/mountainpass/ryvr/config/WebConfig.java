@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
+import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,11 +23,18 @@ public class WebConfig extends WebMvcConfigurerAdapter {
   private ObjectMapper om;
 
   @Override
+  public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    // registry.addResourceHandler("/api-docsxx/**").addResourceLocations("/webjars/swagger-ui/2.2.10/");
+    // registry.addResourceHandler("/api-docsxx/swagger.json").addResourceLocations("/api/v2/swagger.json");
+  }
+
+  @Override
   public void configureContentNegotiation(final ContentNegotiationConfigurer configurer) {
     configurer.defaultContentType(MediaType.TEXT_HTML);
     configurer.ignoreAcceptHeader(false).favorPathExtension(false).mediaType("json",
         MediaType.APPLICATION_JSON);
     configurer.mediaType("html", MediaType.TEXT_HTML);
+    configurer.mediaType("js", MediaType.valueOf("application/javascript"));
   }
 
   @Bean
@@ -48,6 +57,11 @@ public class WebConfig extends WebMvcConfigurerAdapter {
   // public AsyncTaskExecutor asyncTaskExecutor() {
   // return new SimpleAsyncTaskExecutor("async");
   // }
+
+  @Override
+  public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+    configurer.enable();
+  }
 
   @PostConstruct
   public void postContruct() {

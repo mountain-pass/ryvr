@@ -2,14 +2,16 @@ package au.com.mountainpass.ryvr.testclient.model;
 
 import java.util.List;
 
+import au.com.mountainpass.ryvr.model.Ryvr;
+
 public interface RyvrsCollectionResponse {
 
-    public void assertIsEmpty();
+  public void assertIsEmpty();
 
-    public void assertCount(int count);
+  public void assertCount(int count);
 
-    public void assertHasItem(List<String> names);
+  public void assertHasItem(List<String> names);
 
-    public RyvrResponse followRyvrLink(String name);
+  public Ryvr followRyvrLink(String name);
 
 }

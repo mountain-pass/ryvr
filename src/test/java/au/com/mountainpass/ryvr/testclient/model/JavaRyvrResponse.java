@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -13,12 +14,14 @@ import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import au.com.mountainpass.ryvr.model.Field;
+import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Summary;
 
-public class JavaRyvrResponse implements RyvrResponse {
+public class JavaRyvrResponse implements RestRyvr {
   public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
   private Ryvr ryvr;
@@ -39,20 +42,19 @@ public class JavaRyvrResponse implements RyvrResponse {
 
   @Override
   public void assertHasItems(List<Map<String, String>> events) throws URISyntaxException {
-    // ryvr.refresh(page);
-    List<Map<String, Object>> rows = ryvr.getEmbedded().get("item");
-    assertThat(rows.size(), equalTo(events.size()));
-    for (int i = 0; i < rows.size(); ++i) {
-      final Map<String, String> expectedRow = events.get(i);
-      final Map<String, Object> row = rows.get(i);
-      row.keySet().forEach(key -> {
-
-        Object actualValue = row.get(key);
-
-        String expectedValue = expectedRow.get(key);
+    Iterator<Record> actualIterator = ryvr.iterator();
+    Iterator<Map<String, String>> expectedIterator = events.iterator();
+    do {
+      Record actualRecord = actualIterator.next();
+      Map<String, String> expectedRecord = expectedIterator.next();
+      for (int i = 0; i < actualRecord.size(); ++i) {
+        Field actualField = actualRecord.getField(i);
+        Object actualValue = actualField.getValue();
+        String expectedValue = expectedRecord.get(actualField.getName());
         Util.assertEqual(actualValue, expectedValue);
-      });
-    }
+      }
+    } while (actualIterator.hasNext() && expectedIterator.hasNext());
+    assertThat(actualIterator.hasNext(), equalTo(expectedIterator.hasNext()));
   }
 
   @Override
@@ -72,7 +74,7 @@ public class JavaRyvrResponse implements RyvrResponse {
   }
 
   @Override
-  public RyvrResponse followLink(String rel) {
+  public RestRyvr followLink(String rel) {
     switch (rel) {
     case "prev":
       ryvr.prev();
@@ -114,7 +116,7 @@ public class JavaRyvrResponse implements RyvrResponse {
   public void retrieveAllEvents() throws Throwable {
     long before = System.currentTimeMillis();
     Summary.Timer requestTimer = requestLatency.startTimer();
-    RyvrResponse response = followLink("first");
+    RestRyvr response = followLink("first");
     requestTimer.observeDuration();
 
     while (response.hasLink("next")) {

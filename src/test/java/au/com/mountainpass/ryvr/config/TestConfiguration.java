@@ -14,11 +14,14 @@ import javax.net.ssl.TrustManagerFactory;
 
 import org.apache.http.HttpException;
 import org.apache.http.HttpHeaders;
+import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.client.cache.CacheResponseStatus;
 import org.apache.http.client.cache.HttpCacheContext;
+import org.apache.http.client.cache.HttpCacheStorage;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpRequestWrapper;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -58,6 +61,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import au.com.mountainpass.ClearableBasicHttpCacheStorage;
 import au.com.mountainpass.TrustStoreManager;
 import au.com.mountainpass.WebDriverFactory;
 import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
@@ -104,11 +108,13 @@ public class TestConfiguration
   private WebDriverFactory webDriverFactory;
 
   @Bean
+  @Profile(value = { "restApi" })
   public CloseableHttpAsyncClient asyncHttpClient() throws Exception {
     return asyncHttpClientBuilder().build();
   }
 
   @Bean
+  @Profile(value = { "restApi" })
   public HttpAsyncClientBuilder asyncHttpClientBuilder() throws Exception {
     final NHttpClientConnectionManager connectionManager = nHttpClientConntectionManager();
     final RequestConfig config = httpClientRequestConfig();
@@ -118,6 +124,7 @@ public class TestConfiguration
   }
 
   @Bean
+  @Profile(value = { "restApi" })
   public AsyncClientHttpRequestFactory asyncHttpClientFactory() throws Exception {
     final HttpComponentsAsyncClientHttpRequestFactory factory = new HttpComponentsAsyncClientHttpRequestFactory(
         httpClient(), asyncHttpClient());
@@ -134,6 +141,7 @@ public class TestConfiguration
   }
 
   @Bean
+  @Profile(value = { "restApi" })
   public CloseableHttpClient httpClient() throws Exception {
 
     CloseableHttpClient client = httpClientBuilder().build();
@@ -141,16 +149,17 @@ public class TestConfiguration
   }
 
   @Bean
+  @Profile(value = { "restApi" })
   public CachingHttpClientBuilder httpClientBuilder() throws Exception {
     final HttpClientConnectionManager connectionManager = httpClientConnectionManager();
     final RequestConfig config = httpClientRequestConfig();
-    CacheConfig cacheConfig = CacheConfig.custom().setMaxCacheEntries(10000000)
-        .setMaxObjectSize(8192 * 1024).build();
+    CacheConfig cacheConfig = cacheConfig();
 
-    return (CachingHttpClientBuilder) CachingHttpClients.custom().setCacheConfig(cacheConfig)
-        .setConnectionManager(connectionManager).setDefaultRequestConfig(config)
-        .setSSLSocketFactory(sslSocketFactory()).setSslcontext(sslContext())
-        .disableRedirectHandling().addInterceptorLast(new HttpResponseInterceptor() {
+    CachingHttpClientBuilder clientBuilder = (CachingHttpClientBuilder) CachingHttpClients.custom()
+        .setCacheConfig(cacheConfig).setConnectionManager(connectionManager)
+        .setDefaultRequestConfig(config).setSSLSocketFactory(sslSocketFactory())
+        .setSSLContext(sslContext()).disableRedirectHandling()
+        .addInterceptorLast(new HttpResponseInterceptor() {
 
           @Override
           public void process(HttpResponse response, HttpContext context)
@@ -172,14 +181,36 @@ public class TestConfiguration
             default:
               xCacheString = cacheResponseStatus.toString();
             }
+            HttpRequestWrapper request = (HttpRequestWrapper) context
+                .getAttribute(HttpCacheContext.HTTP_REQUEST);
+            LOGGER.info("X-Cache: {}\t{}", xCacheString, request.getURI());
             response.addHeader("X-Cache", xCacheString);
             long length = response.getEntity().getContentLength();
             response.setHeader(HttpHeaders.CONTENT_LENGTH, Long.toString(length));
           }
-        });
+        }).addInterceptorFirst((HttpResponseInterceptor) httpThroughputCounter)
+        .addInterceptorLast((HttpRequestInterceptor) httpThroughputCounter);
+    clientBuilder.setHttpCacheStorage(httpCacheStorage());
+    return clientBuilder;
+  }
+
+  @Autowired(required = false)
+  private HttpThroughputCounter httpThroughputCounter;
+
+  @Bean
+  @Profile(value = { "restApi" })
+  public CacheConfig cacheConfig() {
+    return CacheConfig.custom().setMaxCacheEntries(10000000).setMaxObjectSize(8192 * 1024).build();
   }
 
   @Bean
+  @Profile(value = { "restApi" })
+  public HttpCacheStorage httpCacheStorage() {
+    return new ClearableBasicHttpCacheStorage(cacheConfig());
+  }
+
+  @Bean
+  @Profile(value = { "restApi" })
   public HttpClientConnectionManager httpClientConnectionManager() throws Exception {
     final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
         httpConnectionSocketFactoryRegistry());
@@ -189,6 +220,7 @@ public class TestConfiguration
   }
 
   @Bean
+  @Profile(value = { "restApi" })
   public HttpComponentsClientHttpRequestFactory httpClientFactory() throws Exception {
     final HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(
         httpClient());
@@ -197,6 +229,7 @@ public class TestConfiguration
   }
 
   @Bean
+  @Profile(value = { "restApi" })
   public Registry<ConnectionSocketFactory> httpConnectionSocketFactoryRegistry() throws Exception {
     return RegistryBuilder.<ConnectionSocketFactory> create()
         .register("http", PlainConnectionSocketFactory.getSocketFactory())

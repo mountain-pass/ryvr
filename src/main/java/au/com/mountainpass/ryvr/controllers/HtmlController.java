@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -19,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mustachejava.DefaultMustacheFactory;
@@ -63,7 +63,17 @@ public class HtmlController {
           "static/index.html", "<%", "%>");
       Map<String, String> scope = new HashMap<>();
       scope.put("root", om.writeValueAsString(root));
-      scope.put("resource", om.writeValueAsString(resource));
+      // scope.put("root-links", TODO);
+      if (resource instanceof StreamingResponseBody) {
+        StreamingResponseBody body = (StreamingResponseBody) resource;
+        ByteArrayOutputStream bodyAsOutputStream = new ByteArrayOutputStream();
+        body.writeTo(bodyAsOutputStream);
+        scope.put("resource", new String(bodyAsOutputStream.toByteArray()));
+      } else {
+        scope.put("resource", om.writeValueAsString(resource));
+      }
+      // scope.put("resource-links", TODO);
+
       OutputStreamWriter writer = new OutputStreamWriter(baos);
       mustache.execute(writer, scope).flush();
       writer.flush();
@@ -74,12 +84,11 @@ public class HtmlController {
     }
   }
 
-  public void getRyvr(HttpServletRequest req, Writer responseWriter, String ryvrName, Long page)
+  public ResponseEntity<?> getRyvr(HttpServletRequest req, String ryvrName, long page)
       throws URISyntaxException {
-    throw new NotImplementedException();
-    // Root root = (Root) jsonController.getRoot(req).getBody();
-    // Ryvr ryvr = (Ryvr) jsonController.getRyvr(req, responseWriter, ryvrName, page).getBody();
-    // return getIndex(root, ryvr);
+    Root root = (Root) jsonController.getRoot(req).getBody();
+    StreamingResponseBody ryvr = jsonController.getRyvr(req, ryvrName, page).getBody();
+    return getIndex(root, ryvr);
   }
 
 }

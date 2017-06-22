@@ -19,7 +19,6 @@ Scenario: Find Ryvr in Collection
     Then the ryvrs list will contain the following entries
       | transactions |
     
-
 Scenario: Get Ryvr
     Given a database "test_db" 
     And it has a table "transactions" with the following events
@@ -35,14 +34,6 @@ Scenario: Get Ryvr
     Then it will contain
       | id | account | description    | amount  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 | 
-    And it will have the following links
-      | self    |
-      | first   |
-      | last    |
-      | current |
-    And it will *not* have the following links
-      | prev    |
-      | next    |
 
 Scenario: Get Ryvr - Multiple Transactions
     Given a database "test_db" 
@@ -71,13 +62,5 @@ Scenario: Get Ryvr - Multiple Transactions
       | 4   | 7786543 | ATM Withdrawal | -50.00  | 
       | 5   | 7786543 | ATM Withdrawal | -60.00  | 
       | 6   | 7786543 | ATM Withdrawal | -70.00  | 
-    And it will have the following links
-      | self    |
-      | first   |
-      | last    |
-      | current |
-    And it will *not* have the following links
-      | prev    |
-      | next    |
 
             
