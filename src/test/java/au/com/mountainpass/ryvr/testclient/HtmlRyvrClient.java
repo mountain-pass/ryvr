@@ -107,6 +107,7 @@ public class HtmlRyvrClient implements RyvrTestClient {
   }
 
   static public List<WebElement> getLinks(WebDriver webDriver) {
+    waitTillLoaded(webDriver, 5, ExpectedConditions.visibilityOfElementLocated(By.id("links")));
     List<WebElement> menuButton = webDriver
         .findElements(By.cssSelector("button.navbar-toggle.collapsed"));
     assertThat(menuButton.size(), lessThanOrEqualTo(1));

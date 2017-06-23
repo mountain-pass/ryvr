@@ -352,4 +352,5 @@ public class DataSourceRyvr extends Ryvr {
   public String[] getFieldNames() {
     return columnNames;
   }
+
 }

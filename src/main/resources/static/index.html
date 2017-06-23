@@ -124,7 +124,7 @@
           </thead>
           <tbody>
             <tr ng-repeat="record in controller.resource.rows" class="itemRow">
-              <td ng-repeat="field in record" data-heading="{{controller.resource.columns[$index]}}" data-type="string">{{field}}</td>
+              <td ng-repeat="field in record" data-heading="{{controller.resource.columns[$index]}}" data-type="{{typeOf(field)}}">{{field}}</td>
             </tr>
           </tbody>
         </table>

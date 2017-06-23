@@ -164,6 +164,10 @@ define(['angular'], function(angular) {
             }
         };
 
+        $scope.typeOf = function(value) {
+            return typeof value;
+        };
+
         $scope.resourceProperties = function() {
             var rval = {};
             if (controller.hasOwnProperty('resource')) {

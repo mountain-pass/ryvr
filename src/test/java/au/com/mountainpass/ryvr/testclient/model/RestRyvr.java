@@ -10,7 +10,7 @@ public interface RestRyvr {
 
   public void assertFromCache();
 
-  public void assertHasItems(List<Map<String, String>> events) throws URISyntaxException;
+  public void assertHasItems(List<Map<String, String>> events) throws URISyntaxException, Throwable;
 
   public void assertHasLinks(List<String> links);
 

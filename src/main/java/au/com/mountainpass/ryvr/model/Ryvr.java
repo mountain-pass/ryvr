@@ -112,4 +112,5 @@ public abstract class Ryvr {
   }
 
   public abstract String[] getFieldNames();
+
 }

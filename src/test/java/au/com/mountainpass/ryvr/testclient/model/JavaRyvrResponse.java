@@ -41,7 +41,7 @@ public class JavaRyvrResponse implements RestRyvr {
   }
 
   @Override
-  public void assertHasItems(List<Map<String, String>> events) throws URISyntaxException {
+  public void assertHasItems(List<Map<String, String>> events) throws Throwable {
     Iterator<Record> actualIterator = ryvr.iterator();
     Iterator<Map<String, String>> expectedIterator = events.iterator();
     do {

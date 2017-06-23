@@ -1,5 +1,6 @@
 package au.com.mountainpass.ryvr.testclient.model;
 
+import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -76,10 +77,24 @@ public class HtmlRyvr extends Ryvr {
 
             @Override
             public Object getValue() {
-              return webDriver
+              WebElement element = webDriver
                   .findElement(By.cssSelector("#items > table > tbody > tr:nth-child("
-                      + (pagePosition + 1) + ") > td:nth-child(" + (fieldIndex + 1) + ")"))
-                  .getText();
+                      + (pagePosition + 1) + ") > td:nth-child(" + (fieldIndex + 1) + ")"));
+              String textValue = element.getText();
+              String type = element.getAttribute("data-type");
+              switch (type) {
+              case "number":
+                BigDecimal number = new BigDecimal(textValue);
+                try {
+                  return number.longValueExact();
+                } catch (ArithmeticException e) {
+                  return number;
+                }
+              case "boolean":
+                return Boolean.parseBoolean(textValue);
+              default:
+                return textValue;
+              }
             }
 
             @Override
