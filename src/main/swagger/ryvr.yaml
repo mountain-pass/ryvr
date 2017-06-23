@@ -260,11 +260,6 @@ definitions:
       - current
   page:
     type: object
-    properties:
-      _links:
-        $ref: "#/definitions/pageLinks"
-    additionalProperties:
-      type: string
 parameters:
   X-Request-Id:
     in: header
