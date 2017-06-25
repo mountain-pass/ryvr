@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
+import au.com.mountainpass.ryvr.io.RyvrSerialiser;
 import au.com.mountainpass.ryvr.model.Link;
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.Ryvr;
@@ -55,6 +56,9 @@ public class JsonController {
 
   @Autowired
   private RyvrConfiguration config;
+
+  @Autowired
+  private RyvrSerialiser serialiser;
 
   public ResponseEntity<?> getApiDocs(HttpServletRequest req, String group) {
     ClassPathResource index = new ClassPathResource("static/swagger.json");
@@ -104,7 +108,7 @@ public class JsonController {
     return responseBuilder.body(new StreamingResponseBody() {
       @Override
       public void writeTo(OutputStream outputStream) throws IOException {
-        ryvr.toJson(outputStream);
+        serialiser.toJson(ryvr, page, outputStream);
       }
     });
   }

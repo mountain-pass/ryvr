@@ -1,15 +1,8 @@
 package au.com.mountainpass.ryvr.datasource;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -180,74 +173,6 @@ public class DataSourceRyvr extends Ryvr {
     }
   }
 
-  @Override
-  public void toJson(OutputStream outputStream) throws IOException {
-    refreshRowSet();
-
-    // hmmm... what happens when there are more rows than MAX_INT?
-    rowSet.absolute((int) ((page - 1L) * pageSize + 1L));
-    // toJsonWithBuilder();
-    toJsonWithWriter(outputStream);
-
-  }
-
-  private ByteArrayOutputStream baos = new ByteArrayOutputStream(pageSize * 1024);
-  private Writer writer = new BufferedWriter(new OutputStreamWriter(baos), pageSize * 1024);
-
-  public void toJsonWithWriter(OutputStream outputStream) throws IOException {
-    baos.reset();
-    writer.write("{\"title\":\"", 0, 10);
-    writer.write(getTitle());
-    writer.write("\",\"page\":", 0, 9);
-    writer.write(Long.toString(getPage()));
-    writer.write(",\"pageSize\":", 0, 12);
-    writer.write(Integer.toString(getPageSize()));
-    if (getPage() == getPages()) {
-      writer.write(",\"count\":", 0, 9);
-      writer.write(Long.toString(getCount()));
-    }
-    writer.write(",\"columns\":[", 0, 12);
-    for (int i = 0; i < columnNames.length; ++i) {
-      if (i != 0) {
-        writer.write(',');
-      }
-      writer.write('"');
-      writer.write(columnNames[i]);
-      writer.write('"');
-    }
-    writer.write("],\"rows\":[", 0, 10);
-
-    for (int i = 0; i < pageSize; ++i) {
-      if (i != 0) {
-        writer.write(',');
-      }
-      writer.write('[');
-      for (int j = 0; j < columnNames.length; ++j) {
-        if (j != 0) {
-          writer.write(',');
-        }
-        String value = rowSet.getString(j + 1);
-        if (columnTypes[j] == Types.VARCHAR) {
-          writer.write('"');
-          writer.write(value);
-          writer.write('"');
-        } else {
-          writer.write(value);
-        }
-      }
-      writer.write(']');
-      if (!rowSet.next()) {
-        break;
-      }
-    }
-    writer.write(']');
-    writer.write('}');
-    writer.flush();
-
-    outputStream.write(baos.toByteArray());
-    outputStream.flush();
-  }
-
   private class RyvrIterator implements Iterator<Record> {
     long position;
 
@@ -337,6 +262,13 @@ public class DataSourceRyvr extends Ryvr {
   public Iterator<Record> iterator() {
     final RyvrIterator ryvrIterator = new RyvrIterator();
     ryvrIterator.position = 0;
+    return ryvrIterator;
+  }
+
+  @Override
+  public Iterator<Record> iterator(long position) {
+    final RyvrIterator ryvrIterator = new RyvrIterator();
+    ryvrIterator.position = position;
     return ryvrIterator;
   }
 

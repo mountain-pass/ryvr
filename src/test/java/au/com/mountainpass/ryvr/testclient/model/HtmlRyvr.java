@@ -29,6 +29,15 @@ public class HtmlRyvr extends Ryvr {
     long pagePosition = -1;
     long currentPage = -1;
 
+    public RyvrIterator() {
+      // TODO Auto-generated constructor stub
+    }
+
+    public RyvrIterator(long position) {
+      currentPage = position / getPageSize();
+      pagePosition = position % getPageSize();
+    }
+
     @Override
     public boolean hasNext() {
       if (currentPage < 0) {
@@ -144,6 +153,11 @@ public class HtmlRyvr extends Ryvr {
   @Override
   public Iterator<Record> iterator() {
     return new RyvrIterator();
+  }
+
+  @Override
+  public Iterator<Record> iterator(long position) {
+    return new RyvrIterator(position);
   }
 
   public String getNextLink() {

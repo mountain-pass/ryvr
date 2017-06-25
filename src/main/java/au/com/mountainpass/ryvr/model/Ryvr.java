@@ -12,7 +12,7 @@ import org.apache.commons.lang.NotImplementedException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public abstract class Ryvr {
+public abstract class Ryvr implements Iterable<Record> {
 
   private String title;
   protected long page = -1l;
@@ -97,7 +97,10 @@ public abstract class Ryvr {
     throw new NotImplementedException();
   }
 
+  @Override
   public abstract Iterator<Record> iterator();
+
+  public abstract Iterator<Record> iterator(long position);
 
   public abstract long getCount();
 

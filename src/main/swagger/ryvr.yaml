@@ -73,6 +73,24 @@ paths:
           $ref: '#/responses/503'
         '504':
           $ref: '#/responses/504'
+  /api-docs:
+    get:
+      description: get the API docs
+      tags:
+        - api-docs
+      summary: Swagger Documentation for this service
+      operationId: getApiDocs
+      parameters:
+        - name: group
+          in: query
+          description: "the name of the subset of the API"
+          type: string
+          required: false
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: object
 responses:
   '400':
     description: |
@@ -133,23 +151,6 @@ responses:
       [Gateway Time-out](https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.5.5)
 
       The server, while acting as a gateway or proxy, did not receive a timely response from the upstream server.
-  /api-docs:
-    get:
-      tags:
-        - api-docs
-      summary: Swagger Documentation for this service
-      operationId: getApiDocs
-      parameters:
-        - name: group
-          in: query
-          description: "the name of the subset of the API"
-          type: string
-          required: false
-      responses:
-        '200':
-          description: OK
-          schema:
-            type: object
 definitions:
   links:
     title: "HAL Links"
