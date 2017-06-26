@@ -281,7 +281,7 @@ public class RestRyvrSource extends RyvrSource {
   }
 
   @Override
-  public long getCount() {
+  public long longSize() {
     if (count == -1L) {
       if (currentUri == null) {
         try {
@@ -317,6 +317,11 @@ public class RestRyvrSource extends RyvrSource {
   public String[] getFieldNames() {
     JSONArray array = JsonPath.read(getBodyDocument(), "$.columns");
     return array.toArray(new String[] {});
+  }
+
+  @Override
+  public Record get(int index) {
+    return iterator(index).next();
   }
 
 }

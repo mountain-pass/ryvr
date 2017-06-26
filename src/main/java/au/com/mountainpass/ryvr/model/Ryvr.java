@@ -24,7 +24,7 @@ public class Ryvr implements Iterable<Record> {
   }
 
   public Iterator<Record> iterator(long position) {
-    return source.iterator(position);
+    return source.listIterator(position);
   }
 
   public int getPageSize() {
@@ -32,11 +32,11 @@ public class Ryvr implements Iterable<Record> {
   }
 
   public long getPages() {
-    return (source.getCount() / this.pageSize) + 1;
+    return (source.longSize() / this.pageSize) + 1;
   }
 
   public int getCurrentPageSize(long page) {
-    long count = source.getCount();
+    long count = source.longSize();
     long pages = (count / this.pageSize) + 1;
     if (page < pages) {
       return pageSize;
@@ -46,7 +46,7 @@ public class Ryvr implements Iterable<Record> {
   }
 
   public long getCount() {
-    return source.getCount();
+    return source.size();
   }
 
   public String[] getFieldNames() {

@@ -219,7 +219,7 @@ public class DataSourceRyvrSource extends RyvrSource {
   }
 
   @Override
-  public long getCount() {
+  public long longSize() {
     if (count == -1L) {
       refresh();
     }
@@ -229,6 +229,11 @@ public class DataSourceRyvrSource extends RyvrSource {
   @Override
   public String[] getFieldNames() {
     return columnNames;
+  }
+
+  @Override
+  public Record get(int index) {
+    return iterator(index).next();
   }
 
 }
