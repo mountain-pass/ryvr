@@ -49,7 +49,7 @@ public class HtmlRyvrsCollectionResponse implements RyvrsCollectionResponse {
     WebElement link = items.stream().filter(item -> name.equals(item.getText())).findAny().get();
     link.click();
     HtmlRyvrClient.waitTillLoaded(webDriver, 5);
-    return new HtmlRyvr(name, webDriver);
+    return new Ryvr(name, 10, new HtmlRyvrSource(webDriver));
   }
 
 }

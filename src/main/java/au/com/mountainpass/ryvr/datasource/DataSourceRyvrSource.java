@@ -3,9 +3,7 @@ package au.com.mountainpass.ryvr.datasource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
@@ -19,11 +17,10 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import au.com.mountainpass.ryvr.model.Field;
-import au.com.mountainpass.ryvr.model.Link;
 import au.com.mountainpass.ryvr.model.Record;
-import au.com.mountainpass.ryvr.model.Ryvr;
+import au.com.mountainpass.ryvr.model.RyvrSource;
 
-public class DataSourceRyvr extends Ryvr {
+public class DataSourceRyvrSource extends RyvrSource {
   @JsonIgnore
   public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
@@ -43,9 +40,8 @@ public class DataSourceRyvr extends Ryvr {
 
   private int[] columnTypes;
 
-  public DataSourceRyvr(String title, JdbcTemplate jt, String catalog, String table,
-      String orderedBy, int pageSize) throws SQLException {
-    super(title);
+  public DataSourceRyvrSource(JdbcTemplate jt, String catalog, String table, String orderedBy,
+      int pageSize) throws SQLException {
     this.table = table;
     this.orderedBy = orderedBy;
     this.jt = jt;
@@ -139,24 +135,6 @@ public class DataSourceRyvr extends Ryvr {
       }
 
     }
-  }
-
-  @JsonIgnore
-  @Override
-  public Map<String, Link[]> getLinks() {
-    Map<String, Link[]> links = new HashMap<>();
-    links.put("current", new Link[] { new Link("/ryvrs/" + getTitle()) });
-    links.put("self", new Link[] { new Link("/ryvrs/" + getTitle() + "?page=" + page) });
-    links.put("first", new Link[] { new Link("/ryvrs/" + getTitle() + "?page=1") });
-    if (page > 1) {
-      links.put("prev", new Link[] { new Link("/ryvrs/" + getTitle() + "?page=" + (page - 1L)) });
-    }
-    if (page < pages) {
-      links.put("next", new Link[] { new Link("/ryvrs/" + getTitle() + "?page=" + (page + 1L)) });
-    } else {
-      links.put("last", new Link[] { new Link("/ryvrs/" + getTitle() + "?page=" + (pages)) });
-    }
-    return links;
   }
 
   @Override

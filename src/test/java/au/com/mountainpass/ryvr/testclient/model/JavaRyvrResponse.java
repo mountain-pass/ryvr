@@ -7,16 +7,16 @@ import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.com.mountainpass.ryvr.model.Field;
 import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.Ryvr;
+import cucumber.api.PendingException;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Summary;
@@ -59,46 +59,48 @@ public class JavaRyvrResponse implements RestRyvr {
 
   @Override
   public void assertHasLinks(List<String> links) {
-    Set<String> rels = ryvr.getLinks().keySet();
-    links.forEach(item -> {
-      assertThat(rels, hasItem(item));
-    });
+    throw new PendingException();
+    // Set<String> rels = ryvr.getLinks().keySet();
+    // links.forEach(item -> {
+    // assertThat(rels, hasItem(item));
+    // });
   }
 
   @Override
   public void assertDoesntHaveLinks(List<String> links) {
-    Set<String> rels = ryvr.getLinks().keySet();
-    links.forEach(item -> {
-      assertThat(rels, not(hasItem(item)));
-    });
+    throw new PendingException();
+    // Set<String> rels = ryvr.getLinks().keySet();
+    // links.forEach(item -> {
+    // assertThat(rels, not(hasItem(item)));
+    // });
   }
 
-  @Override
-  public RestRyvr followLink(String rel) {
-    switch (rel) {
-    case "prev":
-      ryvr.prev();
-      break;
-    case "next":
-      ryvr.next();
-      break;
-    case "first":
-      ryvr.first();
-      break;
-    case "last":
-      ryvr.last();
-      break;
-    case "current":
-      ryvr.current();
-      break;
-    case "self":
-      ryvr.self();
-      break;
-    default:
-      throw new NotImplementedException();
-    }
-    return this;
-  }
+  // @Override
+  // public RestRyvr followLink(String rel) {
+  // switch (rel) {
+  // case "prev":
+  // ryvr.prev();
+  // break;
+  // case "next":
+  // ryvr.next();
+  // break;
+  // case "first":
+  // ryvr.first();
+  // break;
+  // case "last":
+  // ryvr.last();
+  // break;
+  // case "current":
+  // ryvr.current();
+  // break;
+  // case "self":
+  // ryvr.self();
+  // break;
+  // default:
+  // throw new NotImplementedException();
+  // }
+  // return this;
+  // }
 
   public Ryvr getRyvr() {
     return ryvr;
@@ -106,10 +108,10 @@ public class JavaRyvrResponse implements RestRyvr {
 
   @Override
   public void assertItemsHaveStructure(List<String> structure) throws URISyntaxException {
-    List<Map<String, Object>> items = ryvr.getEmbedded().get("item");
-    assertThat(items, not(empty()));
+    String[] fieldNames = ryvr.getFieldNames();
+    assertThat(fieldNames.length, equalTo(structure.size()));
 
-    assertThat(items.get(0).keySet(), containsInAnyOrder(structure.toArray()));
+    assertThat(fieldNames, arrayContainingInAnyOrder(structure.toArray()));
   }
 
   @Override
@@ -153,7 +155,9 @@ public class JavaRyvrResponse implements RestRyvr {
 
   @Override
   public boolean hasLink(String rel) {
-    return ryvr.getLinks().containsKey(rel);
+    throw new PendingException();
+
+    // return ryvr.getLinks().containsKey(rel);
   }
 
   @Override
@@ -181,6 +185,11 @@ public class JavaRyvrResponse implements RestRyvr {
   @Override
   public void assertNotFromCache() {
     // do nothing as caching is implemented at the REST layer
+  }
+
+  @Override
+  public RestRyvr followLink(String rel) {
+    throw new NotImplementedException("TODO");
   }
 
 }

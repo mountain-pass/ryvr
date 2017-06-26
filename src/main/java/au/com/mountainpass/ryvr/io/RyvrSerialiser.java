@@ -22,7 +22,6 @@ public class RyvrSerialiser {
   public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
   public void toJson(Ryvr ryvr, long page, OutputStream outputStream) throws IOException {
-    ryvr.refreshPage(page);
     toJsonWithWriter(ryvr, page, outputStream);
   }
 
@@ -44,7 +43,7 @@ public class RyvrSerialiser {
     }
     writer.write(",\"rows\":[", 0, 9);
 
-    for (int i = 0; i < ryvr.getCurrentPageSize(); ++i) {
+    for (int i = 0, pageSize = ryvr.getCurrentPageSize(page); i < pageSize; ++i) {
       Record record = iterator.next();
       if (i != 0) {
         writer.write(',');

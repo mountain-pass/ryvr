@@ -4,8 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,7 +24,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.io.RyvrSerialiser;
-import au.com.mountainpass.ryvr.model.Link;
+import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
@@ -76,7 +75,7 @@ public class JsonController {
 
   public ResponseEntity<?> getRyvrsCollection(HttpServletRequest req) {
     BodyBuilder responseBuilder = ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE);
-    addLinks(responseBuilder, ryvrsCollection.getLinks());
+    // addLinks(responseBuilder, ryvrsCollection.getLinks());
 
     return responseBuilder.body(ryvrsCollection);
   }
@@ -93,7 +92,9 @@ public class JsonController {
     if (ryvr == null) {
       return ResponseEntity.notFound().build();
     }
-    boolean cachable = ryvr.refreshPage(page);
+    Iterator<Record> iterator = ryvr.iterator((page - 1) * ryvr.getPageSize());
+
+    boolean cachable = false;
 
     BodyBuilder responseBuilder = ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE);
     if (cachable) {
@@ -101,10 +102,10 @@ public class JsonController {
     } else {
       responseBuilder.cacheControl(CacheControl.maxAge(currentPageMaxAge, currentPageMaxAgeUnit));
     }
-    responseBuilder.eTag(ryvr.getEtag());
+    // responseBuilder.eTag(ryvr.getEtag());
 
-    addLinks(responseBuilder, ryvr.getLinks());
-    responseBuilder.header("Page-Record-Count", Integer.toString(ryvr.getCurrentPageSize()));
+    addLinks(ryvr, page, responseBuilder);
+    responseBuilder.header("Page-Record-Count", Integer.toString(ryvr.getCurrentPageSize(page)));
     return responseBuilder.body(new StreamingResponseBody() {
       @Override
       public void writeTo(OutputStream outputStream) throws IOException {
@@ -113,13 +114,27 @@ public class JsonController {
     });
   }
 
-  public void addLinks(BodyBuilder responseBuilder, Map<String, Link[]> links) {
-    for (Entry<String, Link[]> entry : links.entrySet()) {
-      for (Link link : entry.getValue()) {
-        String headerValue = "<" + link.getHref() + ">; rel=\"" + entry.getKey() + "\"";
-        responseBuilder.header(HttpHeaders.LINK, headerValue);
-      }
+  public void addLinks(Ryvr ryvr, long page, BodyBuilder responseBuilder) {
+
+    String base = "/ryvrs/" + ryvr.getTitle();
+    addLink("current", base, responseBuilder);
+    addLink("self", base + "?page=" + page, responseBuilder);
+    addLink("first", base + "?page=1", responseBuilder);
+    if (page > 1) {
+      addLink("prev", base + "?page=" + (page - 1L), responseBuilder);
     }
+    if (page < ryvr.getPages()) {
+      addLink("next", base + "?page=" + (page + 1L), responseBuilder);
+      addLink("last", base, responseBuilder);
+    } else {
+      addLink("last", base + "?page=" + (ryvr.getPages()), responseBuilder);
+    }
+
+  }
+
+  private void addLink(String rel, String href, BodyBuilder responseBuilder) {
+    String headerValue = "<" + href + ">; rel=\"" + rel + "\"";
+    responseBuilder.header(HttpHeaders.LINK, headerValue);
   }
 
   public ResponseEntity<StreamingResponseBody> getRyvr(HttpServletRequest req, String ryvrName) {
@@ -127,9 +142,8 @@ public class JsonController {
     if (ryvr == null) {
       return ResponseEntity.notFound().build();
     }
-
-    ryvr.refreshPage(-1);
+    String lastHref = "/ryvrs/" + ryvr.getTitle() + "?page=" + (ryvr.getPages());
     return ResponseEntity.status(HttpStatus.SEE_OTHER)
-        .location(config.getBaseUri().resolve(ryvr.getLinks().get("last")[0].getHref())).build();
+        .location(config.getBaseUri().resolve(lastHref)).build();
   }
 }

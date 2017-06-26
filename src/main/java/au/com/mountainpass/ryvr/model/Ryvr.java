@@ -1,119 +1,56 @@
 package au.com.mountainpass.ryvr.model;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
-import org.apache.commons.lang.NotImplementedException;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-public abstract class Ryvr implements Iterable<Record> {
+public class Ryvr implements Iterable<Record> {
 
   private String title;
-  protected long page = -1l;
-  protected long pages = -1l;
-  protected Map<String, List<Map<String, Object>>> rows = new HashMap<>();
-  protected Map<String, Link[]> links = new HashMap<>();
+  private int pageSize;
+  RyvrSource source;
 
-  private Ryvr() {
-  }
-
-  public Ryvr(String title) {
+  public Ryvr(String title, int pageSize, RyvrSource source) {
     this.title = title;
+    this.pageSize = pageSize;
+    this.source = source;
   }
 
   public String getTitle() {
     return title;
   }
 
-  public boolean refreshPage(long page) {
-    throw new NotImplementedException();
-  }
-
-  public void refresh() {
-    throw new NotImplementedException();
-  }
-
-  @JsonProperty("_embedded")
-  public Map<String, List<Map<String, Object>>> getEmbedded() {
-    return rows;
-  }
-
-  @JsonIgnore
-  public Map<String, Link[]> getLinks() {
-    return links;
-  }
-
-  public void prev() {
-    refreshPage(getPage() - 1L);
-  }
-
-  public long getPage() {
-    if (page < 0L) {
-      return getPages();
-    }
-    return page;
-  }
-
-  public void next() {
-    refreshPage(getPage() + 1L);
-  }
-
-  public void first() {
-    refreshPage(1L);
-  }
-
-  public void last() {
-    refreshPage(getPages());
-  }
-
-  @JsonIgnore
-  public long getPages() {
-    if (pages < 0L) {
-      refresh();
-    }
-    return pages;
-  }
-
-  public void current() {
-    refresh();
-  }
-
-  public void self() {
-    refreshPage(page);
-  }
-
-  @JsonIgnore
-  public String getEtag() {
-    throw new NotImplementedException();
-  }
-
-  public void toJson(OutputStream outputStream) throws IOException {
-    throw new NotImplementedException();
-  }
-
   @Override
-  public abstract Iterator<Record> iterator();
+  public Iterator<Record> iterator() {
+    return source.iterator();
+  }
 
-  public abstract Iterator<Record> iterator(long position);
+  public Iterator<Record> iterator(long position) {
+    return source.iterator(position);
+  }
 
-  public abstract long getCount();
+  public int getPageSize() {
+    return this.pageSize;
+  }
 
-  public abstract int getPageSize();
+  public long getPages() {
+    return (source.getCount() / this.pageSize) + 1;
+  }
 
-  public int getCurrentPageSize() {
-    if (page == pages) {
-      return (int) (getCount() % getPageSize());
+  public int getCurrentPageSize(long page) {
+    long count = source.getCount();
+    long pages = (count / this.pageSize) + 1;
+    if (page < pages) {
+      return pageSize;
     } else {
-      return getPageSize();
+      return (int) (count % pageSize);
     }
   }
 
-  public abstract String[] getFieldNames();
+  public long getCount() {
+    return source.getCount();
+  }
+
+  public String[] getFieldNames() {
+    return source.getFieldNames();
+  }
 
 }

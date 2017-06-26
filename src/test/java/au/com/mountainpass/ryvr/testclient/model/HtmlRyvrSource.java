@@ -13,15 +13,14 @@ import org.openqa.selenium.WebElement;
 
 import au.com.mountainpass.ryvr.model.Field;
 import au.com.mountainpass.ryvr.model.Record;
-import au.com.mountainpass.ryvr.model.Ryvr;
+import au.com.mountainpass.ryvr.model.RyvrSource;
 import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
 
-public class HtmlRyvr extends Ryvr {
+public class HtmlRyvrSource extends RyvrSource {
 
   private WebDriver webDriver;
 
-  public HtmlRyvr(String title, WebDriver webDriver) {
-    super(title);
+  public HtmlRyvrSource(WebDriver webDriver) {
     this.webDriver = webDriver;
   }
 

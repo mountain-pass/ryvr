@@ -30,7 +30,6 @@ import au.com.mountainpass.ryvr.config.TestConfiguration;
 import au.com.mountainpass.ryvr.model.Field;
 import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.Ryvr;
-import au.com.mountainpass.ryvr.rest.RestRyvr;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 import au.com.mountainpass.ryvr.testclient.RyvrTestDbDriver;
 import au.com.mountainpass.ryvr.testclient.RyvrTestServerAdminDriver;
@@ -210,6 +209,7 @@ public class StepDefs {
   public void theRyvrIsRetrieved(final String name) throws Throwable {
     configClient.ensureStarted();
     ryvr = client.getRyvr(name);
+    assertThat(ryvr, notNullValue());
   }
 
   @When("^the ryvrs list is retrieved$")
@@ -343,10 +343,6 @@ public class StepDefs {
 
   @Then("^it will not come from cache$")
   public void it_will_not_come_from_cache() throws Throwable {
-    if (ryvr instanceof RestRyvr) {
-      RestRyvr restRyvr = (RestRyvr) ryvr;
-      Record record = restRyvr.iterator().next();
-      throw new PendingException();
-    }
+    throw new PendingException();
   }
 }

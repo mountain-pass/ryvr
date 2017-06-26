@@ -14,10 +14,8 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.RestTemplate;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.InvalidJsonException;
@@ -25,31 +23,22 @@ import com.jayway.jsonpath.JsonPath;
 
 import au.com.mountainpass.ryvr.model.Field;
 import au.com.mountainpass.ryvr.model.Record;
-import au.com.mountainpass.ryvr.model.Ryvr;
-import de.otto.edison.hal.traverson.Traverson;
+import au.com.mountainpass.ryvr.model.RyvrSource;
 import net.minidev.json.JSONArray;
 
-public class RestRyvr extends Ryvr {
+public class RestRyvrSource extends RyvrSource {
 
-  private Traverson traverson;
   private URI contextUri;
-  private RestTemplate restTemplate;
-  private CloseableHttpAsyncClient httpAsyncClient;
   private CloseableHttpClient httpClient;
   private HttpEntity body;
   private URI currentUri;
   private CloseableHttpResponse response;
 
-  public RestRyvr(String title, CloseableHttpClient httpClient,
-      CloseableHttpAsyncClient httpAsyncClient, Traverson traverson, URI ryvrUri, HttpEntity body,
-      RestTemplate restTemplate, CloseableHttpResponse response) {
-    super(title);
+  public RestRyvrSource(CloseableHttpClient httpClient, URI ryvrUri, HttpEntity body,
+      CloseableHttpResponse response) {
     this.body = body;
     this.httpClient = httpClient;
-    this.httpAsyncClient = httpAsyncClient;
-    this.traverson = traverson;
     this.contextUri = ryvrUri;
-    this.restTemplate = restTemplate;
     this.response = response;
     this.currentUri = contextUri;
   }
@@ -242,6 +231,7 @@ public class RestRyvr extends Ryvr {
       if (pagePosition == getPageSize()) {
         followNextLink();
         this.pagePosition = 0;
+        ++this.currentPage;
       }
       return rval;
     }

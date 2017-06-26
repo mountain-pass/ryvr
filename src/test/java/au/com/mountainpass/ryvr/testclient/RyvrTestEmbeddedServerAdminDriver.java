@@ -9,7 +9,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import au.com.mountainpass.ryvr.datasource.DataSourceRyvr;
+import au.com.mountainpass.ryvr.datasource.DataSourceRyvrSource;
+import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import cucumber.api.Scenario;
 
@@ -41,10 +42,10 @@ public class RyvrTestEmbeddedServerAdminDriver implements RyvrTestServerAdminDri
 
   @Override
   public void createDataSourceRyvr(final Map<String, String> config) throws Throwable {
-    final DataSourceRyvr ryvr = new DataSourceRyvr(config.get("name"), currentJt,
-        config.get("database"), config.get("table"), config.get("ordered by"),
-        Integer.parseInt(config.get("page size")));
-    ryvrsCollection.addRyvr(ryvr);
+    final DataSourceRyvrSource ryvr = new DataSourceRyvrSource(currentJt, config.get("database"),
+        config.get("table"), config.get("ordered by"), Integer.parseInt(config.get("page size")));
+    ryvrsCollection
+        .addRyvr(new Ryvr(config.get("name"), Integer.parseInt(config.get("page size")), ryvr));
 
   }
 

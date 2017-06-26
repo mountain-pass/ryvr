@@ -8,6 +8,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import au.com.mountainpass.ryvr.controllers.JsonController;
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.Ryvr;
+import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.testclient.model.JavaRootResponse;
 import au.com.mountainpass.ryvr.testclient.model.JavaSwaggerResponse;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
@@ -24,6 +25,9 @@ public class JavaRyvrClient implements RyvrTestClient {
   private HttpServletRequest request = new MockHttpServletRequest();
 
   private SwaggerParser swaggerParser = new SwaggerParser();
+
+  @Autowired
+  private RyvrsCollection ryvrsCollection;
 
   @Override
   public SwaggerResponse getApiDocs() {
@@ -43,7 +47,7 @@ public class JavaRyvrClient implements RyvrTestClient {
 
   @Override
   public Ryvr getRyvr(String name) {
-    return getRyvrsCollection().followRyvrLink(name);
+    return ryvrsCollection.getRyvr(name);
   }
 
   @Override

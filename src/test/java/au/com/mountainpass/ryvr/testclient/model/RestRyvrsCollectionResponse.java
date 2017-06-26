@@ -23,7 +23,7 @@ import org.springframework.web.client.RestTemplate;
 
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
-import au.com.mountainpass.ryvr.rest.RestRyvr;
+import au.com.mountainpass.ryvr.rest.RestRyvrSource;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.traverson.Traverson;
 
@@ -79,8 +79,8 @@ public class RestRyvrsCollectionResponse implements RyvrsCollectionResponse {
         response = httpClient.execute(httpget);
       }
 
-      return new RestRyvr(name, httpClient, httpAsyncClient, traverson, ryvrUri,
-          response.getEntity(), restTemplate, response);
+      return new Ryvr(name, 10,
+          new RestRyvrSource(httpClient, ryvrUri, response.getEntity(), response));
     } catch (URISyntaxException | IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
