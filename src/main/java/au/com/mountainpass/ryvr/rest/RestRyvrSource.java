@@ -33,6 +33,7 @@ public class RestRyvrSource extends RyvrSource {
   private HttpEntity body;
   private URI currentUri;
   private CloseableHttpResponse response;
+  private int pageSize = -1;
 
   public RestRyvrSource(CloseableHttpClient httpClient, URI ryvrUri, HttpEntity body,
       CloseableHttpResponse response) {
@@ -151,8 +152,8 @@ public class RestRyvrSource extends RyvrSource {
     }
 
     public RyvrIterator(long position) {
-      currentPage = position / getPageSize();
-      pagePosition = position % getPageSize();
+      currentPage = position / getUnderlyingPageSize();
+      pagePosition = position % getUnderlyingPageSize();
 
     }
 
@@ -162,7 +163,7 @@ public class RestRyvrSource extends RyvrSource {
         // first call to hasNext, so load the first page and check if we have records;
         followLink("first");
         currentPage = 0;
-        return getPageSize() != 0;
+        return getUnderlyingPageSize() != 0;
       } else if (getNextLink() != null) {
         // if there is a next link, then there are definitely next records
         return true;
@@ -171,13 +172,13 @@ public class RestRyvrSource extends RyvrSource {
         // otherwise we are on the most recent page (AKA the current page)
         // so check if there are rows after the row we are pointing to at
         // the moment.
-        int recordsOnPage = getPageSize();
+        int recordsOnPage = getUnderlyingPageSize();
         if (pagePosition < recordsOnPage - 1) {
           return true;
         } else {
           // otehrwise, relaod and see if we have new events
           followLink("self");
-          recordsOnPage = getPageSize();
+          recordsOnPage = getUnderlyingPageSize();
         }
         return pagePosition < recordsOnPage - 1;
       }
@@ -228,7 +229,7 @@ public class RestRyvrSource extends RyvrSource {
         }
       };
       ++pagePosition;
-      if (pagePosition == getPageSize()) {
+      if (pagePosition == getUnderlyingPageSize()) {
         followNextLink();
         this.pagePosition = 0;
         ++this.currentPage;
@@ -298,10 +299,7 @@ public class RestRyvrSource extends RyvrSource {
     return count;
   }
 
-  private int pageSize = -1;
-
-  @Override
-  public int getPageSize() {
+  public int getUnderlyingPageSize() {
     if (pageSize < 0) {
       pageSize = Integer.parseInt(response.getFirstHeader("Page-Record-Count").getValue());
     }

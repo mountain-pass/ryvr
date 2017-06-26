@@ -73,59 +73,26 @@ public class DataSourceRyvrSource extends RyvrSource {
         + catalogSeparator + identifierQuoteString + table + identifierQuoteString;
   }
 
-  @Override
   public void refresh() {
     refreshPage(-1L);
   }
 
-  public void embeddedToJson(StringBuilder builder) {
-    builder.append("{\"item\":[");
-    for (int i = 0; i < pageSize; ++i) {
-      builder.append("{");
-      for (int j = 0; j < columnNames.length; ++j) {
-        if (j != 0) {
-          builder.append(",");
-        }
-        builder.append("\"");
-        builder.append(columnNames[j]);
-        builder.append("\":");
-        Object value = rowSet.getObject(j + 1);
-        if (value instanceof String) {
-          builder.append("\"");
-          builder.append(value);
-          builder.append("\"");
-        } else {
-          builder.append(value);
-        }
-      }
-      builder.append("}");
-      if (!rowSet.next()) {
-        break;
-      }
-      if (i + 1 < pageSize) {
-        builder.append(",");
-      }
-    }
-    builder.append("]}");
-  }
-
-  @Override
-  public boolean refreshPage(long requestedPage) {
-    if (pages < 0L || requestedPage < 0L || requestedPage >= pages) {
-      count = jt.queryForObject(countQuery, Long.class);
-      pages = ((count - 1L) / pageSize) + 1L;
-    }
-    if (requestedPage > pages) {
-      throw new IndexOutOfBoundsException();
-    }
-
-    page = requestedPage < 0L ? pages : requestedPage;
-
-    return page != pages;
+  public void refreshPage(long requestedPage) {
+    // if (pages < 0L || requestedPage < 0L || requestedPage >= pages) {
+    count = jt.queryForObject(countQuery, Long.class);
+    // pages = ((count - 1L) / pageSize) + 1L;
+    // }
+    // if (requestedPage > pages) {
+    // throw new IndexOutOfBoundsException();
+    // }
+    //
+    // page = requestedPage < 0L ? pages : requestedPage;
+    //
+    // return page != pages;
   }
 
   public void refreshRowSet() {
-    if (rowSet == null || page == pages) {
+    if (rowSet == null) { // || page == pages) {
       jt.setFetchSize(pageSize);
       rowSet = jt.queryForRowSet(rowsQuery);
       columnNames = rowSet.getMetaData().getColumnNames();
@@ -137,19 +104,19 @@ public class DataSourceRyvrSource extends RyvrSource {
     }
   }
 
-  @Override
-  public int getPageSize() {
-    return pageSize;
-  }
+  // @Override
+  // public int getPageSize() {
+  // return pageSize;
+  // }
 
-  @Override
-  public String getEtag() {
-    if (getPage() < 0L || getPage() == pages) {
-      return Long.toHexString(count) + "." + Long.toHexString(pageSize);
-    } else {
-      return Long.toHexString(page) + "." + Long.toHexString(pageSize);
-    }
-  }
+  // @Override
+  // public String getEtag() {
+  // if (getPage() < 0L || getPage() == pages) {
+  // return Long.toHexString(count) + "." + Long.toHexString(pageSize);
+  // } else {
+  // return Long.toHexString(page) + "." + Long.toHexString(pageSize);
+  // }
+  // }
 
   private class RyvrIterator implements Iterator<Record> {
     long position;
@@ -160,7 +127,7 @@ public class DataSourceRyvrSource extends RyvrSource {
         long newCount = jt.queryForObject(countQuery, Long.class);
         if (newCount != count) {
           count = newCount;
-          pages = ((count - 1L) / pageSize) + 1L;
+          // pages = ((count - 1L) / pageSize) + 1L;
           refreshRowSet();
         }
       }
@@ -234,6 +201,7 @@ public class DataSourceRyvrSource extends RyvrSource {
         consumer.accept(next());
       }
     }
+
   }
 
   @Override

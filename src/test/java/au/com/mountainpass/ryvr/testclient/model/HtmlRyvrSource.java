@@ -33,8 +33,8 @@ public class HtmlRyvrSource extends RyvrSource {
     }
 
     public RyvrIterator(long position) {
-      currentPage = position / getPageSize();
-      pagePosition = position % getPageSize();
+      currentPage = position / getUnderlyingPageSize();
+      pagePosition = position % getUnderlyingPageSize();
     }
 
     @Override
@@ -43,7 +43,7 @@ public class HtmlRyvrSource extends RyvrSource {
         // first call to hasNext, so load the first page and check if we have records;
         followLink("first");
         currentPage = 0;
-        return getPageSize() != 0;
+        return getUnderlyingPageSize() != 0;
       } else if (getNextLink() != null) {
         // if there is a next link, then there are definitely next records
         return true;
@@ -52,13 +52,13 @@ public class HtmlRyvrSource extends RyvrSource {
         // otherwise we are on the most recent page (AKA the current page)
         // so check if there are rows after the row we are pointing to at
         // the moment.
-        int recordsOnPage = getPageSize();
+        int recordsOnPage = getUnderlyingPageSize();
         if (pagePosition < recordsOnPage - 1) {
           return true;
         } else {
           // otehrwise, relaod and see if we have new events
           followLink("last");
-          recordsOnPage = getPageSize();
+          recordsOnPage = getUnderlyingPageSize();
         }
         return pagePosition < recordsOnPage - 1;
       }
@@ -125,7 +125,7 @@ public class HtmlRyvrSource extends RyvrSource {
         }
       };
       ++pagePosition;
-      if (pagePosition == getPageSize()) {
+      if (pagePosition == getUnderlyingPageSize()) {
         followNextLink();
         this.pagePosition = 0;
       }
@@ -191,8 +191,7 @@ public class HtmlRyvrSource extends RyvrSource {
     // return (pageNo - 1) * pageSize + currentPageCount;
   }
 
-  @Override
-  public int getPageSize() {
+  public int getUnderlyingPageSize() {
     return webDriver.findElements(By.className("itemRow")).size();
   }
 
