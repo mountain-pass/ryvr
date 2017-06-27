@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import au.com.mountainpass.ryvr.model.Field;
 import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.Ryvr;
 
@@ -53,10 +52,10 @@ public class RyvrSerialiser {
         if (j != 0) {
           writer.write(',');
         }
-        Field field = record.getField(j);
-        Object value = field.getValue();
+        final Object value = record.getField(j).getValue();
         if (value instanceof String) {
           writer.write('"');
+          // todo: JSON encode
           writer.write((String) value);
           writer.write('"');
         } else {

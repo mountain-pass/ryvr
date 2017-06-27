@@ -91,10 +91,11 @@ public class DataSourceRyvrSource extends RyvrSource {
     // return page != pages;
   }
 
-  public void refreshRowSet() {
+  public void refreshRowSet(long position) {
     if (rowSet == null) { // || page == pages) {
       jt.setFetchSize(pageSize);
       rowSet = jt.queryForRowSet(rowsQuery);
+      rowSet.absolute((int) position);
       columnNames = rowSet.getMetaData().getColumnNames();
       columnTypes = new int[columnNames.length];
       for (int i = 0; i < columnNames.length; ++i) {
@@ -128,7 +129,7 @@ public class DataSourceRyvrSource extends RyvrSource {
         if (newCount != count) {
           count = newCount;
           // pages = ((count - 1L) / pageSize) + 1L;
-          refreshRowSet();
+          refreshRowSet(position);
         }
       }
       return position < count;
@@ -146,7 +147,7 @@ public class DataSourceRyvrSource extends RyvrSource {
         @Override
         public int size() {
           if (columnNames == null) {
-            refreshRowSet();
+            refreshRowSet(position);
           }
           return columnNames.length;
         }
@@ -159,7 +160,7 @@ public class DataSourceRyvrSource extends RyvrSource {
 
             @Override
             public Object getValue() {
-              rowSet.absolute((int) position);
+              // rowSet.absolute((int) position);
               return rowSet.getObject(fieldIndex + 1);
             }
 
@@ -180,6 +181,9 @@ public class DataSourceRyvrSource extends RyvrSource {
         @Override
         public void setPosition(long position) {
           this.position = position;
+          if (rowSet != null) {
+            rowSet.absolute((int) position);
+          }
         }
       };
       rval.setPosition(++position);
