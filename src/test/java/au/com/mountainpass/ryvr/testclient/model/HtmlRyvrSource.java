@@ -123,6 +123,7 @@ public class HtmlRyvrSource extends RyvrSource {
         public void setPosition(long pp) {
           pagePosition = (int) pp;
         }
+
       };
       ++pagePosition;
       if (pagePosition == getUnderlyingPageSize()) {
@@ -196,15 +197,15 @@ public class HtmlRyvrSource extends RyvrSource {
   }
 
   @Override
+  public Record get(int index) {
+    return iterator(index).next();
+  }
+
+  @Override
   public String[] getFieldNames() {
     List<String> headings = webDriver.findElements(By.className("itemHeading")).stream()
         .map(element -> element.getText()).collect(Collectors.toList());
     return headings.toArray(new String[] {});
-  }
-
-  @Override
-  public Record get(int index) {
-    return iterator(index).next();
   }
 
 }

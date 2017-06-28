@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 
 import javax.validation.constraints.Min;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -73,35 +74,27 @@ public class DataSourceRyvrSource extends RyvrSource {
         + catalogSeparator + identifierQuoteString + table + identifierQuoteString;
   }
 
-  public void refresh() {
-    refreshPage(-1L);
+  public void refreshCount() {
+    count = jt.queryForObject(countQuery, Long.class);
   }
 
-  public void refreshPage(long requestedPage) {
-    // if (pages < 0L || requestedPage < 0L || requestedPage >= pages) {
-    count = jt.queryForObject(countQuery, Long.class);
-    // pages = ((count - 1L) / pageSize) + 1L;
-    // }
-    // if (requestedPage > pages) {
-    // throw new IndexOutOfBoundsException();
-    // }
-    //
-    // page = requestedPage < 0L ? pages : requestedPage;
-    //
-    // return page != pages;
+  public SqlRowSet getRowSet() {
+    if (rowSet == null) {
+      jt.setFetchSize(pageSize);
+      rowSet = jt.queryForRowSet(rowsQuery);
+      columnNames = null;
+    }
+    return rowSet;
   }
 
   public void refreshRowSet(long position) {
-    if (rowSet == null) { // || page == pages) {
-      jt.setFetchSize(pageSize);
-      rowSet = jt.queryForRowSet(rowsQuery);
+    rowSet = jt.queryForRowSet(rowsQuery);
+    // columnTypes = new int[columnNames.length];
+    // for (int i = 0; i < columnNames.length; ++i) {
+    // columnTypes[i] = rowSet.getMetaData().getColumnType(i + 1);
+    // }
+    if (position != 0) {
       rowSet.absolute((int) position);
-      columnNames = rowSet.getMetaData().getColumnNames();
-      columnTypes = new int[columnNames.length];
-      for (int i = 0; i < columnNames.length; ++i) {
-        columnTypes[i] = rowSet.getMetaData().getColumnType(i + 1);
-      }
-
     }
   }
 
@@ -120,36 +113,29 @@ public class DataSourceRyvrSource extends RyvrSource {
   // }
 
   private class RyvrIterator implements Iterator<Record> {
-    long position;
 
     @Override
     public boolean hasNext() {
-      if (position == count - 1 || count < 0) {
+      if (getRowSet().getRow() == count || count < 0) {
         long newCount = jt.queryForObject(countQuery, Long.class);
         if (newCount != count) {
           count = newCount;
-          // pages = ((count - 1L) / pageSize) + 1L;
-          refreshRowSet(position);
+          refreshRowSet(getRowSet().getRow());
         }
       }
-      return position < count;
+      return getRowSet().getRow() < count;
     }
 
     @Override
     public Record next() {
       if (!hasNext()) {
-        throw new NoSuchElementException();
+        throw new NoSuchElementException("Current Row: " + getRowSet().getRow());
       }
       final Record rval = new Record() {
 
-        private long position;
-
         @Override
         public int size() {
-          if (columnNames == null) {
-            refreshRowSet(position);
-          }
-          return columnNames.length;
+          return getFieldNames().length;
         }
 
         @Override
@@ -179,14 +165,12 @@ public class DataSourceRyvrSource extends RyvrSource {
         }
 
         @Override
-        public void setPosition(long position) {
-          this.position = position;
-          if (rowSet != null) {
-            rowSet.absolute((int) position);
-          }
+        public void setPosition(long l) {
+          throw new NotImplementedException("TODO");
         }
+
       };
-      rval.setPosition(++position);
+      getRowSet().next();
       return rval;
     }
 
@@ -211,33 +195,41 @@ public class DataSourceRyvrSource extends RyvrSource {
   @Override
   public Iterator<Record> iterator() {
     final RyvrIterator ryvrIterator = new RyvrIterator();
-    ryvrIterator.position = 0;
+    getRowSet().beforeFirst();
     return ryvrIterator;
   }
 
   @Override
   public Iterator<Record> iterator(long position) {
     final RyvrIterator ryvrIterator = new RyvrIterator();
-    ryvrIterator.position = position;
+    if (position == 0) {
+      getRowSet().beforeFirst();
+    } else {
+      getRowSet().absolute((int) position);
+    }
     return ryvrIterator;
   }
 
   @Override
   public long longSize() {
     if (count == -1L) {
-      refresh();
+      refreshCount();
     }
     return count;
   }
 
   @Override
-  public String[] getFieldNames() {
-    return columnNames;
+  public Record get(int index) {
+    return iterator(index + 1).next();
   }
 
   @Override
-  public Record get(int index) {
-    return iterator(index).next();
+  public String[] getFieldNames() {
+    if (columnNames == null) {
+      columnNames = getRowSet().getMetaData().getColumnNames();
+    }
+    return columnNames;
+
   }
 
 }

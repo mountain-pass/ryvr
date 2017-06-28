@@ -227,6 +227,7 @@ public class RestRyvrSource extends RyvrSource {
         public void setPosition(long pp) {
           pagePosition = (int) pp;
         }
+
       };
       ++pagePosition;
       if (pagePosition == getUnderlyingPageSize()) {
@@ -289,9 +290,15 @@ public class RestRyvrSource extends RyvrSource {
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
-      } else if (!currentUri.getPath().equals(getLink("current"))
-          && !currentUri.getPath().equals(getLink("last"))) {
-        followLink("current");
+      } else {
+        String currentFile = currentUri.getPath();
+        String currentQuery = currentUri.getQuery();
+        if (currentQuery != null) {
+          currentFile += '?' + currentQuery;
+        }
+        if (!currentFile.equals(getLink("current")) && !currentFile.equals(getLink("last"))) {
+          followLink("current");
+        }
       }
       Integer intCount = JsonPath.read(getBodyDocument(), "$.count");
       count = intCount;
@@ -314,14 +321,14 @@ public class RestRyvrSource extends RyvrSource {
   }
 
   @Override
-  public String[] getFieldNames() {
-    JSONArray array = JsonPath.read(getBodyDocument(), "$.columns");
-    return array.toArray(new String[] {});
+  public Record get(int index) {
+    return iterator(index).next();
   }
 
   @Override
-  public Record get(int index) {
-    return iterator(index).next();
+  public String[] getFieldNames() {
+    JSONArray array = JsonPath.read(getBodyDocument(), "$.columns");
+    return array.toArray(new String[] {});
   }
 
 }

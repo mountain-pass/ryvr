@@ -36,10 +36,6 @@ public class RyvrSerialiser {
     writer.write(Long.toString(page));
     writer.write(",\"pageSize\":", 0, 12);
     writer.write(Integer.toString(ryvr.getPageSize()));
-    if (page == ryvr.getPages()) {
-      writer.write(",\"count\":", 0, 9);
-      writer.write(Long.toString(ryvr.getCount()));
-    }
     writer.write(",\"rows\":[", 0, 9);
 
     for (int i = 0, pageSize = ryvr.getCurrentPageSize(page); i < pageSize; ++i) {
@@ -66,15 +62,21 @@ public class RyvrSerialiser {
     }
     writer.write("],\"columns\":[", 0, 13);
     String[] fieldNames = ryvr.getFieldNames();
-    for (int i = 0, size = fieldNames.length; i < size; ++i) {
-      if (i != 0) {
-        writer.write(',');
+    if (fieldNames != null) {
+      for (int i = 0, size = fieldNames.length; i < size; ++i) {
+        if (i != 0) {
+          writer.write(',');
+        }
+        writer.write('"');
+        writer.write(fieldNames[i]);
+        writer.write('"');
       }
-      writer.write('"');
-      writer.write(fieldNames[i]);
-      writer.write('"');
     }
     writer.write(']');
+    if (page == ryvr.getPages()) {
+      writer.write(",\"count\":", 0, 9);
+      writer.write(Long.toString(ryvr.getCount()));
+    }
     writer.write('}');
     writer.flush();
 

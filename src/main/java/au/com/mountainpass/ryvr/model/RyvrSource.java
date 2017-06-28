@@ -8,9 +8,6 @@ public abstract class RyvrSource extends AbstractList<Record> {
   public RyvrSource() {
   }
 
-  @Override
-  public abstract Iterator<Record> iterator();
-
   public abstract Iterator<Record> iterator(long position);
 
   public abstract long longSize();
