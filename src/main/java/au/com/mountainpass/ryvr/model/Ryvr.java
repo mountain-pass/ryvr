@@ -24,7 +24,7 @@ public class Ryvr implements Iterable<Record> {
   }
 
   public Iterator<Record> iterator(long position) {
-    return source.listIterator(position);
+    return source.listIterator((int) position);
   }
 
   public int getPageSize() {

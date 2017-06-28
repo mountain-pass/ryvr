@@ -3,10 +3,12 @@ package au.com.mountainpass.ryvr.testclient.model;
 import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -24,7 +26,7 @@ public class HtmlRyvrSource extends RyvrSource {
     this.webDriver = webDriver;
   }
 
-  private class RyvrIterator implements Iterator<Record> {
+  private class RyvrIterator implements ListIterator<Record> {
     long pagePosition = -1;
     long currentPage = -1;
 
@@ -148,6 +150,36 @@ public class HtmlRyvrSource extends RyvrSource {
       }
     }
 
+    @Override
+    public boolean hasPrevious() {
+      throw new NotImplementedException("TODO");
+    }
+
+    @Override
+    public Record previous() {
+      throw new NotImplementedException("TODO");
+    }
+
+    @Override
+    public int nextIndex() {
+      throw new NotImplementedException("TODO");
+    }
+
+    @Override
+    public int previousIndex() {
+      throw new NotImplementedException("TODO");
+    }
+
+    @Override
+    public void set(Record e) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void add(Record e) {
+      throw new UnsupportedOperationException();
+    }
+
   }
 
   @Override
@@ -156,7 +188,7 @@ public class HtmlRyvrSource extends RyvrSource {
   }
 
   @Override
-  public Iterator<Record> iterator(long position) {
+  public ListIterator<Record> listIterator(int position) {
     return new RyvrIterator(position);
   }
 
@@ -198,7 +230,7 @@ public class HtmlRyvrSource extends RyvrSource {
 
   @Override
   public Record get(int index) {
-    return iterator(index).next();
+    return listIterator(index).next();
   }
 
   @Override
