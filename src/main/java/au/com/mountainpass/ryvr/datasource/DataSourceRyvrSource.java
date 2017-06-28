@@ -3,11 +3,10 @@ package au.com.mountainpass.ryvr.datasource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
-
-import javax.validation.constraints.Min;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
@@ -15,25 +14,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import au.com.mountainpass.ryvr.model.Field;
 import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.RyvrSource;
 
 public class DataSourceRyvrSource extends RyvrSource {
-  @JsonIgnore
   public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-  @Min(1)
-  private int pageSize = 10; // as of 2017/05/02, optimal page size is
-  // 2048 when using h2
-  @JsonIgnore
   private JdbcTemplate jt;
-  @JsonIgnore
   private SqlRowSet rowSet;
   private String[] columnNames;
-  private String countQuery;
   private String rowsQuery;
   private String table;
   private String orderedBy;
@@ -48,12 +38,9 @@ public class DataSourceRyvrSource extends RyvrSource {
     this.jt = jt;
     Connection connection = this.jt.getDataSource().getConnection();
     connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
-    this.pageSize = pageSize;
     String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
     String catalogSeparator = connection.getMetaData().getCatalogSeparator();
 
-    // TODO: combine count query and row query
-    countQuery = generateCountQuery(catalog, table, identifierQuoteString, catalogSeparator);
     rowsQuery = generateRowQuery(catalog, table, orderedBy, identifierQuoteString,
         catalogSeparator);
     connection.close();
@@ -61,34 +48,38 @@ public class DataSourceRyvrSource extends RyvrSource {
 
   public String generateRowQuery(String database, String table, String orderedBy,
       String identifierQuoteString, String catalogSeparator) {
-    return "select * from " + identifierQuoteString + database + identifierQuoteString
-        + catalogSeparator + identifierQuoteString + table + identifierQuoteString + " ORDER BY "
-        + identifierQuoteString + database + identifierQuoteString + catalogSeparator
-        + identifierQuoteString + table + identifierQuoteString + "." + identifierQuoteString
-        + orderedBy + identifierQuoteString + " ASC";
-  }
-
-  public String generateCountQuery(String database, String table, String identifierQuoteString,
-      String catalogSeparator) {
-    return "select count(*) from " + identifierQuoteString + database + identifierQuoteString
-        + catalogSeparator + identifierQuoteString + table + identifierQuoteString;
+    return "select *, (select count(*) from " + identifierQuoteString + database
+        + identifierQuoteString + catalogSeparator + identifierQuoteString + table
+        + identifierQuoteString + ") from " + identifierQuoteString + database
+        + identifierQuoteString + catalogSeparator + identifierQuoteString + table
+        + identifierQuoteString + " ORDER BY " + identifierQuoteString + database
+        + identifierQuoteString + catalogSeparator + identifierQuoteString + table
+        + identifierQuoteString + "." + identifierQuoteString + orderedBy + identifierQuoteString
+        + " ASC";
   }
 
   public void refreshCount() {
-    count = jt.queryForObject(countQuery, Long.class);
+    int currentRow = getRowSet().getRow();
+    refreshRowSet(currentRow);
+    if (rowSet.isBeforeFirst()) {
+      rowSet.first();
+    }
+    count = rowSet.getLong(columnNames.length + 1);
   }
 
   public SqlRowSet getRowSet() {
     if (rowSet == null) {
-      jt.setFetchSize(pageSize);
       rowSet = jt.queryForRowSet(rowsQuery);
-      columnNames = null;
+      columnNames = getRowSet().getMetaData().getColumnNames();
+      columnNames = Arrays.copyOfRange(columnNames, 0, columnNames.length - 1);
     }
     return rowSet;
   }
 
   public void refreshRowSet(long position) {
     rowSet = jt.queryForRowSet(rowsQuery);
+    columnNames = getRowSet().getMetaData().getColumnNames();
+    columnNames = Arrays.copyOfRange(columnNames, 0, columnNames.length - 1);
     // columnTypes = new int[columnNames.length];
     // for (int i = 0; i < columnNames.length; ++i) {
     // columnTypes[i] = rowSet.getMetaData().getColumnType(i + 1);
@@ -117,11 +108,7 @@ public class DataSourceRyvrSource extends RyvrSource {
     @Override
     public boolean hasNext() {
       if (getRowSet().getRow() == count || count < 0) {
-        long newCount = jt.queryForObject(countQuery, Long.class);
-        if (newCount != count) {
-          count = newCount;
-          refreshRowSet(getRowSet().getRow());
-        }
+        refreshCount();
       }
       return getRowSet().getRow() < count;
     }
@@ -135,6 +122,7 @@ public class DataSourceRyvrSource extends RyvrSource {
 
         @Override
         public int size() {
+          // subtract 1 because each record also contains the count
           return getFieldNames().length;
         }
 

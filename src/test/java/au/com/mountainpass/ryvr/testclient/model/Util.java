@@ -8,6 +8,12 @@ import java.math.BigDecimal;
 public class Util {
 
   public static void assertEqual(Object actualValue, String expectedValue) throws Throwable {
+    if (actualValue == null) {
+      assertThat(expectedValue, nullValue());
+    }
+    if (expectedValue == null) {
+      assertThat(actualValue, nullValue());
+    }
     if (actualValue instanceof BigDecimal) {
       assertThat((BigDecimal) actualValue, closeTo(new BigDecimal(expectedValue), BigDecimal.ZERO));
     } else if (actualValue instanceof String) {

@@ -161,6 +161,7 @@ public class StepDefs {
         Object actualValue = actualField.getValue();
         String expectedValue = expectedRecord.get(actualField.getName());
         Util.assertEqual(actualValue, expectedValue);
+
       }
     } while (actualIterator.hasNext() && expectedIterator.hasNext());
     assertThat(actualIterator.hasNext(), equalTo(expectedIterator.hasNext()));
