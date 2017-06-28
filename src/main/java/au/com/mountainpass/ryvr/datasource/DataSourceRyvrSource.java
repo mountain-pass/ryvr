@@ -3,7 +3,6 @@ package au.com.mountainpass.ryvr.datasource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
@@ -48,10 +47,9 @@ public class DataSourceRyvrSource extends RyvrSource {
 
   public String generateRowQuery(String database, String table, String orderedBy,
       String identifierQuoteString, String catalogSeparator) {
-    return "select *, (select count(*) from " + identifierQuoteString + database
-        + identifierQuoteString + catalogSeparator + identifierQuoteString + table
-        + identifierQuoteString + ") from " + identifierQuoteString + database
-        + identifierQuoteString + catalogSeparator + identifierQuoteString + table
+    return "select " + identifierQuoteString + database + identifierQuoteString + catalogSeparator
+        + identifierQuoteString + table + identifierQuoteString + ".* from " + identifierQuoteString
+        + database + identifierQuoteString + catalogSeparator + identifierQuoteString + table
         + identifierQuoteString + " ORDER BY " + identifierQuoteString + database
         + identifierQuoteString + catalogSeparator + identifierQuoteString + table
         + identifierQuoteString + "." + identifierQuoteString + orderedBy + identifierQuoteString
@@ -59,34 +57,37 @@ public class DataSourceRyvrSource extends RyvrSource {
   }
 
   public void refreshCount() {
-    int currentRow = getRowSet().getRow();
-    refreshRowSet(currentRow);
-    if (rowSet.isBeforeFirst()) {
-      rowSet.first();
+    int currentRow = 0;
+    if (rowSet != null) {
+      currentRow = rowSet.getRow();
     }
-    count = rowSet.getLong(columnNames.length + 1);
+    refreshRowSet();
+    rowSet.last();
+    count = rowSet.getRow();
+    if (currentRow == 0) {
+      rowSet.beforeFirst();
+    } else {
+      rowSet.absolute(currentRow);
+    }
   }
 
   public SqlRowSet getRowSet() {
     if (rowSet == null) {
       rowSet = jt.queryForRowSet(rowsQuery);
-      columnNames = getRowSet().getMetaData().getColumnNames();
-      columnNames = Arrays.copyOfRange(columnNames, 0, columnNames.length - 1);
     }
     return rowSet;
   }
 
   public void refreshRowSet(long position) {
-    rowSet = jt.queryForRowSet(rowsQuery);
-    columnNames = getRowSet().getMetaData().getColumnNames();
-    columnNames = Arrays.copyOfRange(columnNames, 0, columnNames.length - 1);
-    // columnTypes = new int[columnNames.length];
-    // for (int i = 0; i < columnNames.length; ++i) {
-    // columnTypes[i] = rowSet.getMetaData().getColumnType(i + 1);
-    // }
+    refreshRowSet();
     if (position != 0) {
       rowSet.absolute((int) position);
     }
+  }
+
+  private void refreshRowSet() {
+    rowSet = null;
+    getRowSet();
   }
 
   // @Override
@@ -107,10 +108,11 @@ public class DataSourceRyvrSource extends RyvrSource {
 
     @Override
     public boolean hasNext() {
-      if (getRowSet().getRow() == count || count < 0) {
+      int row = getRowSet().getRow();
+      if (row == count || count < 0) {
         refreshCount();
       }
-      return getRowSet().getRow() < count;
+      return row < count;
     }
 
     @Override
@@ -122,7 +124,6 @@ public class DataSourceRyvrSource extends RyvrSource {
 
         @Override
         public int size() {
-          // subtract 1 because each record also contains the count
           return getFieldNames().length;
         }
 
@@ -134,7 +135,7 @@ public class DataSourceRyvrSource extends RyvrSource {
 
             @Override
             public Object getValue() {
-              // rowSet.absolute((int) position);
+              // plus one because the first column is column 1, not 0.
               return rowSet.getObject(fieldIndex + 1);
             }
 

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,7 +23,6 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.io.RyvrSerialiser;
-import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
@@ -92,9 +90,7 @@ public class JsonController {
     if (ryvr == null) {
       return ResponseEntity.notFound().build();
     }
-    Iterator<Record> iterator = ryvr.iterator((page - 1) * ryvr.getPageSize());
-
-    boolean cachable = false;
+    boolean cachable = ryvr.isArchivePage(page);
 
     BodyBuilder responseBuilder = ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE);
     if (cachable) {
@@ -102,7 +98,7 @@ public class JsonController {
     } else {
       responseBuilder.cacheControl(CacheControl.maxAge(currentPageMaxAge, currentPageMaxAgeUnit));
     }
-    // responseBuilder.eTag(ryvr.getEtag());
+    responseBuilder.eTag(ryvr.getEtag(page));
 
     addLinks(ryvr, page, responseBuilder);
     responseBuilder.header("Page-Record-Count", Integer.toString(ryvr.getCurrentPageSize(page)));

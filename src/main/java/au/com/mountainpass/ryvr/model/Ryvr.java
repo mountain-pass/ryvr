@@ -53,4 +53,24 @@ public class Ryvr implements Iterable<Record> {
     return source.getFieldNames();
   }
 
+  public RyvrSource getSource() {
+    return source;
+  }
+
+  public String getEtag(long page) {
+    long count = source.longSize();
+    long pages = (count / this.pageSize) + 1;
+    if (page == pages) {
+      return Long.toHexString(count) + "." + Long.toHexString(pageSize);
+    } else {
+      return Long.toHexString(page) + "." + Long.toHexString(pageSize);
+    }
+  }
+
+  public boolean isArchivePage(long page) {
+    long count = source.longSize();
+    long pages = (count / this.pageSize) + 1;
+    return page != pages;
+  }
+
 }

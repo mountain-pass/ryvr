@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -278,21 +277,8 @@ public class StepDefs {
     System.gc();
     long before = System.nanoTime();
 
-    // URI page = null;
-    Iterator<Record> i = ryvr.iterator();
-    // if (ryvr instanceof RestRyvr) {
-    // RestRyvr restRyvr = (RestRyvr) ryvr;
-    // page = restRyvr.getCurrentUri();
-    // }
-    while (true) {
-      try {
-        // Summary.Timer requestTimer = httpThroughputCounter.startTimer();
-        i.next();
-        // double duration = requestTimer.observeDuration();
-      } catch (NoSuchElementException e) {
-        break;
-      }
-    }
+    ryvr.getSource().forEach(e -> {
+    });
 
     long after = System.nanoTime();
     double localLatency = (after - before) / 1000.0;
