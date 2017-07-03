@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.InvalidResultSetAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
@@ -18,7 +19,7 @@ public class DataSourceRyvrSource extends RyvrSource {
   public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
   private JdbcTemplate jt;
-  private SqlRowSet rowSet;
+  private ThreadLocal<SqlRowSet> rowSet = new ThreadLocal<>();
   private String[] columnNames;
   private String rowsQuery;
   private String table;
@@ -55,36 +56,39 @@ public class DataSourceRyvrSource extends RyvrSource {
 
   public void refreshCount() {
     int currentRow = 0;
-    if (rowSet != null) {
-      currentRow = rowSet.getRow();
+    SqlRowSet localRowSet = rowSet.get();
+    if (localRowSet != null) {
+      currentRow = localRowSet.getRow();
     }
-    refreshRowSet();
-    rowSet.last();
-    count = rowSet.getRow();
+    localRowSet = refreshRowSet();
+    localRowSet.last();
+    count = localRowSet.getRow();
     if (currentRow == 0) {
-      rowSet.beforeFirst();
+      localRowSet.beforeFirst();
     } else {
-      rowSet.absolute(currentRow);
+      localRowSet.absolute(currentRow);
     }
   }
 
   public SqlRowSet getRowSet() {
-    if (rowSet == null) {
-      rowSet = jt.queryForRowSet(rowsQuery);
+    SqlRowSet localRowSet = rowSet.get();
+    if (localRowSet == null) {
+      localRowSet = jt.queryForRowSet(rowsQuery);
+      rowSet.set(localRowSet);
     }
-    return rowSet;
+    return localRowSet;
   }
 
   public void refreshRowSet(long position) {
-    refreshRowSet();
+    SqlRowSet localRowSet = refreshRowSet();
     if (position != 0) {
-      rowSet.absolute((int) position);
+      localRowSet.absolute((int) position);
     }
   }
 
-  private void refreshRowSet() {
-    rowSet = null;
-    getRowSet();
+  private SqlRowSet refreshRowSet() {
+    rowSet.set(null);
+    return getRowSet();
   }
 
   @Override
@@ -102,7 +106,7 @@ public class DataSourceRyvrSource extends RyvrSource {
     @Override
     public Object getValue() {
       // plus one because the first column is column 1, not 0.
-      return rowSet.getObject(fieldIndex + 1);
+      return getRowSet().getObject(fieldIndex + 1);
     }
 
     @Override
@@ -138,9 +142,15 @@ public class DataSourceRyvrSource extends RyvrSource {
 
   @Override
   public Record get(int index) {
-    getRowSet().absolute(index + 1);
-
-    return record;
+    while (true) {
+      try {
+        getRowSet().absolute(index + 1);
+        return record;
+      } catch (InvalidResultSetAccessException e) {
+        LOGGER.error("Error getting record", e);
+        refreshRowSet();
+      }
+    }
   }
 
   @Override

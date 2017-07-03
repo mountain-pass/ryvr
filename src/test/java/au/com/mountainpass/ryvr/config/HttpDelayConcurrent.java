@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 public class HttpDelayConcurrent implements HttpResponseInterceptor, HttpRequestInterceptor {
 
   private static final String URI_KEY = "URI";
-  ConcurrentHashMap<String, LongAdder> pending = new ConcurrentHashMap<>();
+  private ConcurrentHashMap<String, LongAdder> pending = new ConcurrentHashMap<>();
 
   @Override
   public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {

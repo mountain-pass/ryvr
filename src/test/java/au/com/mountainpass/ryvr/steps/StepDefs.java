@@ -283,18 +283,19 @@ public class StepDefs {
     long after = System.nanoTime();
     double localLatencyµs = (after - before) / 1000.0;
     LOGGER.info("total latency: {}µs", localLatencyµs);
-
-    double byteCount = httpThroughputCounter.getBytes();
-    double latencySeconds = httpThroughputCounter.getTotalLatency();
-    LOGGER.info("bytes: {}MB", byteCount / 1024.0 / 1024.0);
-    LOGGER.info("throughput (local): {}MB/s",
-        byteCount / 1024.0 / 1024.0 / localLatencyµs * 1000000);
-    LOGGER.info("throughput: {}MB/s", byteCount / 1024.0 / 1024.0 / latencySeconds);
-    LOGGER.info("total latency(prom): {}µs", latencySeconds * 1000000.0);
     LOGGER.info("MTPS(local): {}", count / localLatencyµs);
-    LOGGER.info("MTPS(prom): {}", count / latencySeconds / 1000000);
 
-    httpThroughputCounter.logLatencies();
+    if (httpThroughputCounter != null) {
+      double byteCount = httpThroughputCounter.getBytes();
+      double latencySeconds = httpThroughputCounter.getTotalLatency();
+      LOGGER.info("bytes: {}MB", byteCount / 1024.0 / 1024.0);
+      LOGGER.info("throughput (local): {}MB/s",
+          byteCount / 1024.0 / 1024.0 / localLatencyµs * 1000000);
+      LOGGER.info("throughput: {}MB/s", byteCount / 1024.0 / 1024.0 / latencySeconds);
+      LOGGER.info("total latency(prom): {}µs", latencySeconds * 1000000.0);
+      LOGGER.info("MTPS(prom): {}", count / latencySeconds / 1000000);
+      httpThroughputCounter.logLatencies();
+    }
 
   }
 
@@ -318,27 +319,31 @@ public class StepDefs {
     LOGGER.info("total latency min: {}s", executionTimes.getMin());
     LOGGER.info("total latency ave: {}s", executionTimes.getAverage());
     LOGGER.info("total latency max: {}s", executionTimes.getMax());
-
-    double byteCount = httpThroughputCounter.getBytes();
-    double latencySeconds = httpThroughputCounter.getTotalLatency();
-
-    LOGGER.info("total latency(prom): {}s", latencySeconds / consumers);
-
-    double megaBytes = byteCount / 1024.0 / 1024.0;
-    LOGGER.info("bytes total: {}MB", megaBytes);
-    LOGGER.info("bytes/consumer : {}MB", megaBytes / consumers);
-    LOGGER.info("throughput (local min): {}MB/s", megaBytes / executionTimes.getMin() / consumers);
-    LOGGER.info("throughput (local ave): {}MB/s",
-        megaBytes / executionTimes.getAverage() / consumers);
-    LOGGER.info("throughput (local max): {}MB/s", megaBytes / executionTimes.getMax() / consumers);
-    LOGGER.info("throughput (prom): {}MB/s", megaBytes / latencySeconds);
     LOGGER.info("MTPS(local  min): {}", 100000.0 / executionTimes.getMin() / 1000000.0);
     LOGGER.info("MTPS(local  ave): {}", 100000.0 / executionTimes.getAverage() / 1000000.0);
     LOGGER.info("MTPS(local  max): {}", 100000.0 / executionTimes.getMax() / 1000000.0);
-    LOGGER.info("MTPS(prom): {}", 100000.0 * consumers / latencySeconds / 1000000.0);
 
-    httpThroughputCounter.logLatencies();
+    if (httpThroughputCounter != null) {
 
+      double byteCount = httpThroughputCounter.getBytes();
+      double latencySeconds = httpThroughputCounter.getTotalLatency();
+
+      LOGGER.info("total latency(prom): {}s", latencySeconds / consumers);
+
+      double megaBytes = byteCount / 1024.0 / 1024.0;
+      LOGGER.info("bytes total: {}MB", megaBytes);
+      LOGGER.info("bytes/consumer : {}MB", megaBytes / consumers);
+      LOGGER.info("throughput (local min): {}MB/s",
+          megaBytes / executionTimes.getMin() / consumers);
+      LOGGER.info("throughput (local ave): {}MB/s",
+          megaBytes / executionTimes.getAverage() / consumers);
+      LOGGER.info("throughput (local max): {}MB/s",
+          megaBytes / executionTimes.getMax() / consumers);
+      LOGGER.info("throughput (prom): {}MB/s", megaBytes / latencySeconds);
+      LOGGER.info("MTPS(prom): {}", 100000.0 * consumers / latencySeconds / 1000000.0);
+
+      httpThroughputCounter.logLatencies();
+    }
   }
 
   @When("^all the events are retrieved again$")
