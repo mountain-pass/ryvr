@@ -144,7 +144,12 @@ public class DataSourceRyvrSource extends RyvrSource {
   public Record get(int index) {
     while (true) {
       try {
-        getRowSet().absolute(index + 1);
+        int position = index + 1;
+        if (position == size()) {
+          refreshRowSet(position);
+        } else {
+          getRowSet().absolute(index + 1);
+        }
         return record;
       } catch (InvalidResultSetAccessException e) {
         LOGGER.error("Error getting record", e);
