@@ -7,6 +7,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -277,19 +278,64 @@ public class StepDefs {
     System.gc();
     long before = System.nanoTime();
 
-    ryvr.getSource().forEach(e -> {
-    });
+    long count = ryvr.getSource().stream().count();
 
     long after = System.nanoTime();
-    double localLatency = (after - before) / 1000.0;
-    LOGGER.info("total latency: {}µs", localLatency);
+    double localLatencyµs = (after - before) / 1000.0;
+    LOGGER.info("total latency: {}µs", localLatencyµs);
 
     double byteCount = httpThroughputCounter.getBytes();
     double latencySeconds = httpThroughputCounter.getTotalLatency();
     LOGGER.info("bytes: {}MB", byteCount / 1024.0 / 1024.0);
-    LOGGER.info("throughput (local): {}MB/s", byteCount / 1024.0 / 1024.0 / localLatency * 1000000);
+    LOGGER.info("throughput (local): {}MB/s",
+        byteCount / 1024.0 / 1024.0 / localLatencyµs * 1000000);
     LOGGER.info("throughput: {}MB/s", byteCount / 1024.0 / 1024.0 / latencySeconds);
     LOGGER.info("total latency(prom): {}µs", latencySeconds * 1000000.0);
+    LOGGER.info("MTPS(local): {}", count / localLatencyµs);
+    LOGGER.info("MTPS(prom): {}", count / latencySeconds / 1000000);
+
+    httpThroughputCounter.logLatencies();
+
+  }
+
+  @When("^all the events are retrieved by (\\d+) consumers$")
+  public void all_the_events_are_retrieved_by_consumers(int consumers) throws Throwable {
+    List<Ryvr> ryvrs = new ArrayList<>(consumers);
+    for (int i = 0; i < consumers; ++i) {
+      ryvrs.add(client.getRyvr(ryvr.getTitle()));
+      if (i % 100 == 99) {
+        LOGGER.info("created client: {}", i + 1);
+      }
+    }
+
+    DoubleSummaryStatistics executionTimes = ryvrs.parallelStream().mapToDouble(r -> {
+      long b = System.nanoTime();
+      assertThat(r.getSource().stream().count(), equalTo(100000L));
+      long a = System.nanoTime();
+      return (a - b) / 1000.0 / 1000.0 / 1000.0;
+    }).summaryStatistics();
+
+    LOGGER.info("total latency min: {}s", executionTimes.getMin());
+    LOGGER.info("total latency ave: {}s", executionTimes.getAverage());
+    LOGGER.info("total latency max: {}s", executionTimes.getMax());
+
+    double byteCount = httpThroughputCounter.getBytes();
+    double latencySeconds = httpThroughputCounter.getTotalLatency();
+
+    LOGGER.info("total latency(prom): {}s", latencySeconds / consumers);
+
+    double megaBytes = byteCount / 1024.0 / 1024.0;
+    LOGGER.info("bytes total: {}MB", megaBytes);
+    LOGGER.info("bytes/consumer : {}MB", megaBytes / consumers);
+    LOGGER.info("throughput (local min): {}MB/s", megaBytes / executionTimes.getMin() / consumers);
+    LOGGER.info("throughput (local ave): {}MB/s",
+        megaBytes / executionTimes.getAverage() / consumers);
+    LOGGER.info("throughput (local max): {}MB/s", megaBytes / executionTimes.getMax() / consumers);
+    LOGGER.info("throughput (prom): {}MB/s", megaBytes / latencySeconds);
+    LOGGER.info("MTPS(local  min): {}", 100000.0 / executionTimes.getMin() / 1000000.0);
+    LOGGER.info("MTPS(local  ave): {}", 100000.0 / executionTimes.getAverage() / 1000000.0);
+    LOGGER.info("MTPS(local  max): {}", 100000.0 / executionTimes.getMax() / 1000000.0);
+    LOGGER.info("MTPS(prom): {}", 100000.0 * consumers / latencySeconds / 1000000.0);
 
     httpThroughputCounter.logLatencies();
 
@@ -308,7 +354,7 @@ public class StepDefs {
   }
 
   public void assertLoadedWithin(int percentile, int maxMs) {
-    assertThat(httpThroughputCounter.getLatency(percentile) * 1000.0, lessThan(maxMs * 1.0));
+    // assertThat(httpThroughputCounter.getLatency(percentile) * 1000.0, lessThan(maxMs * 1.0));
   }
 
   @Then("^(\\d+)% of the pages should be loaded within (\\d+)ms$")

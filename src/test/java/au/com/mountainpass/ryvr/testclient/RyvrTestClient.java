@@ -1,5 +1,6 @@
 package au.com.mountainpass.ryvr.testclient;
 
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 
@@ -12,13 +13,13 @@ import cucumber.api.Scenario;
 public interface RyvrTestClient {
 
   public SwaggerResponse getApiDocs()
-      throws InterruptedException, ExecutionException, URISyntaxException;
+      throws InterruptedException, ExecutionException, URISyntaxException, MalformedURLException;
 
-  public RootResponse getRoot();
+  public RootResponse getRoot() throws MalformedURLException;
 
-  public RyvrsCollectionResponse getRyvrsCollection();
+  public RyvrsCollectionResponse getRyvrsCollection() throws MalformedURLException;
 
-  public Ryvr getRyvr(String name);
+  public Ryvr getRyvr(String name) throws MalformedURLException;
 
   public void after(Scenario scenario);
 

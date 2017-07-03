@@ -15,22 +15,19 @@ import org.springframework.web.client.RestTemplate;
 
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
-import de.otto.edison.hal.traverson.Traverson;
 
 public class RestRootResponse implements RootResponse {
 
   private Root root;
-  private Traverson traverson;
   private URL contextUrl;
   private RestTemplate restTemplate;
   private CloseableHttpAsyncClient httpAsyncClient;
   private CloseableHttpClient httpClient;
 
   public RestRootResponse(CloseableHttpClient httpClient, CloseableHttpAsyncClient httpAsyncClient,
-      Traverson traverson, URL contextUrl, Root root, RestTemplate restTemplate) {
+      URL contextUrl, Root root, RestTemplate restTemplate) {
     this.httpClient = httpClient;
     this.httpAsyncClient = httpAsyncClient;
-    this.traverson = traverson;
     this.contextUrl = contextUrl;
     this.root = root;
     this.restTemplate = restTemplate;
@@ -59,13 +56,20 @@ public class RestRootResponse implements RootResponse {
       URI ryvrsUri = contextUrl.toURI().resolve(path);
       RyvrsCollection ryvrsCollection = restTemplate.getForEntity(ryvrsUri, RyvrsCollection.class)
           .getBody();
-      return new RestRyvrsCollectionResponse(httpClient, httpAsyncClient, traverson,
-          ryvrsUri.toURL(), ryvrsCollection, restTemplate);
+      return new RestRyvrsCollectionResponse(httpClient, httpAsyncClient, ryvrsUri.toURL(),
+          ryvrsCollection);
     } catch (MalformedURLException | URISyntaxException ex) {
       // TODO Auto-generated catch block
       ex.printStackTrace();
       throw new NotImplementedException();
     }
+  }
+
+  @Override
+  public URI getApiDocsLink() {
+    return root.getLinks().stream().filter(link -> {
+      return link.getRel().equals("describedby");
+    }).map(link -> URI.create(link.getHref())).findAny().get();
   }
 
 }

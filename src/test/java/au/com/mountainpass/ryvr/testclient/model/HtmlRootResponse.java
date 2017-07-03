@@ -3,6 +3,7 @@ package au.com.mountainpass.ryvr.testclient.model;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -73,6 +74,15 @@ public class HtmlRootResponse implements RootResponse {
     }
     assertTrue(false);
     return null;
+  }
+
+  @Override
+  public URI getApiDocsLink() {
+    List<WebElement> linksList = HtmlRyvrClient.getLinks(webDriver);
+    return linksList.stream().filter(element -> "describedby".equals(element.getAttribute("rel")))
+        .findAny().map(element -> {
+          return URI.create(element.getAttribute("href"));
+        }).get();
   }
 
 }

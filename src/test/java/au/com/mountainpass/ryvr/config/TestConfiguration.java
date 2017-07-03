@@ -12,16 +12,10 @@ import java.security.cert.CertificateException;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.apache.http.HttpException;
-import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
-import org.apache.http.client.cache.CacheResponseStatus;
-import org.apache.http.client.cache.HttpCacheContext;
 import org.apache.http.client.cache.HttpCacheStorage;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpRequestWrapper;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -29,6 +23,7 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.cache.CacheConfig;
 import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
 import org.apache.http.impl.client.cache.CachingHttpClients;
@@ -42,7 +37,6 @@ import org.apache.http.nio.conn.NHttpClientConnectionManager;
 import org.apache.http.nio.conn.NoopIOSessionStrategy;
 import org.apache.http.nio.conn.SchemeIOSessionStrategy;
 import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
-import org.apache.http.protocol.HttpContext;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,44 +152,24 @@ public class TestConfiguration
     CachingHttpClientBuilder clientBuilder = (CachingHttpClientBuilder) CachingHttpClients.custom()
         .setCacheConfig(cacheConfig).setConnectionManager(connectionManager)
         .setDefaultRequestConfig(config).setSSLSocketFactory(sslSocketFactory())
-        .setSSLContext(sslContext()).disableRedirectHandling()
-        .addInterceptorLast(new HttpResponseInterceptor() {
-
-          @Override
-          public void process(HttpResponse response, HttpContext context)
-              throws HttpException, IOException {
-            CacheResponseStatus cacheResponseStatus = (CacheResponseStatus) context
-                .getAttribute(HttpCacheContext.CACHE_RESPONSE_STATUS);
-            String xCacheString;
-            switch (cacheResponseStatus) {
-            case CACHE_HIT:
-              xCacheString = "HIT";
-              break;
-            case VALIDATED:
-              xCacheString = "VALIDATED";
-              break;
-            case CACHE_MISS:
-            case CACHE_MODULE_RESPONSE:
-              xCacheString = "MISS";
-              break;
-            default:
-              xCacheString = cacheResponseStatus.toString();
-            }
-            HttpRequestWrapper request = (HttpRequestWrapper) context
-                .getAttribute(HttpCacheContext.HTTP_REQUEST);
-            LOGGER.info("X-Cache: {}\t{}", xCacheString, request.getURI());
-            response.addHeader("X-Cache", xCacheString);
-            long length = response.getEntity().getContentLength();
-            response.setHeader(HttpHeaders.CONTENT_LENGTH, Long.toString(length));
-          }
-        }).addInterceptorFirst((HttpResponseInterceptor) httpThroughputCounter)
-        .addInterceptorLast((HttpRequestInterceptor) httpThroughputCounter);
+        .setSSLContext(sslContext()).setRedirectStrategy(DefaultRedirectStrategy.INSTANCE)
+        .addInterceptorLast((HttpRequestInterceptor) httpThroughputCounter)
+        .addInterceptorLast((HttpRequestInterceptor) httpDelayConcurrent)
+        .addInterceptorLast((HttpResponseInterceptor) httpDelayConcurrent)
+        .addInterceptorLast((HttpResponseInterceptor) httpThroughputCounter)
+        .addInterceptorLast(httpCacheStatusHeaderAdder);
     clientBuilder.setHttpCacheStorage(httpCacheStorage());
     return clientBuilder;
   }
 
   @Autowired(required = false)
+  private HttpCacheStatusHeaderAdder httpCacheStatusHeaderAdder;
+
+  @Autowired(required = false)
   private HttpThroughputCounter httpThroughputCounter;
+
+  @Autowired(required = false)
+  private HttpDelayConcurrent httpDelayConcurrent;
 
   @Bean
   @Profile(value = { "restApi" })

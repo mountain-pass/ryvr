@@ -1,18 +1,12 @@
 package au.com.mountainpass.ryvr.testclient;
 
-import static de.otto.edison.hal.traverson.Traverson.*;
-
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +22,6 @@ import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 import cucumber.api.Scenario;
-import de.otto.edison.hal.HalRepresentation;
-import de.otto.edison.hal.Link;
-import de.otto.edison.hal.traverson.Traverson;
 import io.swagger.parser.SwaggerParser;
 
 public class RestRyvrClient implements RyvrTestClient {
@@ -57,88 +48,30 @@ public class RestRyvrClient implements RyvrTestClient {
 
   @Override
   public SwaggerResponse getApiDocs()
-      throws InterruptedException, ExecutionException, URISyntaxException {
-
-    Traverson traverson = getTraverson();
-    HalRepresentation root = traverson.getResource().get();
-    String docsHref = root.getLinks().getLinkBy("describedby").get().getHref();
-    Link docsLink = Link.link("describedby",
-        traverson.getCurrentContextUrl().toURI().resolve(docsHref).toString());
-    String swagger = httpGet(docsLink);
+      throws InterruptedException, ExecutionException, URISyntaxException, MalformedURLException {
+    RootResponse root = getRoot();
+    URI baseUri = config.getBaseUri();
+    String swagger = restTemplate.getForEntity(baseUri.resolve(root.getApiDocsLink()), String.class)
+        .getBody();
 
     return new JavaSwaggerResponse(swaggerParser.parse(swagger));
   }
 
   @Override
-  public RootResponse getRoot() {
-    Traverson startedWith = getTraverson();
-    return new RestRootResponse(httpClient, httpAsyncClient, traverson(this::httpGet),
-        startedWith.getCurrentContextUrl(), startedWith.getResourceAs(Root.class).get(),
-        restTemplate);
-  }
+  public RootResponse getRoot() throws MalformedURLException {
+    URI baseUri = config.getBaseUri();
+    Root root = restTemplate.getForEntity(baseUri, Root.class).getBody();
 
-  private Traverson getTraverson() {
-    URI url = config.getBaseUri().resolve("/");
-
-    Traverson startedWith = traverson(this::httpGet).startWith(url.toString());
-    return startedWith;
-  }
-
-  public String httpGet(final Link link) {
-    try {
-      final HttpGet httpget = new HttpGet(link.getHref());
-      if (link.getType().isEmpty()) {
-        httpget.addHeader("Accept", "application/hal+json, application/json");
-      } else {
-        httpget.addHeader("Accept", link.getType());
-      }
-      // httpAsyncClient.start();
-      CompletableFuture<HttpResponse> completableFuture = new CompletableFuture<HttpResponse>();
-      httpAsyncClient.execute(httpget, new FutureCallback<HttpResponse>() {
-
-        @Override
-        public void failed(Exception ex) {
-          logger.error(ex.getMessage(), ex);
-          completableFuture.completeExceptionally(ex);
-        }
-
-        @Override
-        public void completed(HttpResponse result) {
-          completableFuture.complete(result);
-        }
-
-        @Override
-        public void cancelled() {
-          completableFuture.cancel(true);
-        }
-      });
-      // TODO create async traverson
-      return completableFuture.thenApply(response -> {
-        String rval = null;
-        try {
-          rval = EntityUtils.toString(response.getEntity());
-          // httpAsyncClient.close();
-        } catch (Exception e) {
-          lastResponse = e.getMessage();
-          logger.error(e.getMessage(), e);
-          throw new RuntimeException(e.getMessage(), e);
-        }
-        lastResponse = rval;
-        return rval;
-      }).get();
-    } catch (InterruptedException | ExecutionException e) {
-      logger.error(e.getMessage(), e);
-      throw new RuntimeException(e.getMessage(), e);
-    }
+    return new RestRootResponse(httpClient, httpAsyncClient, baseUri.toURL(), root, restTemplate);
   }
 
   @Override
-  public RyvrsCollectionResponse getRyvrsCollection() {
+  public RyvrsCollectionResponse getRyvrsCollection() throws MalformedURLException {
     return getRoot().followRyvrsLink();
   }
 
   @Override
-  public Ryvr getRyvr(String name) {
+  public Ryvr getRyvr(String name) throws MalformedURLException {
     return getRyvrsCollection().followRyvrLink(name);
   }
 

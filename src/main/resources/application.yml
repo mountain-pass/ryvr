@@ -16,7 +16,9 @@ spring:
   resources:
     cache-period: 2592000
 
-server.tomcat.access-log-enabled: true
+server.undertow.accesslog.enabled: true
+server.undertow.io-threads: 1
+server.undertow.worker-threads: 1
 
 au.com.mountainpass.ryvr:
   ssl:

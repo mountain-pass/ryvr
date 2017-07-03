@@ -42,7 +42,7 @@ public class HttpThroughputCounter implements HttpResponseInterceptor, HttpReque
     double duration = timer.observeDuration() * 1000000.0;
     HttpRequestWrapper request = (HttpRequestWrapper) context
         .getAttribute(HttpCacheContext.HTTP_REQUEST);
-    LOGGER.info("latency: {}µs\t{}", Math.round(duration), request.getURI());
+    // LOGGER.info("latency: {}µs\t{}", Math.round(duration), request.getURI());
     receivedBytes.observe(response.getEntity().getContentLength());
   }
 

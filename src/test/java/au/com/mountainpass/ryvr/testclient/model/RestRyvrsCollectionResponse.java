@@ -19,32 +19,25 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.RestTemplate;
 
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.rest.RestRyvrSource;
 import de.otto.edison.hal.Link;
-import de.otto.edison.hal.traverson.Traverson;
 
 public class RestRyvrsCollectionResponse implements RyvrsCollectionResponse {
 
   private RyvrsCollection ryvrsCollection;
-  private Traverson traverson;
   private URL contextUrl;
-  private RestTemplate restTemplate;
   private CloseableHttpAsyncClient httpAsyncClient;
   private CloseableHttpClient httpClient;
 
   public RestRyvrsCollectionResponse(CloseableHttpClient httpClient,
-      CloseableHttpAsyncClient httpAsyncClient, Traverson traverson, URL contextUrl,
-      RyvrsCollection ryvrsCollection, RestTemplate restTemplate) {
+      CloseableHttpAsyncClient httpAsyncClient, URL contextUrl, RyvrsCollection ryvrsCollection) {
     this.httpClient = httpClient;
     this.httpAsyncClient = httpAsyncClient;
-    this.traverson = traverson;
     this.contextUrl = contextUrl;
     this.ryvrsCollection = ryvrsCollection;
-    this.restTemplate = restTemplate;
   }
 
   @Override

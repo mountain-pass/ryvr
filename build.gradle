@@ -149,6 +149,9 @@ dependencies {
     compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
     compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.2.0'
 
+    compile group: 'com.lmax', name: 'disruptor', version: '3.3.6'
+    
+    
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'
     testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'

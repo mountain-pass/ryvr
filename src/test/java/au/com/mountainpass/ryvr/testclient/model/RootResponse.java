@@ -1,13 +1,17 @@
 package au.com.mountainpass.ryvr.testclient.model;
 
+import java.net.URI;
+
 public interface RootResponse {
 
-    void assertHasApiDocsLink();
+  void assertHasApiDocsLink();
 
-    void assertHasRyvrsLink();
+  void assertHasRyvrsLink();
 
-    void assertHasTitle(String title);
+  void assertHasTitle(String title);
 
-    RyvrsCollectionResponse followRyvrsLink();
+  RyvrsCollectionResponse followRyvrsLink();
+
+  URI getApiDocsLink();
 
 }

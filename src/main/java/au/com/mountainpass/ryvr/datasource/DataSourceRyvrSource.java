@@ -95,49 +95,52 @@ public class DataSourceRyvrSource extends RyvrSource {
     return count;
   }
 
+  final private Field field = new Field() {
+
+    private int fieldIndex;
+
+    @Override
+    public Object getValue() {
+      // plus one because the first column is column 1, not 0.
+      return rowSet.getObject(fieldIndex + 1);
+    }
+
+    @Override
+    public String getName() {
+      return columnNames[fieldIndex];
+    }
+
+    @Override
+    public void setFieldIndex(int fieldIndex) {
+      this.fieldIndex = fieldIndex;
+    }
+  };
+
+  final private Record record = new Record() {
+
+    @Override
+    public int size() {
+      return getFieldNames().length;
+    }
+
+    @Override
+    public Field getField(int fieldIndex) {
+      field.setFieldIndex(fieldIndex);
+      return field;
+    }
+
+    @Override
+    public void setPosition(long l) {
+      throw new NotImplementedException("TODO");
+    }
+
+  };
+
   @Override
   public Record get(int index) {
     getRowSet().absolute(index + 1);
-    final Record rval = new Record() {
 
-      @Override
-      public int size() {
-        return getFieldNames().length;
-      }
-
-      @Override
-      public Field getField(int fieldIndex) {
-        final Field field = new Field() {
-
-          private int fieldIndex;
-
-          @Override
-          public Object getValue() {
-            // plus one because the first column is column 1, not 0.
-            return rowSet.getObject(fieldIndex + 1);
-          }
-
-          @Override
-          public String getName() {
-            return columnNames[fieldIndex];
-          }
-
-          @Override
-          public void setFieldIndex(int fieldIndex) {
-            this.fieldIndex = fieldIndex;
-          }
-        };
-        field.setFieldIndex(fieldIndex);
-        return field;
-      }
-
-      @Override
-      public void setPosition(long l) {
-        throw new NotImplementedException("TODO");
-      }
-
-    };
-    return rval;
+    return record;
   }
 
   @Override

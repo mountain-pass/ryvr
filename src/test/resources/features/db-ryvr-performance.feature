@@ -29,4 +29,10 @@ Scenario: Get Ryvr Multiple Hits
     And all the events are retrieved again
     Then on the second retrieve, 95% of the pages should be loaded within 10ms
     And on the second retrieve, 100% of the pages should be loaded within 200ms
+
+Scenario: Get Ryvr Multiple Consumers
+    When the "transactions" ryvr is retrieved
+    And all the events are retrieved by 10000 consumers
+    Then 95% of the pages should be loaded within 50ms
+    And 100% of the pages should be loaded within 700ms
     
