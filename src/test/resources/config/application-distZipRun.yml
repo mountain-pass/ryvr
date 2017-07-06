@@ -1,0 +1,3 @@
+server:
+  ssl:
+    key-store: build/distributions/ryvr/etc/keystore.jks

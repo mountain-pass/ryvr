@@ -1,14 +1,14 @@
 buildscript {
-    ext { springBootVersion = '1.5.2.RELEASE' }
-    repositories {
-        jcenter()
-        maven { url "https://plugins.gradle.org/m2/" }
-    }
-    dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-        classpath('gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:1.4.17')
-        classpath 'co.riiid:gradle-github-plugin:0.4.2'
-    }
+  ext { springBootVersion = '1.5.2.RELEASE' }
+  repositories {
+    jcenter()
+    maven { url "https://plugins.gradle.org/m2/" }
+  }
+  dependencies {
+    classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    classpath('gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:1.4.17')
+    classpath 'co.riiid:gradle-github-plugin:0.4.2'
+  }
 }
 
 apply plugin: 'java'
@@ -28,30 +28,30 @@ import org.apache.commons.lang.NotImplementedException;
 println "System.env.SHIPPABLE: ${System.env.SHIPPABLE}"
 def shippable = System.env.SHIPPABLE == 'true'
 if( shippable ) {
-    try {
-        new URL("https://api.github.com/repos/mountain-pass/ryvr/releases/latest").withInputStream{ i ->
-            def slurper = new groovy.json.JsonSlurper().setType(groovy.json.JsonParserType.INDEX_OVERLAY);
-            def result = slurper.parseText(i.getText())
-            def latestVersion = result.tag_name
-            println "latestVersion: ${latestVersion}"
-            def splitVerison = latestVersion.split("\\.")
-            splitVerison[1] = (splitVerison[1] as Integer) + 1
-            project.version = "${splitVerison[0]}.${splitVerison[1]}.${splitVerison[2]}"
-            i.close()
-        }
+  try {
+    new URL("https://api.github.com/repos/mountain-pass/ryvr/releases/latest").withInputStream{ i ->
+      def slurper = new groovy.json.JsonSlurper().setType(groovy.json.JsonParserType.INDEX_OVERLAY);
+      def result = slurper.parseText(i.getText())
+      def latestVersion = result.tag_name
+      println "latestVersion: ${latestVersion}"
+      def splitVerison = latestVersion.split("\\.")
+      splitVerison[1] = (splitVerison[1] as Integer) + 1
+      project.version = "${splitVerison[0]}.${splitVerison[1]}.${splitVerison[2]}"
+      i.close()
     }
-    catch( java.io.FileNotFoundException e ) {
-        project.version = '1.0.0'
-    }
+  }
+  catch( java.io.FileNotFoundException e ) {
+    project.version = '1.0.0'
+  }
 }
 else {
-    project.version = 'LOCAL'
+  project.version = 'LOCAL'
 }
 
 println "${project.name} version: ${project.version}"
 
 ext {
-    releaseNotes = new File("RELEASE_NOTES-v${project.version}.md")
+  releaseNotes = new File("RELEASE_NOTES-v${project.version}.md")
 }
 
 sourceCompatibility = 1.8
@@ -61,147 +61,171 @@ compileJava.options.compilerArgs.add '-parameters'
 compileTestJava.options.compilerArgs.add '-parameters'
 
 repositories {
-    mavenLocal()
-    jcenter()
-    // codacy uses com.typesafe.netty:netty-http-pipelining, which
-    // can be found here
-    maven { url "http://dl.bintray.com/typesafe/maven-releases" }
+  mavenLocal()
+  jcenter()
+  // codacy uses com.typesafe.netty:netty-http-pipelining, which
+  // can be found here
+  maven { url "http://dl.bintray.com/typesafe/maven-releases" }
 }
 
 eclipseProject {
-    doLast {
-        // https://discuss.gradle.org/t/how-to-write-properties-to-3rd-party-eclipse-settings-files/6499/2
+  doLast {
+    // https://discuss.gradle.org/t/how-to-write-properties-to-3rd-party-eclipse-settings-files/6499/2
 
-        def props = new Properties()
-        file(".settings/org.eclipse.jdt.core.prefs").withInputStream { stream ->
-            props.load(stream)
-        }
-        props.setProperty("org.eclipse.jdt.core.compiler.codegen.methodParameters", "generate")
-        file(".settings/org.eclipse.jdt.core.prefs").withOutputStream { stream ->
-            props.store(stream, null)
-        }
+    def props = new Properties()
+    file(".settings/org.eclipse.jdt.core.prefs").withInputStream { stream ->
+      props.load(stream)
     }
+    props.setProperty("org.eclipse.jdt.core.compiler.codegen.methodParameters", "generate")
+    file(".settings/org.eclipse.jdt.core.prefs").withOutputStream { stream ->
+      props.store(stream, null)
+    }
+  }
 }
 
 springBoot  { buildInfo() }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
+  classifier = 'sources'
+  from sourceSets.main.allSource
 }
 
 
-applicationDistribution.from("LICENSE") {
-  into "."
-}
+applicationDistribution.from("LICENSE") { into "." }
 
-//applicationDefaultJvmArgs = ["-Dspring.config.location=file:../etc/application.yml", "-Dlogging.config=file:../etc/logback-spring.xml"]
+
+bootRun.doFirst() { applicationDefaultJvmArgs = [] }
+applicationDefaultJvmArgs = [
+  "-Dspring.config.location=file:../etc/application.yml",
+  "-Dlogging.config=file:../etc/logback-spring.xml"
+]
 
 distTar {
-    compression Compression.GZIP
-    extension "tar.gz"
+  compression Compression.GZIP
+  extension "tar.gz"
 }
 
 artifacts { archives sourcesJar  }
 
 configurations {
-    providedRuntime
-    codacy
+  providedRuntime
+  codacy
 }
+
+
 
 
 dependencies {
-    compile('commons-lang:commons-lang:2.6')
-    compile('commons-io:commons-io:2.5')
+  compile('commons-lang:commons-lang:2.6')
+  compile('commons-io:commons-io:2.5')
 
-    compile('org.springframework.boot:spring-boot-starter-actuator')
-    compile('org.springframework.boot:spring-boot-starter-web') { exclude(module: 'spring-boot-starter-tomcat') } 
-    compile('org.springframework.boot:spring-boot-starter-undertow')
-    compile('org.springframework.boot:spring-boot-starter-jdbc')
-    compile('org.springframework.boot:spring-boot-autoconfigure')
-    
-    
-
-
-    compile('com.github.spullara.mustache.java:compiler:0.9.2')
-
-    compile("org.springframework.boot:spring-boot-devtools")
-
-
-    compile 'de.otto.edison:edison-hal:1.0.0.RC5'
-
-    compile group: 'org.webjars', name: 'swagger-ui', version: '2.2.10'
-
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.1'
-    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.1'
-
-    compile('org.apache.httpcomponents:httpasyncclient')
-    compile('org.apache.httpcomponents:httpclient-cache:4.5.3')
-
-
-    compile('org.webjars:webjars-locator:0.30')
-    compile 'org.webjars:requirejs:2.3.3'
-    compile('org.webjars:bootstrap:3.3.7-1')
-    compile('org.webjars:jquery:3.1.1-1')
-    compile('org.webjars:angularjs:1.6.4')
-    
-    compile group: 'org.shredzone.acme4j', name: 'acme4j-client', version: '0.10'
-    compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
-    compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.2.0'
-
-    compile group: 'com.lmax', name: 'disruptor', version: '3.3.6'
-    
-    
-    testCompile('org.springframework.boot:spring-boot-starter-test')
-    testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'
-    testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
-
-    testCompile ('org.seleniumhq.selenium:selenium-java:3.0.1') { exclude(module: 'commons-logging') }
-    testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.0.1'
-    testCompile 'com.saucelabs:sauce_junit:2.1.20'
-    testCompile 'com.saucelabs:ci-sauce:1.123'
-
-
-    testCompile('io.swagger:swagger-parser:1.0.22')
-
-    testCompile group: 'io.prometheus', name: 'simpleclient', version: '0.0.21'
-
-
-    compile('com.h2database:h2')
-    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.39'
-    compile group: 'org.postgresql', name: 'postgresql', version: '42.1.1'
+  compile('org.springframework.boot:spring-boot-starter-actuator')
+  compile('org.springframework.boot:spring-boot-starter-web') { exclude(module: 'spring-boot-starter-tomcat') }
+  compile('org.springframework.boot:spring-boot-starter-undertow')
+  compile('org.springframework.boot:spring-boot-starter-jdbc')
+  compile('org.springframework.boot:spring-boot-autoconfigure')
 
 
 
 
-    codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.10'
+  compile('com.github.spullara.mustache.java:compiler:0.9.2')
+
+  compile("org.springframework.boot:spring-boot-devtools")
+
+
+  compile 'de.otto.edison:edison-hal:1.0.0.RC5'
+
+  compile group: 'org.webjars', name: 'swagger-ui', version: '2.2.10'
+
+  compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.1'
+  compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.1'
+
+  compile('org.apache.httpcomponents:httpasyncclient')
+  compile('org.apache.httpcomponents:httpclient-cache:4.5.3')
+
+
+  compile('org.webjars:webjars-locator:0.30')
+  compile 'org.webjars:requirejs:2.3.3'
+  compile('org.webjars:bootstrap:3.3.7-1')
+  compile('org.webjars:jquery:3.1.1-1')
+  compile('org.webjars:angularjs:1.6.4')
+
+  compile group: 'org.shredzone.acme4j', name: 'acme4j-client', version: '0.10'
+  compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
+  compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.2.0'
+
+  compile group: 'com.lmax', name: 'disruptor', version: '3.3.6'
+
+
+  testCompile('org.springframework.boot:spring-boot-starter-test')
+  testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'
+  testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
+
+  testCompile ('org.seleniumhq.selenium:selenium-java:3.0.1') { exclude(module: 'commons-logging') }
+  testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.0.1'
+  testCompile 'com.saucelabs:sauce_junit:2.1.20'
+  testCompile 'com.saucelabs:ci-sauce:1.123'
+
+
+  testCompile('io.swagger:swagger-parser:1.0.22')
+
+  testCompile group: 'io.prometheus', name: 'simpleclient', version: '0.0.21'
+
+
+  compile('com.h2database:h2')
+  compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.39'
+  compile group: 'org.postgresql', name: 'postgresql', version: '42.1.1'
+
+
+
+
+  codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.10'
 }
 
 bootRun {
-    String activeProfile =  System.properties['spring.profiles.active']
-    String confLoc = System.properties['spring.config.location']
-    systemProperty "spring.profiles.active", activeProfile
-    systemProperty "spring.config.location", confLoc
+  String activeProfile =  System.properties['spring.profiles.active']
+  String confLoc = System.properties['spring.config.location']
+  systemProperty "spring.profiles.active", activeProfile
+  systemProperty "spring.config.location", confLoc
+}
+
+task "unzipDistZip" (type: Copy, dependsOn: 'distZip', group: 'distribution') {
+  def zipFile = distZip.outputs.files.singleFile
+  def outputDir = zipFile.parent
+  ext.outputDir = outputDir
+  from zipTree(zipFile)
+  into outputDir
+  doLast {
+    copy {
+      from("${outputDir}/ryvr-${project.version}")
+      into("${outputDir}/ryvr")
+    }
+  }
+}
+
+task "distZipRun"(type: Exec, group: 'application', description: "run this project via the distZip", dependsOn: 'unzipDistZip') {
+  workingDir "${unzipDistZip.outputDir}/ryvr/bin"
+  commandLine "${unzipDistZip.outputDir}/ryvr/bin/ryvr"
 }
 
 test { exclude '**' }
 
 new ByteArrayOutputStream().withStream { os ->
-    def result = exec {
-        executable = 'whoami'
-        standardOutput = os
-    }
-    ext.whoami = os.toString().trim()
+  def result = exec {
+    executable = 'whoami'
+    standardOutput = os
+  }
+  ext.whoami = os.toString().trim()
 }
 
 if(file("gradle-${whoami}.properties").exists()) {
-    file("gradle-${whoami}.properties").withReader { reader ->
-        def userProps = new Properties()
-        userProps.load(reader)
-        userProps.each { prop ->
-            project.ext.set(prop.key, prop.value)
-        }
+  file("gradle-${whoami}.properties").withReader { reader ->
+    def userProps = new Properties()
+    userProps.load(reader)
+    userProps.each { prop ->
+      project.ext.set(prop.key, prop.value)
     }
+  }
 }
 
 
@@ -212,178 +236,178 @@ def SAUCE_LABS_KEY = project.getProperties().get("SAUCE_LABS_KEY") ?: ""
 Boolean withSauce = project.getProperties().get("withSauce") ?: false
 
 jacoco {
-    toolVersion = "0.7.7.201606060606"
-    reportsDir = file("${buildDir}/test-results/jacoco")
+  toolVersion = "0.7.7.201606060606"
+  reportsDir = file("${buildDir}/test-results/jacoco")
 }
 
 
 def testClasses = fileTree("src/test/java") {
-    // include { details -> details.file.text.contains('@RunWith(SpringProfileCucumber.class)') }
-    include '**/*Tests*.java'
-    exclude '**/*_Current.java'
+  // include { details -> details.file.text.contains('@RunWith(SpringProfileCucumber.class)') }
+  include '**/*Tests*.java'
+  exclude '**/*_Current.java'
 }
 
 testClasses.each { File testClass ->
-    def baseName = testClass.name.replace('.java', '')
-    task "test${baseName}"(type: Test, group: 'verification', description: "run ${baseName}") {
-        testClassesDir = sourceSets.test.output.classesDir
-        classpath = sourceSets.test.runtimeClasspath
-        include "**/${baseName}.class"
-        ext.outputDir = "${testOutputDir}/test-results-${baseName}"
-        outputs.dir file(outputDir)
-        ext.coverageDir = "${coverageOutputDir}/coverage-results-${baseName}"
-        outputs.dir file(coverageDir)
-        systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
-        systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
-        systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
-        systemProperty 'au.com.mountainpass.ryvr.test.jar', jar.outputs.files.singleFile
-        jacoco {
-            append = false
-            destinationFile = file("${coverageDir}/jacoco/${baseName}.exec")
-        }
-
-        ignoreFailures = true
+  def baseName = testClass.name.replace('.java', '')
+  task "test${baseName}"(type: Test, group: 'verification', description: "run ${baseName}") {
+    testClassesDir = sourceSets.test.output.classesDir
+    classpath = sourceSets.test.runtimeClasspath
+    include "**/${baseName}.class"
+    ext.outputDir = "${testOutputDir}/test-results-${baseName}"
+    outputs.dir file(outputDir)
+    ext.coverageDir = "${coverageOutputDir}/coverage-results-${baseName}"
+    outputs.dir file(coverageDir)
+    systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
+    systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
+    systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
+    systemProperty 'au.com.mountainpass.ryvr.test.jar', jar.outputs.files.singleFile
+    jacoco {
+      append = false
+      destinationFile = file("${coverageDir}/jacoco/${baseName}.exec")
     }
-    tasks["test${baseName}"].finalizedBy jacocoTestReport
+
+    ignoreFailures = true
+  }
+  tasks["test${baseName}"].finalizedBy jacocoTestReport
 }
 
 test { ignoreFailures = true }
 
 test.dependsOn {
-    tasks.findAll { task ->
-        //    println "${task.name}.local: ${project.ext.properties["${task.name}.local"]}"
-        //    println 'task.name.startsWith(\'test\')?: ' +         task.name.startsWith('test')
-        //    println 'task.name != "test"?: ' +        task.name != "test"
-        //    println 'project.hasProperty("${task.name}.local")?: ' +         project.hasProperty("${task.name}.local")
-        //    println 'project.ext.properties["${task.name}.local"]?: ' +          project.ext.properties["${task.name}.local"]=='true'
-        //    println 'test?: ' +        ( task.name.startsWith('test') && task.name != "test" && project.hasProperty("${task.name}.local") && project.ext.properties["${task.name}.local"]=='true' )
-        //
-        task.name.startsWith('test') && task.name != "test" && project.hasProperty("${task.name}.enabled") && project.ext.properties["${task.name}.enabled"]=='true' }
+  tasks.findAll { task ->
+    //    println "${task.name}.local: ${project.ext.properties["${task.name}.local"]}"
+    //    println 'task.name.startsWith(\'test\')?: ' +         task.name.startsWith('test')
+    //    println 'task.name != "test"?: ' +        task.name != "test"
+    //    println 'project.hasProperty("${task.name}.local")?: ' +         project.hasProperty("${task.name}.local")
+    //    println 'project.ext.properties["${task.name}.local"]?: ' +          project.ext.properties["${task.name}.local"]=='true'
+    //    println 'test?: ' +        ( task.name.startsWith('test') && task.name != "test" && project.hasProperty("${task.name}.local") && project.ext.properties["${task.name}.local"]=='true' )
+    //
+    task.name.startsWith('test') && task.name != "test" && project.hasProperty("${task.name}.enabled") && project.ext.properties["${task.name}.enabled"]=='true' }
 }
 
 
 jacocoTestReport {
-    executionData = fileTree(dir: "${coverageOutputDir}", include: '**/jacoco/*.exec')
+  executionData = fileTree(dir: "${coverageOutputDir}", include: '**/jacoco/*.exec')
 
-    reports {
-        xml.enabled true
-        xml.destination "${coverageOutputDir}/coverage-results/jacoco/${archivesBaseName}.xml"
-        csv.enabled false
-        html.enabled true
-        html.destination "${coverageOutputDir}/coverage-results/jacoco/html"
+  reports {
+    xml.enabled true
+    xml.destination "${coverageOutputDir}/coverage-results/jacoco/${archivesBaseName}.xml"
+    csv.enabled false
+    html.enabled true
+    html.destination "${coverageOutputDir}/coverage-results/jacoco/html"
+  }
+
+  doLast {
+    def report = reports.xml.destination
+    logger.lifecycle("Checking coverage results: ${report}")
+
+    def parser = new XmlParser()
+    parser.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+    parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false)
+    def results = parser.parse(report)
+
+    def percentage = {
+      if( it == null ) {
+        return 100
+      }
+      def covered = it.'@covered' as Double
+      def missed = it.'@missed' as Double
+      ((covered / (covered + missed)) * 100).round(2)
     }
 
-    doLast {
-        def report = reports.xml.destination
-        logger.lifecycle("Checking coverage results: ${report}")
-
-        def parser = new XmlParser()
-        parser.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-        parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false)
-        def results = parser.parse(report)
-
-        def percentage = {
-            if( it == null ) {
-                return 100
-            }
-            def covered = it.'@covered' as Double
-            def missed = it.'@missed' as Double
-            ((covered / (covered + missed)) * 100).round(2)
-        }
-
-        def counters = results.counter
-        def metrics = [:]
-        metrics << [
-            'instruction': percentage(counters.find { it.'@type'.equals('INSTRUCTION') }),
-            'branch'     : percentage(counters.find { it.'@type'.equals('BRANCH') }),
-            'line'       : percentage(counters.find { it.'@type'.equals('LINE') }),
-            'complexity' : percentage(counters.find { it.'@type'.equals('COMPLEXITY') }),
-            'method'     : percentage(counters.find { it.'@type'.equals('METHOD') }),
-            'class'      : percentage(counters.find { it.'@type'.equals('CLASS') })
-        ]
+    def counters = results.counter
+    def metrics = [:]
+    metrics << [
+      'instruction': percentage(counters.find { it.'@type'.equals('INSTRUCTION') }),
+      'branch'     : percentage(counters.find { it.'@type'.equals('BRANCH') }),
+      'line'       : percentage(counters.find { it.'@type'.equals('LINE') }),
+      'complexity' : percentage(counters.find { it.'@type'.equals('COMPLEXITY') }),
+      'method'     : percentage(counters.find { it.'@type'.equals('METHOD') }),
+      'class'      : percentage(counters.find { it.'@type'.equals('CLASS') })
+    ]
 
 
-        def failures = []
-        def success = []
-        metrics.each {
-            def limit = limits[it.key]
-            if (it.value < limit) {
-                failures.add("- ${it.key} coverage rate is: ${it.value}%, minimum is ${limit}%")
-            }
-            else {
-                success.add("- ${it.key} coverage rate is: ${it.value}%, minimum is ${limit}%")
-            }
-        }
-
-        logger.quiet("------------------ Code Coverage Passes -----------------------")
-        success.each { logger.quiet(it) }
-        logger.quiet("---------------------------------------------------------------")
-        if (failures) {
-            logger.quiet("------------------ Code Coverage Failed -----------------------")
-            failures.each { logger.quiet(it) }
-            logger.quiet("---------------------------------------------------------------")
-            throw new GradleException("Code coverage failed")
-        } else{
-            logger.quiet("Passed Code Coverage Checks")
-        }
+    def failures = []
+    def success = []
+    metrics.each {
+      def limit = limits[it.key]
+      if (it.value < limit) {
+        failures.add("- ${it.key} coverage rate is: ${it.value}%, minimum is ${limit}%")
+      }
+      else {
+        success.add("- ${it.key} coverage rate is: ${it.value}%, minimum is ${limit}%")
+      }
     }
+
+    logger.quiet("------------------ Code Coverage Passes -----------------------")
+    success.each { logger.quiet(it) }
+    logger.quiet("---------------------------------------------------------------")
+    if (failures) {
+      logger.quiet("------------------ Code Coverage Failed -----------------------")
+      failures.each { logger.quiet(it) }
+      logger.quiet("---------------------------------------------------------------")
+      throw new GradleException("Code coverage failed")
+    } else{
+      logger.quiet("Passed Code Coverage Checks")
+    }
+  }
 }
 
 ext {
-    // TODO: Increase these
-    limits = [
-        'instruction': 70,
-        'branch'     : 70,
-        'line'       : 70,
-        'complexity' : 70,
-        'method'     : 70,
-        'class'      : 70
-    ]
+  // TODO: Increase these
+  limits = [
+    'instruction': 70,
+    'branch'     : 70,
+    'line'       : 70,
+    'complexity' : 70,
+    'method'     : 70,
+    'class'      : 70
+  ]
 }
 
 
 
 
 task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
-    main = "com.codacy.CodacyCoverageReporter"
-    classpath = configurations.codacy
-    args = [
-        "-l",
-        "Java",
-        "-r",
-        "${coverageOutputDir}/coverage-results/jacoco/${archivesBaseName}.xml"
-    ]
+  main = "com.codacy.CodacyCoverageReporter"
+  classpath = configurations.codacy
+  args = [
+    "-l",
+    "Java",
+    "-r",
+    "${coverageOutputDir}/coverage-results/jacoco/${archivesBaseName}.xml"
+  ]
 }
 
 jar {
-    manifest {
-        attributes("Implementation-Title": "Ryvr",
-        "Implementation-Version": project.version)
-    }
+  manifest {
+    attributes("Implementation-Title": "Ryvr",
+    "Implementation-Version": project.version)
+  }
 }
 
 github {
-    owner = 'mountain-pass'
-    repo = 'ryvr'
-    token = project.hasProperty('githubToken') ? project.getProperty('githubToken') : 'NOTSET'
-    tagName = "${project.version}"
-    targetCommitish = 'master'
-    name = "v${project.version}"
+  owner = 'mountain-pass'
+  repo = 'ryvr'
+  token = project.hasProperty('githubToken') ? project.getProperty('githubToken') : 'NOTSET'
+  tagName = "${project.version}"
+  targetCommitish = 'master'
+  name = "v${project.version}"
 
-    body = project.releaseNotes.exists() ? file(releaseNotes.path).text : "TBC"
-    assets = [
-        "build/libs/ryvr-${project.version}.jar"
-    ]
-    prerelease = true
-    draft = true
+  body = project.releaseNotes.exists() ? file(releaseNotes.path).text : "TBC"
+  assets = [
+    "build/libs/ryvr-${project.version}.jar"
+  ]
+  prerelease = true
+  draft = true
 }
 
 task checkReleaseNotes(group: 'Verification') {
-    doLast {
-        if( !project.releaseNotes.exists() ) {
-            throw new GradleException("Please document the changes for ${project.name} v${project.version}, in ./RELEASE_NOTES-v${project.version}.md")
-        }
+  doLast {
+    if( !project.releaseNotes.exists() ) {
+      throw new GradleException("Please document the changes for ${project.name} v${project.version}, in ./RELEASE_NOTES-v${project.version}.md")
     }
+  }
 }
 
 githubRelease.dependsOn checkReleaseNotes
@@ -391,17 +415,17 @@ githubRelease.dependsOn checkReleaseNotes
 githubRelease.dependsOn bootRepackage
 
 task printOutputs(group: 'build') {
-    doLast {
-        println jar.outputs.files.singleFile
-    }
+  doLast {
+    println jar.outputs.files.singleFile
+  }
 }
 
 gradle.taskGraph.afterTask { Task task, TaskState state ->
-    if (state.failure) {
-        announce.announce("':${task.name}' FAILED", "local")
-    }
-    else {
-        announce.announce("':${task.name}' succeeded", "local")
-    }
+  if (state.failure) {
+    announce.announce("':${task.name}' FAILED", "local")
+  }
+  else {
+    announce.announce("':${task.name}' succeeded", "local")
+  }
 }
 

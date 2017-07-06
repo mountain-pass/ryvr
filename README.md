@@ -165,11 +165,11 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [X] Add caching headers
  - [X] Fix test clients and UI after performance tuning improvements
  - [X] move serialiser out of datesource ryvr
+ - [X] Performance test with multiple clients
  - [ ] refactor remaining endpoints to use link headers and remove hal
  - [ ] remove dead code
  - [ ] Stablise API
  - [ ] Fix API Docs
- - [ ] Performance test with multiple clients
  - [ ] Performance test with real world dataset 
  - [ ] release as zip/tarball with example properties
  - [ ] Add authentication

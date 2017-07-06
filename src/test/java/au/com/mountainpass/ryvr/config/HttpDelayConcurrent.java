@@ -17,25 +17,29 @@ import org.springframework.stereotype.Component;
 @Profile(value = { "restApi" })
 public class HttpDelayConcurrent implements HttpResponseInterceptor, HttpRequestInterceptor {
 
-  private static final String URI_KEY = "URI";
-  private ConcurrentHashMap<String, LongAdder> pending = new ConcurrentHashMap<>();
+//  private static final String URI_KEY = "URI";
+//  private ConcurrentHashMap<String, LongAdder> pending = new ConcurrentHashMap<>();
 
   @Override
   public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
-    String uri = request.getRequestLine().getUri();
-    pending.putIfAbsent(uri, new LongAdder());
-    while (pending.get(uri).longValue() > 0) {
-      Thread.yield();
-    }
-    context.setAttribute(URI_KEY, uri);
-    pending.get(uri).increment();
+//    String uri = request.getRequestLine().getUri();
+//    pending.putIfAbsent(uri, new LongAdder());
+//    while (pending.get(uri).longValue() > 0) {
+//      Thread.yield();
+//    }
+//    context.setAttribute(URI_KEY, uri);
+//    try {
+//      pending.get(uri).increment();
+//    } catch (Exception e) {
+//      pending.get(uri).decrement();
+//    }
   }
 
   @Override
   public void process(HttpResponse response, HttpContext context)
       throws HttpException, IOException {
-    String uri = (String) context.getAttribute(URI_KEY);
-    pending.get(uri).decrement();
+//    String uri = (String) context.getAttribute(URI_KEY);
+//    pending.get(uri).decrement();
   }
 
 }

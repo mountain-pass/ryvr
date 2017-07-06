@@ -1,11 +1,14 @@
+
 package au.com.mountainpass.ryvr.testclient;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,13 +17,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile(value = { "bootRun" })
-public class RyvrTestBootRunServerProcessBuilder implements RyvrTestServerProcessBuilder {
+@Profile(value = { "distZipRun" })
+public class RyvrTestDistZipRunServerProcessBuilder implements RyvrTestServerProcessBuilder {
 
   public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
-  static final String RUN_DIR = "build/bootrun";
-  protected static final String APPLICATION_YML = RUN_DIR + "/application.yml";
 
   @Value("${spring.datasource.password}")
   String springDatasourcePassword;
@@ -31,23 +31,38 @@ public class RyvrTestBootRunServerProcessBuilder implements RyvrTestServerProces
   @Value("${spring.datasource.username}")
   String springDatasourceUsername;
 
+  protected static final String APPLICATION_YML = "build/distZipRun-application.yml";
+
   @Override
   public ProcessBuilder getProcessBuilder() {
-    return new ProcessBuilder("bash", "./gradlew", "-Dspring.config.location=" + APPLICATION_YML,
-        "bootRun");
+    ProcessBuilder setupPb = new ProcessBuilder("bash", "./gradlew", "unzipDistZip").inheritIO();
+    try {
+      Process setupProcess = setupPb.start();
+      setupProcess.waitFor(30, TimeUnit.SECONDS);
+    } catch (IOException | InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+    try (FileReader fr = new FileReader(APPLICATION_YML);
+        FileWriter fw = new FileWriter("build/distributions/ryvr/etc/application.yml", true)) {
+      int c = fr.read();
+      while (c != -1) {
+        fw.write(c);
+        c = fr.read();
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    return new ProcessBuilder("bash", "./gradlew", "distZipRun");
   }
 
   @Override
   public void createApplicationProperties(List<Map<String, String>> dataSourcesRyvrConfigs)
       throws IOException {
-
-    new File(RUN_DIR).mkdirs();
+    new File(APPLICATION_YML).getParentFile().mkdirs();
     new File(APPLICATION_YML).delete();
     final FileWriter fileWriter = new FileWriter(APPLICATION_YML);
     final StringWriter writer = new StringWriter();
-    writer.write("server:\n");
-    writer.write("  ssl:\n");
-    writer.write("    key-store: build/bootrun/keystore.jks\n");
     writer.write("au.com.mountainpass.ryvr:\n");
     writer.write("  data-sources:\n");
     writer.write("    - url: " + springDatasourceUrl + "\n");
@@ -68,4 +83,5 @@ public class RyvrTestBootRunServerProcessBuilder implements RyvrTestServerProces
     fileWriter.write(writer.getBuffer().toString());
     fileWriter.close();
   }
+
 }
