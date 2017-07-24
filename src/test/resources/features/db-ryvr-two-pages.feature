@@ -27,7 +27,6 @@ Background:
       | ordered by  | id            |
       | page size   | 10            |
 
-@current
 Scenario: Get Ryvr - Multiple Pages
     When the "transactions" ryvr is retrieved
     Then it will contain

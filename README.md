@@ -166,6 +166,8 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [X] Fix test clients and UI after performance tuning improvements
  - [X] move serialiser out of datesource ryvr
  - [X] Performance test with multiple clients
+ - [X] Add performance test on write -> read latency
+ - [X] Add rest ryvr
  - [ ] refactor remaining endpoints to use link headers and remove hal
  - [ ] remove dead code
  - [ ] Stablise API
@@ -182,4 +184,4 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [ ] Add logic to create triggers or use change data capture to allow ryvrs from non-event based tables
  - [ ] Add support for more non-DB datasources
  - [ ] Add client library
- - [ ] Add rest ryvr
+ - [ ] decouple rest ryvr page size and UI page size

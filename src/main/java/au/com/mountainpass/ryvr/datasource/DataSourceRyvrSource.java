@@ -1,15 +1,15 @@
 package au.com.mountainpass.ryvr.datasource;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.stream.IntStream;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.InvalidResultSetAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 
 import au.com.mountainpass.ryvr.model.Field;
 import au.com.mountainpass.ryvr.model.Record;
@@ -19,9 +19,10 @@ public class DataSourceRyvrSource extends RyvrSource {
   public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
   private JdbcTemplate jt;
-  private ThreadLocal<SqlRowSet> rowSet = new ThreadLocal<>();
-  private String[] columnNames;
-  private String rowsQuery;
+  private ResultSet rowSet;
+  String[] columnNames;
+  private PreparedStatement rowsQuery;
+  // private String rowsQuery;
   private String table;
   private String orderedBy;
   private long count = -1;
@@ -40,131 +41,149 @@ public class DataSourceRyvrSource extends RyvrSource {
 
     rowsQuery = generateRowQuery(catalog, table, orderedBy, identifierQuoteString,
         catalogSeparator);
+    LOGGER.info("ROWS QUERY: {}", rowsQuery);
     connection.close();
   }
 
-  public String generateRowQuery(String database, String table, String orderedBy,
-      String identifierQuoteString, String catalogSeparator) {
-    return "select " + identifierQuoteString + database + identifierQuoteString + catalogSeparator
-        + identifierQuoteString + table + identifierQuoteString + ".* from " + identifierQuoteString
-        + database + identifierQuoteString + catalogSeparator + identifierQuoteString + table
-        + identifierQuoteString + " ORDER BY " + identifierQuoteString + database
-        + identifierQuoteString + catalogSeparator + identifierQuoteString + table
-        + identifierQuoteString + "." + identifierQuoteString + orderedBy + identifierQuoteString
-        + " ASC";
+  public PreparedStatement generateRowQuery(String database, String table, String orderedBy,
+      String identifierQuoteString, String catalogSeparator) throws SQLException {
+    String statement = "select " + identifierQuoteString + database + identifierQuoteString
+        + catalogSeparator + identifierQuoteString + table + identifierQuoteString + ".* from "
+        + identifierQuoteString + database + identifierQuoteString + catalogSeparator
+        + identifierQuoteString + table + identifierQuoteString + " ORDER BY "
+        + identifierQuoteString + database + identifierQuoteString + catalogSeparator
+        + identifierQuoteString + table + identifierQuoteString + "." + identifierQuoteString
+        + orderedBy + identifierQuoteString + " ASC";
+    return jt.getDataSource().getConnection().prepareStatement(statement,
+        ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY,
+        ResultSet.HOLD_CURSORS_OVER_COMMIT);
   }
 
   public void refreshCount() {
-    int currentRow = 0;
-    SqlRowSet localRowSet = rowSet.get();
-    if (localRowSet != null) {
-      currentRow = localRowSet.getRow();
-    }
-    localRowSet = refreshRowSet();
-    localRowSet.last();
-    count = localRowSet.getRow();
-    if (currentRow == 0) {
-      localRowSet.beforeFirst();
-    } else {
-      localRowSet.absolute(currentRow);
+    // LOGGER.info("Refreshing - Current Row: {}", getRowSet().getRow());
+    try {
+      int currentRow = 0;
+      ResultSet localRowSet = rowSet;
+      if (localRowSet != null) {
+        currentRow = localRowSet.getRow();
+      }
+      localRowSet = refreshRowSet();
+      localRowSet.last();
+      count = localRowSet.getRow();
+      if (currentRow == 0) {
+        localRowSet.beforeFirst();
+      } else {
+        localRowSet.absolute(currentRow);
+      }
+      // LOGGER.info("Refreshed - Current Row: {}", getRowSet().getRow());
+      // LOGGER.info("Refreshed - Total Rows: {}", count);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
     }
   }
 
-  public SqlRowSet getRowSet() {
-    SqlRowSet localRowSet = rowSet.get();
+  public ResultSet getRowSet() throws SQLException {
+    ResultSet localRowSet = rowSet;
     if (localRowSet == null) {
-      localRowSet = jt.queryForRowSet(rowsQuery);
-      rowSet.set(localRowSet);
+      localRowSet = rowsQuery.executeQuery();
+      rowSet = localRowSet;
     }
     return localRowSet;
   }
 
-  public void refreshRowSet(long position) {
-    SqlRowSet localRowSet = refreshRowSet();
+  public void refreshRowSet(long position) throws SQLException {
+    ResultSet localRowSet = refreshRowSet();
     if (position != 0) {
       localRowSet.absolute((int) position);
     }
   }
 
-  private SqlRowSet refreshRowSet() {
-    rowSet.set(null);
+  private ResultSet refreshRowSet() throws SQLException {
+    rowSet = null;
     return getRowSet();
   }
 
-  @Override
-  public long longSize() {
-    if (count == -1L) {
-      refreshCount();
-    }
-    return count;
-  }
+  // @Override
+  // public long longSize() {
+  // if (count == -1L) {
+  // refreshCount();
+  // }
+  // return count;
+  // }
 
-  final private Field field = new Field() {
+  final Field field = new DataSourceField(this);
 
-    private int fieldIndex;
+  final Record record = new DataSourceRecord(this);
 
-    @Override
-    public Object getValue() {
-      // plus one because the first column is column 1, not 0.
-      return getRowSet().getObject(fieldIndex + 1);
-    }
-
-    @Override
-    public String getName() {
-      return columnNames[fieldIndex];
-    }
-
-    @Override
-    public void setFieldIndex(int fieldIndex) {
-      this.fieldIndex = fieldIndex;
-    }
-  };
-
-  final private Record record = new Record() {
-
-    @Override
-    public int size() {
-      return getFieldNames().length;
-    }
-
-    @Override
-    public Field getField(int fieldIndex) {
-      field.setFieldIndex(fieldIndex);
-      return field;
-    }
-
-    @Override
-    public void setPosition(long l) {
-      throw new NotImplementedException("TODO");
-    }
-
-  };
-
-  @Override
-  public Record get(int index) {
-    while (true) {
-      try {
-        int position = index + 1;
-        if (position == size()) {
-          refreshRowSet(position);
-        } else {
-          getRowSet().absolute(index + 1);
-        }
-        return record;
-      } catch (InvalidResultSetAccessException e) {
-        LOGGER.error("Error getting record", e);
-        refreshRowSet();
-      }
-    }
-  }
+  // @Override
+  // public Record get(int index) {
+  // while (true) {
+  // try {
+  // getRowSet().absolute(index + 1);
+  // // LOGGER.info("Current Row: {}", getRowSet().getRow());
+  // return record;
+  // } catch (InvalidResultSetAccessException e) {
+  // LOGGER.error("Error getting record", e);
+  // refreshRowSet();
+  // }
+  // }
+  // }
 
   @Override
   public String[] getFieldNames() {
     if (columnNames == null) {
-      columnNames = getRowSet().getMetaData().getColumnNames();
+      try {
+        columnNames = IntStream.range(0, getRowSet().getMetaData().getColumnCount()).mapToObj(i -> {
+          try {
+            return getRowSet().getMetaData().getColumnName(i + 1);
+          } catch (Exception e) {
+            // TODO Auto-generated catch block
+            throw new RuntimeException(e);
+          }
+        }).toArray(String[]::new);
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+      // columnNames = getRowSet().getMetaData().getColumnNames();
     }
     return columnNames;
 
+  }
+
+  @Override
+  public void refresh() {
+    refreshCount();
+  }
+
+  @Override
+  public Iterator<Record> iterator() {
+    return new DataSourceRyvrSourceIterator(this);
+  }
+
+  @Override
+  public Iterator<Record> iterator(long position) {
+    return new DataSourceRyvrSourceIterator(this, position);
+  }
+
+  @Override
+  public long getRecordsRemaining(long fromPosition) {
+    try {
+      getRowSet().last();
+      long records = getRowSet().getRow() - fromPosition;
+      if (fromPosition == 0L) {
+        getRowSet().beforeFirst();
+      } else {
+        getRowSet().absolute((int) fromPosition);
+      }
+      return records;
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public boolean isLoaded(long page) {
+    return rowSet != null;
   }
 
 }

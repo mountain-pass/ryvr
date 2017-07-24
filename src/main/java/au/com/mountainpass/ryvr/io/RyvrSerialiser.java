@@ -1,6 +1,5 @@
 package au.com.mountainpass.ryvr.io;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,16 +19,22 @@ public class RyvrSerialiser {
   private static final int outputBufferSize = 8192 * 1024;
   public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-  public void toJson(Ryvr ryvr, long page, OutputStream outputStream) throws IOException {
-    toJsonWithWriter(ryvr, page, outputStream);
+  public void toJson(Ryvr ryvr, long page, OutputStream o) throws IOException {
+    toJsonWithWriter(ryvr, page, o);
   }
 
   private ByteArrayOutputStream baos = new ByteArrayOutputStream(outputBufferSize);
-  private Writer writer = new BufferedWriter(new OutputStreamWriter(baos), outputBufferSize);
+  private Writer writer = new OutputStreamWriter(baos); // new BufferedWriter(new
+  // // OutputStreamWriter(baos),
+  // // outputBufferSize);
 
-  public void toJsonWithWriter(Ryvr ryvr, long page, OutputStream outputStream) throws IOException {
+  public void toJsonWithWriter(Ryvr ryvr, long page, OutputStream o) throws IOException {
     baos.reset();
-    Iterator<Record> iterator = ryvr.iterator((page - 1) * ryvr.getPageSize());
+    // if (page <= 0) {
+    // page = ryvr.getPages();
+    // }
+    // Writer writer = new BufferedWriter(w, outputBufferSize);
+    Iterator<Record> iterator = ryvr.getSource().iterator((page - 1) * ryvr.getPageSize());
     writer.write("{\"title\":\"", 0, 10);
     writer.write(ryvr.getTitle());
     writer.write("\",\"page\":", 0, 9);
@@ -38,7 +43,7 @@ public class RyvrSerialiser {
     writer.write(Integer.toString(ryvr.getPageSize()));
     writer.write(",\"rows\":[", 0, 9);
 
-    for (int i = 0, pageSize = ryvr.getCurrentPageSize(page); i < pageSize; ++i) {
+    for (int i = 0, pageSize = ryvr.getPageSize(); i < pageSize && iterator.hasNext(); ++i) {
       Record record = iterator.next();
       if (i != 0) {
         writer.write(',');
@@ -73,15 +78,15 @@ public class RyvrSerialiser {
       }
     }
     writer.write(']');
-    if (page == ryvr.getPages()) {
-      writer.write(",\"count\":", 0, 9);
-      writer.write(Long.toString(ryvr.getCount()));
-    }
+    // if (page == ryvr.getPages()) {
+    // writer.write(",\"count\":", 0, 9);
+    // writer.write(Long.toString(ryvr.getCount()));
+    // }
     writer.write('}');
     writer.flush();
 
-    outputStream.write(baos.toByteArray());
-    outputStream.flush();
+    o.write(baos.toByteArray());
+    o.flush();
   }
 
 }

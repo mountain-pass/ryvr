@@ -23,7 +23,6 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.cache.CacheConfig;
 import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
 import org.apache.http.impl.client.cache.CachingHttpClients;
@@ -152,7 +151,7 @@ public class TestConfiguration
     CachingHttpClientBuilder clientBuilder = (CachingHttpClientBuilder) CachingHttpClients.custom()
         .setCacheConfig(cacheConfig).setConnectionManager(connectionManager)
         .setDefaultRequestConfig(config).setSSLSocketFactory(sslSocketFactory())
-        .setSSLContext(sslContext()).setRedirectStrategy(DefaultRedirectStrategy.INSTANCE)
+        .setSSLContext(sslContext()).setRedirectStrategy(RyvrRedirectStrategy.INSTANCE)
         .addInterceptorLast((HttpRequestInterceptor) httpThroughputCounter)
         .addInterceptorLast((HttpRequestInterceptor) httpDelayConcurrent)
         .addInterceptorLast((HttpResponseInterceptor) httpDelayConcurrent)

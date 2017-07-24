@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 @RestController
 @RequestMapping("/ryvrs/{name}")
@@ -32,20 +32,32 @@ public class RyvrController {
 
   @RequestMapping(method = RequestMethod.GET, produces = { "application/hal+json",
       MediaType.APPLICATION_JSON_VALUE })
-  public ResponseEntity<StreamingResponseBody> getJson(final HttpServletRequest req,
+  public void getJson(final HttpServletResponse res, final HttpServletRequest req,
       @PathVariable String name, @RequestParam(required = false) Long page)
       throws URISyntaxException, IOException {
     if (page == null) {
-      return jsonController.getRyvr(req, name);
+      jsonController.getRyvr(res, req, name);
     } else {
-      return jsonController.getRyvr(req, name, page);
+      if (page <= 0L) {
+        res.setStatus(HttpStatus.NOT_FOUND.value());
+      } else {
+        jsonController.getRyvr(res, req, name, page);
+      }
     }
   }
 
   @RequestMapping(method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE })
   public ResponseEntity<?> getHtml(final HttpServletRequest req, @PathVariable String name,
-      @RequestParam(required = false) Long page) throws URISyntaxException {
-    return htmlController.getRyvr(req, name, page == null ? -1l : page.longValue());
+      @RequestParam(required = false) Long page) throws URISyntaxException, IOException {
+    if (page == null) {
+      return htmlController.getRyvr(req, name, -1L);
+    } else {
+      if (page <= 0L) {
+        return ResponseEntity.notFound().build();
+      } else {
+        return htmlController.getRyvr(req, name, page);
+      }
+    }
   }
 
   @ExceptionHandler(Exception.class)

@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -75,6 +76,16 @@ public class StepDefs {
 
   @Autowired(required = false)
   private HttpThroughputCounter httpThroughputCounter;
+
+  private boolean addingRecords;
+
+  private long actualCount;
+
+  private long finishedAdding;
+
+  private long finishedReading;
+
+  private int expectedRecordCount;
 
   @Given("^a database \"([^\"]*)\"$")
   public void aDatabase(final String dbName) throws Throwable {
@@ -151,7 +162,7 @@ public class StepDefs {
 
   @Then("^it will contain$")
   public void itWillContain(final List<Map<String, String>> events) throws Throwable {
-    Iterator<Record> actualIterator = ryvr.iterator();
+    Iterator<Record> actualIterator = ryvr.getSource().iterator();
     Iterator<Map<String, String>> expectedIterator = events.iterator();
     do {
       Record actualRecord = actualIterator.next();
@@ -160,11 +171,12 @@ public class StepDefs {
         Field actualField = actualRecord.getField(i);
         Object actualValue = actualField.getValue();
         String expectedValue = expectedRecord.get(actualField.getName());
-        Util.assertEqual(actualValue, expectedValue);
-
+        Util.assertEqual(actualField.getName() + " should be " + expectedValue, actualValue,
+            expectedValue);
       }
     } while (actualIterator.hasNext() && expectedIterator.hasNext());
-    assertThat(actualIterator.hasNext(), equalTo(expectedIterator.hasNext()));
+    assertThat("Neither iterator should haveNext()", actualIterator.hasNext(),
+        equalTo(expectedIterator.hasNext()));
   }
 
   @Before
@@ -254,6 +266,7 @@ public class StepDefs {
       events.add(event);
     }
     insertRows("test_db", this.currentTable, events);
+    expectedRecordCount = noOfEvents;
   }
 
   @Then("^it will have the following structure$")
@@ -263,9 +276,9 @@ public class StepDefs {
 
   @Then("^it will have (\\d+) events$")
   public void itWillHaveTheEvents(long noOfEvents) throws Throwable {
-    assertThat(ryvr.getCount(), equalTo(noOfEvents));
+    assertThat(ryvr.getSource().stream().count(), equalTo(noOfEvents));
     long actualCount = 0;
-    Iterator<Record> iterator = ryvr.iterator();
+    Iterator<Record> iterator = ryvr.getSource().iterator();
     while (iterator.hasNext()) {
       ++actualCount;
       iterator.next();
@@ -275,6 +288,7 @@ public class StepDefs {
 
   @When("^all the events are retrieved$")
   public void all_the_events_are_retrieved() throws Throwable {
+    clearMetrics();
     System.gc();
     long before = System.nanoTime();
 
@@ -308,6 +322,9 @@ public class StepDefs {
         LOGGER.info("created client: {}", i + 1);
       }
     }
+
+    clearMetrics();
+    System.gc();
 
     DoubleSummaryStatistics executionTimes = ryvrs.parallelStream().mapToDouble(r -> {
       long b = System.nanoTime();
@@ -359,7 +376,9 @@ public class StepDefs {
   }
 
   public void assertLoadedWithin(int percentile, int maxMs) {
-    // assertThat(httpThroughputCounter.getLatency(percentile) * 1000.0, lessThan(maxMs * 1.0));
+    if (httpThroughputCounter != null) {
+      assertThat(httpThroughputCounter.getLatency(percentile) * 1000.0, lessThan(maxMs * 1.0));
+    }
   }
 
   @Then("^(\\d+)% of the pages should be loaded within (\\d+)ms$")
@@ -382,5 +401,94 @@ public class StepDefs {
   @Then("^it will not come from cache$")
   public void it_will_not_come_from_cache() throws Throwable {
     throw new PendingException();
+  }
+
+  @When("^(\\d+) records are added at a rate of (\\d+) records/s$")
+  public void records_are_added_at_a_rate_of_records_s(int noOfEvents, int rate) throws Throwable {
+    addingRecords = true;
+    int countSoFar = expectedRecordCount;
+    expectedRecordCount += noOfEvents;
+
+    CompletableFuture.runAsync(() -> {
+      long start = System.nanoTime();
+      for (int i = 0; i < noOfEvents; ++i) {
+        List<Map<String, String>> events = new ArrayList<>(noOfEvents);
+        Map<String, String> event = new HashMap<>(4);
+        event.put("id", Integer.toString(i + countSoFar));
+        event.put("account", "78901234");
+        event.put("description", "Buying Stuff");
+        event.put("amount", Double.toString(i * -20.00 - i));
+        events.add(event);
+        try {
+          insertRows("test_db", this.currentTable, events);
+          // if (i % 100 == 99) {
+          // LOGGER.info("added record: {}", i + countSoFar + 1);
+          // }
+        } catch (Throwable e) {
+          throw new RuntimeException(e);
+        }
+        long next = start + 1000000000L / rate;
+        long now = System.nanoTime();
+        long sleepFor = next - now;
+        if (sleepFor > 0) {
+          try {
+            Thread.sleep(sleepFor / 1000000L, (int) (sleepFor % 1000000));
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
+        }
+      }
+      finishedAdding = System.nanoTime();
+      addingRecords = false;
+      LOGGER.info("Finished adding records");
+    });
+
+  }
+
+  @When("^all the records are retrieved while the records are added$")
+  public void all_the_records_are_retrieved_while_the_records_are_added() throws Throwable {
+    // Optional<Record> first = ryvr.getSource().stream().findFirst();
+    // if (first.isPresent()) {
+    // LOGGER.info("FIRST ID: {}", first.get().getField(0).getValue());
+    // }
+    actualCount = ryvr.getSource().stream().count();
+    // Optional<Record> last = ryvr.getSource().stream(actualCount - 1).findFirst();
+    // if (last.isPresent()) {
+    // LOGGER.info("LAST ID: {}", last.get().getField(0).getValue());
+    // } else {
+    // LOGGER.info("NO RECORD FOUND FOR POSTION: {}", actualCount - 1);
+    // }
+    finishedReading = System.nanoTime();
+    LOGGER.info("Reached end: {}", actualCount);
+    while (actualCount < expectedRecordCount) {
+      Thread.sleep(100);
+      ryvr.getSource().refresh();
+      // first = ryvr.getSource().stream(actualCount).findFirst();
+      // if (first.isPresent()) {
+      // LOGGER.info("FIRST ID: {}", first.get().getField(0).getValue());
+      // }
+      long additionalCount = ryvr.getSource().stream(actualCount).count();
+      actualCount += additionalCount;
+      finishedReading = System.nanoTime();
+      LOGGER.info("New Records: {}", additionalCount);
+      // last = ryvr.getSource().stream(actualCount - 1).findFirst();
+      // if (last.isPresent()) {
+      // LOGGER.info("LAST ID: {}", last.get().getField(0).getValue());
+      // } else {
+      // LOGGER.info("NO RECORD FOUND FOR POSTION: {}", actualCount - 1);
+      // }
+      LOGGER.info("Reached end: {}", actualCount);
+    }
+  }
+
+  @Then("^(\\d+) records will be retrieved$")
+  public void records_will_be_retrieved(long count) throws Throwable {
+    assertThat(actualCount, equalTo(count));
+  }
+
+  @Then("^the write-read latency shuld be less than (\\d+)ms$")
+  public void the_write_read_latency_shuld_be_less_than_ms(double latency) throws Throwable {
+    LOGGER.info("Write-Read Latency: {}ms", (finishedReading - finishedAdding) / 1000000.0);
+    assertThat((finishedReading - finishedAdding) / 1000000.0, lessThan(latency));
   }
 }

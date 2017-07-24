@@ -1,8 +1,6 @@
-
 package au.com.mountainpass.ryvr.testclient;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -17,10 +15,12 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
-@Profile(value = { "distZipRun" })
-public class RyvrTestDistZipRunServerProcessBuilder implements RyvrTestServerProcessBuilder {
+@Profile(value = { "jarRun" })
+public class RyvrTestJarRunProcessBuilder implements RyvrTestServerProcessBuilder {
 
   public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+
+  protected static final String APPLICATION_YML = "build/jarRun-application.yml";
 
   @Value("${spring.datasource.password}")
   private String springDatasourcePassword;
@@ -31,29 +31,20 @@ public class RyvrTestDistZipRunServerProcessBuilder implements RyvrTestServerPro
   @Value("${spring.datasource.username}")
   private String springDatasourceUsername;
 
-  protected static final String APPLICATION_YML = "build/distZipRun-application.yml";
+  @Value("${au.com.mountainpass.ryvr.test.jar}")
+  private String jarPath;
 
   @Override
   public ProcessBuilder getProcessBuilder() {
-    ProcessBuilder setupPb = new ProcessBuilder("bash", "./gradlew", "unzipDistZip").inheritIO();
+    ProcessBuilder setupPb = new ProcessBuilder("bash", "./gradlew", "bootRepackage").inheritIO();
     try {
       Process setupProcess = setupPb.start();
       setupProcess.waitFor(30, TimeUnit.SECONDS);
     } catch (IOException | InterruptedException e) {
       throw new RuntimeException(e);
     }
-    try (FileReader fr = new FileReader(APPLICATION_YML);
-        FileWriter fw = new FileWriter("build/distributions/ryvr/etc/application.yml", true)) {
-      int c = fr.read();
-      while (c != -1) {
-        fw.write(c);
-        c = fr.read();
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
-    return new ProcessBuilder("bash", "./gradlew", "distZipRun");
+    return new ProcessBuilder("java", "-jar", jarPath,
+        "--spring.config.location=" + APPLICATION_YML);
   }
 
   @Override

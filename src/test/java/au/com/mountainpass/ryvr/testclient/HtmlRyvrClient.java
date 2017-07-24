@@ -10,11 +10,14 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import au.com.mountainpass.SauceLabsTunnel;
@@ -28,6 +31,7 @@ import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
 import cucumber.api.Scenario;
 
 public class HtmlRyvrClient implements RyvrTestClient {
+  private final static Logger LOGGER = LoggerFactory.getLogger(HtmlRyvrClient.class);
 
   @Autowired
   private WebDriver webDriver;
@@ -63,6 +67,7 @@ public class HtmlRyvrClient implements RyvrTestClient {
 
   public static void waitTillLoaded(WebDriver webDriver, long timeoutInSeconds,
       ExpectedCondition<?> expectedCondition) {
+
     (new WebDriverWait(webDriver, timeoutInSeconds)).until(expectedCondition);
   }
 
@@ -132,6 +137,17 @@ public class HtmlRyvrClient implements RyvrTestClient {
           .executeScript("sauce:context=" + scenario.getName() + ":started");
     }
 
+  }
+
+  public static void waitTillVisible(WebDriver webDriver, long timeoutInSeconds, String id) {
+    LOGGER.info("waiting till {} loaded...", id);
+    try {
+      HtmlRyvrClient.waitTillLoaded(webDriver, timeoutInSeconds,
+          ExpectedConditions.visibilityOfElementLocated(By.id(id)));
+    } catch (TimeoutException e) {
+      LOGGER.info("...timeout", id);
+    }
+    LOGGER.info("...loaded", id);
   }
 
 }

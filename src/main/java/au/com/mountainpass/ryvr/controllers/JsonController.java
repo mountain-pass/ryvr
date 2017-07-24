@@ -1,12 +1,13 @@
 package au.com.mountainpass.ryvr.controllers;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.io.RyvrSerialiser;
+import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
@@ -32,6 +33,8 @@ public class JsonController {
 
   public static final MediaType APPLICATION_HAL_JSON_TYPE = new MediaType("application",
       "hal+json");
+
+  public static final String RELS_PAGE = "https://mountain-pass.github.io/ryvr/rels/page";
 
   @Value("${spring.application.name}")
   private String applicationName;
@@ -83,63 +86,138 @@ public class JsonController {
     return ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE).body(root);
   }
 
-  public ResponseEntity<StreamingResponseBody> getRyvr(HttpServletRequest req, String ryvrName,
-      long page) throws URISyntaxException {
-
+  public void getRyvr(HttpServletResponse res, HttpServletRequest req, String ryvrName, long page)
+      throws URISyntaxException, IOException {
+    // hmmm... we want to avoid having a size operation on the rvyr, because that can
+    // be very slow, so the only way we know if we are on an archive page is if
+    // the iterator we use for outputting hasNext(), or if we get another iterator and
+    // advance end and then check if it hasNext(). Going with that latter option.
     Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
     if (ryvr == null) {
-      return ResponseEntity.notFound().build();
+      res.setStatus(HttpStatus.NOT_FOUND.value());
+      return;
     }
-    boolean cachable = ryvr.isArchivePage(page);
-
-    BodyBuilder responseBuilder = ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE);
-    if (cachable) {
-      responseBuilder.cacheControl(CacheControl.maxAge(archivePageMaxAge, archivePageMaxAgeUnit));
+    boolean isLastPage = false;
+    long pageSize = ryvr.getPageSize();
+    if (page == -1L) {
+      isLastPage = true;
+      long count = ryvr.getSource().getRecordsRemaining(0L);
+      page = (count / pageSize) + 1L;
     } else {
-      responseBuilder.cacheControl(CacheControl.maxAge(currentPageMaxAge, currentPageMaxAgeUnit));
-    }
-    responseBuilder.eTag(ryvr.getEtag(page));
+      // get the iterator for the last possible element on this page
+      // this might be beyond the end of the ryvr
+      boolean isLoaded = ryvr.getSource().isLoaded(page);
 
-    addLinks(ryvr, page, responseBuilder);
-    responseBuilder.header("Page-Record-Count", Integer.toString(ryvr.getCurrentPageSize(page)));
-    return responseBuilder.body(new StreamingResponseBody() {
-      @Override
-      public void writeTo(OutputStream outputStream) throws IOException {
-        serialiser.toJson(ryvr, page, outputStream);
+      long pageEndPosition = getPageEndPosition(page, pageSize);
+      Iterator<Record> lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition);
+
+      isLastPage = !lastOnPageIterator.hasNext();
+      if (isLastPage && isLoaded) {
+        // since we are on the last page, and we already had the page loaded, refresh to see if
+        // there are new records
+        // and then check if we are on the lastPage again.
+        ryvr.getSource().refresh();
+        lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition);
+        isLastPage = !lastOnPageIterator.hasNext();
       }
-    });
+    }
+    // BodyBuilder responseBuilder = ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE);
+    res.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    if (isLastPage) {
+      res.addHeader(HttpHeaders.CACHE_CONTROL,
+          CacheControl.maxAge(currentPageMaxAge, currentPageMaxAgeUnit).getHeaderValue());
+      // responseBuilder.cacheControl(CacheControl.maxAge(currentPageMaxAge,
+      // currentPageMaxAgeUnit));
+      long pageRecordCount = ryvr.getSource()
+          .getRecordsRemaining(getPageStartPosition(page, pageSize));
+      res.addHeader(HttpHeaders.ETAG,
+          "\"" + Long.toHexString(page) + "." + Long.toHexString(pageRecordCount) + "\"");
+      res.addHeader("Current-Page-Size", Long.toString(pageRecordCount));
+      res.addHeader("Archive-Page", "false");
+      // responseBuilder.eTag(Long.toHexString(page) + "." + Long.toHexString(pageRecordCount));
+      // responseBuilder.header("Current-Page-Size", Long.toString(pageRecordCount));
+    } else {
+      res.addHeader(HttpHeaders.CACHE_CONTROL,
+          CacheControl.maxAge(archivePageMaxAge, archivePageMaxAgeUnit).getHeaderValue());
+      res.addHeader(HttpHeaders.ETAG, "\"" + Long.toHexString(page) + "\"");
+      res.addHeader("Current-Page-Size", Long.toString(pageSize));
+      res.addHeader("Archive-Page", "true");
+
+      // responseBuilder.cacheControl(CacheControl.maxAge(archivePageMaxAge,
+      // archivePageMaxAgeUnit));
+      // responseBuilder.eTag(Long.toHexString(page));
+      // responseBuilder.header("Current-Page-Size", Long.toString(pageSize));
+    }
+    res.addHeader("Page", Long.toString(page));
+    res.addHeader("Page-Size", Long.toString(pageSize));
+
+    // responseBuilder.header("Page", Long.toString(page));
+    // responseBuilder.header("Page-Size", Integer.toString(pageSize));
+
+    addLinks(ryvr, page, isLastPage, res);
+    // responseBuilder.header("Current-Page-Size", Integer.toString(ryvr.getCurrentPageSize(page)));
+    serialiser.toJson(ryvr, page, res.getOutputStream());
+    res.setStatus(HttpStatus.OK.value());
+
+    // return responseBuilder.body(new StreamingResponseBody() {
+    // @Override
+    // public void writeTo(OutputStream outputStream) throws IOException {
+    // serialiser.toJson(ryvr, page, outputStream);
+    // }
+    // });
   }
 
-  public void addLinks(Ryvr ryvr, long page, BodyBuilder responseBuilder) {
+  private long getPageEndPosition(long page, long pageSize) {
+    return getPageStartPosition(page + 1L, pageSize) - 1L;
+  }
+
+  private long getPageStartPosition(long page, long pageSize) {
+    return (page - 1L) * pageSize;
+  }
+
+  public void addLinks(Ryvr ryvr, long page, boolean isLastPage, HttpServletResponse res) {
 
     String base = "/ryvrs/" + ryvr.getTitle();
-    addLink("current", base, responseBuilder);
-    addLink("self", base + "?page=" + page, responseBuilder);
-    addLink("first", base + "?page=1", responseBuilder);
-    if (page > 1) {
-      addLink("prev", base + "?page=" + (page - 1L), responseBuilder);
-    }
-    if (page < ryvr.getPages()) {
-      addLink("next", base + "?page=" + (page + 1L), responseBuilder);
-      addLink("last", base, responseBuilder);
+    addLink("current", base, res);
+    if (page > 0L) {
+      addLink("self", base + "?page=" + page, res);
     } else {
-      addLink("last", base + "?page=" + (ryvr.getPages()), responseBuilder);
+      addLink("self", base + "?page=" + page, res);
     }
-
+    addLink("first", base + "?page=1", res);
+    if (page > 1L) {
+      addLink("prev", base + "?page=" + (page - 1L), res);
+    }
+    if (!isLastPage) {
+      addLink("next", base + "?page=" + (page + 1L), res);
+      addLink("last", base, res);
+    } else {
+      addLink("last", base + "?page=" + page, res);
+    }
+    String headerValue = "<" + base + "?page={page}" + ">; rel=\"" + RELS_PAGE
+        + "\"; var-base=\"https://mountain-pass.github.io/ryvr/vars/\"";
+    res.addHeader("Link-Template", headerValue);
   }
 
-  private void addLink(String rel, String href, BodyBuilder responseBuilder) {
+  private void addLink(String rel, String href, HttpServletResponse res) {
     String headerValue = "<" + href + ">; rel=\"" + rel + "\"";
-    responseBuilder.header(HttpHeaders.LINK, headerValue);
+    res.addHeader(HttpHeaders.LINK, headerValue);
   }
 
-  public ResponseEntity<StreamingResponseBody> getRyvr(HttpServletRequest req, String ryvrName) {
-    Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
-    if (ryvr == null) {
-      return ResponseEntity.notFound().build();
-    }
-    String lastHref = "/ryvrs/" + ryvr.getTitle() + "?page=" + (ryvr.getPages());
-    return ResponseEntity.status(HttpStatus.SEE_OTHER)
-        .location(config.getBaseUri().resolve(lastHref)).build();
+  public void getRyvr(HttpServletResponse res, HttpServletRequest req, String ryvrName)
+      throws URISyntaxException, IOException {
+    // we can't redirect to the last page, becasue by the time we get that page, it might no longer
+    // be
+    // the last, in which case we can't get the count of records, which is what we need for
+    // AbstractList::size()
+    // hmm maybe we don't use abstract list...
+    getRyvr(res, req, ryvrName, -1L);
+    // Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
+    // if (ryvr == null) {
+    // return ResponseEntity.notFound().build();
+    // }
+    // String lastHref = "/ryvrs/" + ryvr.getTitle() + "?page=" + (ryvr.getPages());
+    // return ResponseEntity.status(HttpStatus.SEE_OTHER)
+    // .location(config.getBaseUri().resolve(lastHref)).build();
   }
 }

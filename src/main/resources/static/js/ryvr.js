@@ -15,7 +15,11 @@ define(['angular'], function(angular) {
             return {
                 'request'(config) {
                     angular.element(document.getElementById('controller')).scope().controller.loading = true;
+                    angular.element(document.getElementById('controller')).scope().controller.viewLoaded = false;
                     config.headers['Accept'] = 'application/hal+json;q=1,application/json;q=0.8,*/*;q=0.1';
+                    if(getLocation(config.url).pathname == '/api-docs') {
+                        window.location.href = config.url;
+                    }
                     return config;
                 },
 
@@ -26,7 +30,8 @@ define(['angular'], function(angular) {
 
                 'response'(response) {
                     angular.element(document.getElementById('controller')).scope().controller.loading = false;
-                    if (response.headers('Content-Type') !== 'application/hal+json') {
+                    if (response.headers('Content-Type') !== 'application/hal+json' &&
+                            response.headers('Content-Type') !== 'application/json' ) {
                         window.location.href = response.config.url;
                     }
                     return response;
@@ -54,23 +59,43 @@ define(['angular'], function(angular) {
         return location;
     }
 
+    function parseResponseHeaders(headerStr) {
+        var headers = {};
+        if (!headerStr) {
+          return headers;
+        }
+        var headerPairs = headerStr.split('\u000d\u000a');
+        for (var i = 0, len = headerPairs.length; i < len; i++) {
+          var headerPair = headerPairs[i];
+          var index = headerPair.indexOf('\u003a\u0020');
+          if (index > 0) {
+            var key = headerPair.substring(0, index);
+            var val = headerPair.substring(index + 2);
+            headers[key] = val;
+          }
+        }
+        return headers;
+      }
+    
     function linkHeaderParse(linkHeader) {
         var rval = {  };
-        var links = [].concat(linkHeader.split(","));
-        for (var i = 0, len = links.length; i < len; i++) {
-            var item = links[i].trim();
-            var split = item.split(";");
-            var href = split[0].trim();
-            href = href.substring(1, href.length -1);
-            var rel = split[1].trim();
-            rel = rel.substring(5, rel.length -1);
-            if( rval[rel] === undefined ) {
-                rval[rel] = [ href ];
-            }
-            else {
-                rval[rel] = rval[rel].concat(href);
-            }
-        };
+        var links = linkHeader;
+        if( links != null ) {
+            for (var i = 0, len = links.length; i < len; i++) {
+                var item = links[i].trim();
+                var split = item.split(";");
+                var href = split[0].trim();
+                href = href.substring(1, href.length -1);
+                var rel = split[1].trim();
+                rel = rel.substring(5, rel.length -1);
+                if( rval[rel] === undefined ) {
+                    rval[rel] = [ href ];
+                }
+                else {
+                    rval[rel] = rval[rel].concat(href);
+                }
+            };
+        }
         return rval;
     }
     
@@ -78,6 +103,7 @@ define(['angular'], function(angular) {
         var controller = this;
         controller.loaded = false;
         controller.loading = false;
+        controller.viewLoaded = false;
         controller.actionValues = {};
         controller.error = {};
         controller.lastForm = null;
@@ -93,10 +119,23 @@ define(['angular'], function(angular) {
         controller.doLoad = function(href) {
             controller.href = href;
             $http.get(href, {
-                cache : false
+                cache : false,
+                eventHandlers: {
+                    readystatechange: function(event) {
+//                      console.log("change");
+//                      console.log(event);
+                      if (event.target.readyState == 4 && event.target.status == 200) {
+//                          console.log('event.target.getAllResponseHeaders()', event.target.getAllResponseHeaders().split('\u000d\u000a'));          
+//                          console.log('parseResponseHeaders(event.target.getAllResponseHeaders())', parseResponseHeaders(event.target.getAllResponseHeaders()));          
+                          controller.resourceHeaders = parseResponseHeaders(event.target.getAllResponseHeaders());
+                          if( controller.resourceHeaders["Link"] != null ) {
+                              controller.resourceLinks = linkHeaderParse(controller.resourceHeaders["Link"].split(","));
+                          }
+                      }
+                    }
+                  },
             }).then(function successCallback(response) {
                 controller.resource = response.data;
-                controller.resourceLinks = linkHeaderParse(response.headers("Link"));
                 controller.lastForm = null;
             }, controller.errorCallback);
 
@@ -107,7 +146,7 @@ define(['angular'], function(angular) {
                 cache : false
             }).then(function successCallback(response) {
                 controller.root = response.data;
-                controller.rootLinks = linkHeaderParse(response.headers("Link"));
+                controller.rootLinks = linkHeaderParse(response.headers("link").split(","));
             }, controller.errorCallback);
 
         };
@@ -141,8 +180,13 @@ define(['angular'], function(angular) {
 
         controller.initResource = function() {
             controller.resource = JSON.parse(document.getElementById('init-resource').textContent);
-            // controller.resourceLinks =
-            // JSON.parse(document.getElementById('init-resource-links').textContent);
+            controller.resourceHeaders = JSON.parse(document.getElementById('init-resource-headers').textContent);
+            if( "Link" in controller.resourceHeaders ) {
+                controller.resourceLinks = linkHeaderParse(controller.resourceHeaders["Link"]);
+            }
+            else {
+                controller.resourceLinks = {};
+            }
         };
 
         controller.initRoot();
@@ -184,6 +228,10 @@ define(['angular'], function(angular) {
         $scope.resourceHasProperties = function() {
             return Object.keys($scope.resourceProperties()).length !== 0;
         };
+        
+        $scope.$on('$viewContentLoaded', function(event) {
+            controller.viewLoaded = true;
+          });
         
         controller.itemHeadings = function() {
             var keys = [];

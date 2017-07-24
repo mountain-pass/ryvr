@@ -18,7 +18,7 @@ Scenario: Find Ryvr in Collection
     Then the count of ryvrs will be 1
     Then the ryvrs list will contain the following entries
       | transactions |
-    
+
 Scenario: Get Ryvr
     Given a database "test_db" 
     And it has a table "transactions" with the following events

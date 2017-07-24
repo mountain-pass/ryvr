@@ -2,7 +2,6 @@ package au.com.mountainpass.ryvr.testclient.model;
 
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Map;
 
 public interface RestRyvr {
 
@@ -10,7 +9,8 @@ public interface RestRyvr {
 
   public void assertFromCache();
 
-  public void assertHasItems(List<Map<String, String>> events) throws URISyntaxException, Throwable;
+  // public void assertHasItems(List<Map<String, String>> events) throws URISyntaxException,
+  // Throwable;
 
   public void assertHasLinks(List<String> links);
 

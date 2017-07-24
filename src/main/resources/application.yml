@@ -6,9 +6,11 @@ server:
     key-password: secret
     key-alias: selfSigned
   servlet-path: /
-#  undertow:
-#    buffer-size: 8388608
-#    direct-buffers: true
+  undertow:
+    buffer-size: 8388608
+    direct-buffers: true
+    io-threads: 1
+    worker-threads: 1
 
 spring:
   application:

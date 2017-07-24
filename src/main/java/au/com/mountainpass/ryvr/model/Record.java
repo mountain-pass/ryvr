@@ -6,6 +6,4 @@ public interface Record {
 
   public int size();
 
-  public void setPosition(long l);
-
 }

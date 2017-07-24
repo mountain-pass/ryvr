@@ -1,4 +1,4 @@
-Feature: DB Ryvr Caching
+Feature: DB Many Pages
     In order create projections from the events that have happened in a DB
     As a user
     I want to get a paginated list of events from the DB

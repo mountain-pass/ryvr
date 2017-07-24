@@ -9,8 +9,8 @@ import cucumber.api.CucumberOptions;
 @RunWith(SpringProfileCucumber.class)
 @CucumberOptions(plugin = { "pretty" }, features = {
     "src/test/resources/features/" }, strict = false, glue = {
-        "au.com.mountainpass.ryvr" }, tags = { "@current", "~@performance" })
-@ActiveProfiles({ "integrationTest", "restApi", "h2" })
-public class RyvrTests_Integration_Rest_H2Local_Current {
+        "au.com.mountainpass.ryvr" }, tags = { "@performance", "@current" })
+@ActiveProfiles({ "integrationTest", "javaApi", "mysql", "performance" })
+public class RyvrTests_Integration_Performance_Java_MySqlLocal_Current {
 
 }

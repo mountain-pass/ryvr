@@ -4,17 +4,13 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.net.URISyntaxException;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.com.mountainpass.ryvr.model.Field;
-import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import cucumber.api.PendingException;
 import io.prometheus.client.Collector.MetricFamilySamples;
@@ -40,22 +36,22 @@ public class JavaRyvrResponse implements RestRyvr {
     this.ryvr = ryvr;
   }
 
-  @Override
-  public void assertHasItems(List<Map<String, String>> events) throws Throwable {
-    Iterator<Record> actualIterator = ryvr.iterator();
-    Iterator<Map<String, String>> expectedIterator = events.iterator();
-    do {
-      Record actualRecord = actualIterator.next();
-      Map<String, String> expectedRecord = expectedIterator.next();
-      for (int i = 0; i < actualRecord.size(); ++i) {
-        Field actualField = actualRecord.getField(i);
-        Object actualValue = actualField.getValue();
-        String expectedValue = expectedRecord.get(actualField.getName());
-        Util.assertEqual(actualValue, expectedValue);
-      }
-    } while (actualIterator.hasNext() && expectedIterator.hasNext());
-    assertThat(actualIterator.hasNext(), equalTo(expectedIterator.hasNext()));
-  }
+  // @Override
+  // public void assertHasItems(List<Map<String, String>> events) throws Throwable {
+  // Iterator<Record> actualIterator = ryvr.iterator();
+  // Iterator<Map<String, String>> expectedIterator = events.iterator();
+  // do {
+  // Record actualRecord = actualIterator.next();
+  // Map<String, String> expectedRecord = expectedIterator.next();
+  // for (int i = 0; i < actualRecord.size(); ++i) {
+  // Field actualField = actualRecord.getField(i);
+  // Object actualValue = actualField.getValue();
+  // String expectedValue = expectedRecord.get(actualField.getName());
+  // Util.assertEqual(actualValue, expectedValue);
+  // }
+  // } while (actualIterator.hasNext() && expectedIterator.hasNext());
+  // assertThat(actualIterator.hasNext(), equalTo(expectedIterator.hasNext()));
+  // }
 
   @Override
   public void assertHasLinks(List<String> links) {

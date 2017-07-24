@@ -8,8 +8,8 @@ import cucumber.api.CucumberOptions;
 
 @RunWith(SpringProfileCucumber.class)
 @CucumberOptions(plugin = { "pretty" }, features = {
-        "src/test/resources/features/" }, strict = false, glue = {
-                "au.com.mountainpass.ryvr" }, tags = { "@current" })
+    "src/test/resources/features/" }, strict = false, glue = {
+        "au.com.mountainpass.ryvr" }, tags = { "@current", "~@performance" })
 @ActiveProfiles({ "integrationTest", "javaApi", "postgres" })
 public class RyvrTests_Integration_Java_PostgresLocal_Current {
 

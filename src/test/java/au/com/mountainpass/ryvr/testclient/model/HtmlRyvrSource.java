@@ -1,17 +1,19 @@
 package au.com.mountainpass.ryvr.testclient.model;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import au.com.mountainpass.ryvr.model.Field;
 import au.com.mountainpass.ryvr.model.Record;
@@ -19,178 +21,72 @@ import au.com.mountainpass.ryvr.model.RyvrSource;
 import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
 
 public class HtmlRyvrSource extends RyvrSource {
+  private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-  private WebDriver webDriver;
+  WebDriver webDriver;
+  public long pagePosition;
+  public URI currentUri;
+  public Record record = new Record() {
+
+    @Override
+    public int size() {
+      return getFieldNames().length;
+    }
+
+    @Override
+    public Field getField(int fieldIndex) {
+      Field field = new Field() {
+
+        private int fieldIndex;
+
+        @Override
+        public void setFieldIndex(int fieldIndex) {
+          this.fieldIndex = fieldIndex;
+        }
+
+        @Override
+        public Object getValue() {
+          WebElement row = webDriver.findElement(By.tagName("section")).findElement(
+              By.cssSelector("#items > table > tbody > tr:nth-child(" + (pagePosition + 1) + ")"));
+          WebElement field = row
+              .findElement(By.cssSelector("td:nth-child(" + (fieldIndex + 1) + ")"));
+          String text = field.getText();
+          String type = field.getAttribute("data-type");
+          switch (type) {
+          case "number":
+            return new BigDecimal(text);
+          default:
+            return text;
+          }
+        }
+
+        @Override
+        public String getName() {
+          WebElement headerRow = webDriver.findElement(By.tagName("section"))
+              .findElement(By.cssSelector("#items > table > thead > tr"));
+          WebElement header = headerRow
+              .findElement(By.cssSelector("th:nth-child(" + (fieldIndex + 1) + ")"));
+          return header.getText();
+        }
+      };
+      field.setFieldIndex(fieldIndex);
+      return field;
+    }
+  };
 
   public HtmlRyvrSource(WebDriver webDriver) {
     this.webDriver = webDriver;
   }
 
-  private class RyvrIterator implements ListIterator<Record> {
-    long pagePosition = -1;
-    long currentPage = -1;
-
-    public RyvrIterator() {
-      // TODO Auto-generated constructor stub
-    }
-
-    public RyvrIterator(long position) {
-      currentPage = position / getUnderlyingPageSize();
-      pagePosition = position % getUnderlyingPageSize();
-    }
-
-    @Override
-    public boolean hasNext() {
-      if (currentPage < 0) {
-        // first call to hasNext, so load the first page and check if we have records;
-        followLink("first");
-        currentPage = 0;
-        return getUnderlyingPageSize() != 0;
-      } else if (getNextLink() != null) {
-        // if there is a next link, then there are definitely next records
-        return true;
-      } else {
-
-        // otherwise we are on the most recent page (AKA the current page)
-        // so check if there are rows after the row we are pointing to at
-        // the moment.
-        int recordsOnPage = getUnderlyingPageSize();
-        if (pagePosition < recordsOnPage - 1) {
-          return true;
-        } else {
-          // otehrwise, relaod and see if we have new events
-          followLink("last");
-          recordsOnPage = getUnderlyingPageSize();
-        }
-        return pagePosition < recordsOnPage - 1;
-      }
-    }
-
-    @Override
-    public Record next() {
-      if (!hasNext()) {
-        throw new NoSuchElementException();
-      }
-
-      final Record rval = new Record() {
-
-        @Override
-        public int size() {
-          return getFieldNames().length;
-        }
-
-        @Override
-        public Field getField(int fieldIndex) {
-          final Field field = new Field() {
-
-            private int fieldIndex;
-
-            @Override
-            public Object getValue() {
-              WebElement element = webDriver
-                  .findElement(By.cssSelector("#items > table > tbody > tr:nth-child("
-                      + (pagePosition + 1) + ") > td:nth-child(" + (fieldIndex + 1) + ")"));
-              String textValue = element.getText();
-              String type = element.getAttribute("data-type");
-              switch (type) {
-              case "number":
-                BigDecimal number = new BigDecimal(textValue);
-                try {
-                  return number.longValueExact();
-                } catch (ArithmeticException e) {
-                  return number;
-                }
-              case "boolean":
-                return Boolean.parseBoolean(textValue);
-              default:
-                return textValue;
-              }
-            }
-
-            @Override
-            public String getName() {
-              return getFieldNames()[fieldIndex];
-            }
-
-            @Override
-            public void setFieldIndex(int fieldIndex) {
-              this.fieldIndex = fieldIndex;
-            }
-          };
-          field.setFieldIndex(fieldIndex);
-          return field;
-        }
-
-        @Override
-        public void setPosition(long pp) {
-          pagePosition = (int) pp;
-        }
-
-      };
-      ++pagePosition;
-      if (pagePosition == getUnderlyingPageSize()) {
-        followNextLink();
-        this.pagePosition = 0;
-      }
-      return rval;
-    }
-
-    @Override
-    public void remove() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void forEachRemaining(Consumer<? super Record> consumer) {
-      if (!hasNext()) {
-        return;
-      }
-      while (hasNext()) {
-        consumer.accept(next());
-      }
-    }
-
-    @Override
-    public boolean hasPrevious() {
-      throw new NotImplementedException("TODO");
-    }
-
-    @Override
-    public Record previous() {
-      throw new NotImplementedException("TODO");
-    }
-
-    @Override
-    public int nextIndex() {
-      throw new NotImplementedException("TODO");
-    }
-
-    @Override
-    public int previousIndex() {
-      throw new NotImplementedException("TODO");
-    }
-
-    @Override
-    public void set(Record e) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void add(Record e) {
-      throw new UnsupportedOperationException();
-    }
-
-  }
-
   @Override
   public Iterator<Record> iterator() {
-    return new RyvrIterator();
+    return new HtmlRyvrSourceIterator(this);
   }
 
-  @Override
-  public ListIterator<Record> listIterator(int position) {
-    return new RyvrIterator(position);
-  }
+  // @Override
+  // public ListIterator<Record> listIterator(int position) {
+  // return new RyvrIterator(position);
+  // }
 
   public String getNextLink() {
     WebElement link = webDriver.findElement(By.tagName("section"))
@@ -207,37 +103,95 @@ public class HtmlRyvrSource extends RyvrSource {
     WebElement link = webDriver.findElement(By.tagName("section"))
         .findElement(By.cssSelector("a[rel~='" + rel + "']"));
     link.click();
-    HtmlRyvrClient.waitTillLoaded(webDriver, 5);
+    HtmlRyvrClient.waitTillLoaded(webDriver, 1000);
   }
 
   public void followNextLink() {
     followLink("next");
   }
 
-  @Override
-  public long longSize() {
-    long count = Long.parseLong(webDriver.findElement(By.id("property::count")).getText());
-    return count;
-    // long pageNo = Long.parseLong(webDriver.findElement(By.id("property::page")).getText());
-    // long pageSize = Long.parseLong(webDriver.findElement(By.id("property::pageSize")).getText());
-    // long currentPageCount = webDriver.findElements(By.className("itemRow")).size() - 1;
-    // return (pageNo - 1) * pageSize + currentPageCount;
-  }
+  // @Override
+  // public long longSize() {
+  // long count = Long.parseLong(webDriver.findElement(By.id("property::count")).getText());
+  // return count;
+  // // long pageNo = Long.parseLong(webDriver.findElement(By.id("property::page")).getText());
+  // // long pageSize =
+  // Long.parseLong(webDriver.findElement(By.id("property::pageSize")).getText());
+  // // long currentPageCount = webDriver.findElements(By.className("itemRow")).size() - 1;
+  // // return (pageNo - 1) * pageSize + currentPageCount;
+  // }
 
   public int getUnderlyingPageSize() {
-    return webDriver.findElements(By.className("itemRow")).size();
+    HtmlRyvrClient.waitTillVisible(webDriver, 1000, "header-Page-Size");
+    return Integer.parseInt(webDriver.findElement(By.id("header-Page-Size")).getText());
   }
 
-  @Override
-  public Record get(int index) {
-    return listIterator(index).next();
-  }
+  // @Override
+  // public Record get(int index) {
+  // return listIterator(index).next();
+  // }
 
   @Override
   public String[] getFieldNames() {
     List<String> headings = webDriver.findElements(By.className("itemHeading")).stream()
         .map(element -> element.getText()).collect(Collectors.toList());
     return headings.toArray(new String[] {});
+  }
+
+  @Override
+  public void refresh() {
+    followLink("self");
+  }
+
+  @Override
+  public Iterator<Record> iterator(long position) {
+    return new HtmlRyvrSourceIterator(this, position);
+  }
+
+  @Override
+  public long getRecordsRemaining(long fromPosition) {
+    throw new NotImplementedException("TODO");
+  }
+
+  public int getPageNo() {
+    HtmlRyvrClient.waitTillVisible(webDriver, 1000, "header-Page");
+    return Integer.parseInt(webDriver.findElement(By.id("header-Page")).getText());
+  }
+
+  public void followUri(URI resolve) throws IOException {
+    webDriver.get(resolve.toString());
+    HtmlRyvrClient.waitTillLoaded(webDriver, 1000);
+  }
+
+  public boolean isArchivePage() {
+
+    // for (int i = 0; i < 5000 && !isViewLoaded(); i += 100)
+    // try {
+    // Thread.sleep(100);
+    // } catch (InterruptedException e) {
+    // // meh
+    // }
+    HtmlRyvrClient.waitTillVisible(webDriver, 1000, "header-Archive-Page");
+    return Boolean.parseBoolean(webDriver.findElement(By.id("header-Archive-Page")).getText());
+  }
+
+  private boolean isViewLoaded() {
+    if (webDriver instanceof JavascriptExecutor) {
+      return (boolean) ((JavascriptExecutor) webDriver).executeScript(
+          "return angular.element(document.getElementById('controller')).scope().controller.viewLoaded;");
+    } else {
+      return true;
+    }
+  }
+
+  public long getUnderlyingCurrentPageSize() {
+    return webDriver.findElement(By.tagName("section"))
+        .findElements(By.cssSelector("#items > table > tbody > tr")).size();
+  }
+
+  @Override
+  public boolean isLoaded(long page) {
+    throw new NotImplementedException("TODO");
   }
 
 }

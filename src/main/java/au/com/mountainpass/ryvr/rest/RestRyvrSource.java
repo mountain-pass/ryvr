@@ -15,8 +15,9 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.InvalidJsonException;
@@ -28,13 +29,21 @@ import au.com.mountainpass.ryvr.model.RyvrSource;
 import net.minidev.json.JSONArray;
 
 public class RestRyvrSource extends RyvrSource {
+  public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
   private URI contextUri;
   private CloseableHttpClient httpClient;
   private HttpEntity body;
-  private URI currentUri;
+  URI currentUri;
   private CloseableHttpResponse response;
-  private int pageSize = -1;
+  int pageSize = -1;
+  private int currentPageSize = -1;
+  private int page = -1;
+  long pagePosition;
+
+  private boolean archivePageSet;
+
+  private boolean archivePage;
 
   public RestRyvrSource(CloseableHttpClient httpClient, URI ryvrUri, HttpEntity body,
       CloseableHttpResponse response) {
@@ -73,14 +82,12 @@ public class RestRyvrSource extends RyvrSource {
       ryvrUri = contextUri.resolve(getLink(rel));
       followUri(ryvrUri);
     } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-      throw new NotImplementedException();
+      throw new RuntimeException(e);
     }
 
   }
 
-  private void followNextLink() {
+  void followNextLink() {
     URI ryvrUri;
     try {
       ryvrUri = contextUri.resolve(getNextLink());
@@ -93,24 +100,23 @@ public class RestRyvrSource extends RyvrSource {
 
   }
 
-  private void followUri(final URI ryvrUri) throws ClientProtocolException, IOException {
+  void followUri(final URI ryvrUri) throws ClientProtocolException, IOException {
     HttpGet httpget = buildHttpGet(ryvrUri);
     if (response != null) {
       response.close();
     }
     response = httpClient.execute(httpget);
-    if (response.getStatusLine().getStatusCode() == HttpStatus.SEE_OTHER.value()) {
-      httpget = buildHttpGet(URI.create(response.getFirstHeader(HttpHeaders.LOCATION).getValue()));
-      response.close();
-      response = httpClient.execute(httpget);
-    }
     body = response.getEntity();
+    // LOGGER.info("Status: {}", response.getStatusLine());
     currentUri = ryvrUri;
     pageSize = -1;
+    currentPageSize = -1;
+    page = -1;
     nextLinkSet = false;
     nextLink = null;
     parsedBody = null;
-    count = -1;
+    archivePageSet = false;
+    // count = -1;
   }
 
   private HttpGet buildHttpGet(final URI ryvrUri) {
@@ -223,12 +229,6 @@ public class RestRyvrSource extends RyvrSource {
           field.setFieldIndex(fieldIndex);
           return field;
         }
-
-        @Override
-        public void setPosition(long pp) {
-          pagePosition = (int) pp;
-        }
-
       };
       ++pagePosition;
       if (pagePosition == getUnderlyingPageSize()) {
@@ -286,15 +286,15 @@ public class RestRyvrSource extends RyvrSource {
 
   }
 
-  @Override
-  public Iterator<Record> iterator() {
-    return new RyvrIterator();
-  }
+  // @Override
+  // public Iterator<Record> iterator() {
+  // return new RyvrIterator();
+  // }
 
-  @Override
-  public ListIterator<Record> listIterator(int position) {
-    return new RyvrIterator(position);
-  }
+  // @Override
+  // public ListIterator<Record> listIterator(int position) {
+  // return new RyvrIterator(position);
+  // }
 
   public String getNextLink() {
     if (!nextLinkSet) {
@@ -312,34 +312,22 @@ public class RestRyvrSource extends RyvrSource {
     return Integer.parseInt(response.getFirstHeader(HttpHeaders.CONTENT_LENGTH).getValue());
   }
 
-  @Override
-  public long longSize() {
-    if (count == -1L) {
-      if (currentUri == null) {
-        try {
-          followUri(contextUri);
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      } else {
-        String currentFile = currentUri.getPath();
-        String currentQuery = currentUri.getQuery();
-        if (currentQuery != null) {
-          currentFile += '?' + currentQuery;
-        }
-        if (!currentFile.equals(getLink("current")) && !currentFile.equals(getLink("last"))) {
-          followLink("current");
-        }
-      }
-      Integer intCount = JsonPath.read(getBodyDocument(), "$.count");
-      count = intCount;
-    }
-    return count;
-  }
+  // @Override
+  // public long longSize() {
+  // if (count == -1L) {
+  // // LOGGER.info("getting current page to get size");
+  // followLink("current");
+  // // LOGGER.info("got current page");
+  // Integer intCount = JsonPath.read(getBodyDocument(), "$.count");
+  // count = intCount.intValue();
+  // // LOGGER.info("size: {}", count);
+  // }
+  // return count;
+  // }
 
   public int getUnderlyingPageSize() {
     if (pageSize < 0) {
-      pageSize = Integer.parseInt(response.getFirstHeader("Page-Record-Count").getValue());
+      pageSize = Integer.parseInt(response.getFirstHeader("Page-Size").getValue());
     }
     return pageSize;
   }
@@ -351,15 +339,113 @@ public class RestRyvrSource extends RyvrSource {
     return currentUri;
   }
 
-  @Override
-  public Record get(int index) {
-    return listIterator(index).next();
+  Record record = new Record() {
+
+    @Override
+    public int size() {
+      return JsonPath.read(getBodyDocument(), "$.columns.length()");
+    }
+
+    @Override
+    public Field getField(int fieldIndex) {
+      final Field field = new Field() {
+
+        private int fieldIndex;
+
+        @Override
+        public Object getValue() {
+          return JsonPath.read(getBodyDocument(),
+              "$.rows[" + pagePosition + "][" + fieldIndex + "]");
+        }
+
+        @Override
+        public String getName() {
+          return JsonPath.read(getBodyDocument(), "$.columns[" + fieldIndex + "]");
+        }
+
+        @Override
+        public void setFieldIndex(int fieldIndex) {
+          this.fieldIndex = fieldIndex;
+        }
+      };
+      field.setFieldIndex(fieldIndex);
+      return field;
+    }
+  };
+
+  // @Override
+  // public Record get(int index) {
+  // int page = (index / getUnderlyingPageSize()) + 1;
+  // pagePosition = index % getUnderlyingPageSize();
+  // int currentPage = getPageNo();
+  // if (currentPage != page) {
+  // String currentFile = currentUri.getPath();
+  // String currentQuery = currentUri.getQuery();
+  // String newQuery = "page=" + page;
+  // try {
+  // // LOGGER.info("getting new page: {} for index {}", page, index);
+  // followUri(currentUri.resolve(currentFile + "?" + newQuery));
+  // } catch (IOException e) {
+  // throw new RuntimeException(e);
+  // }
+  // }
+  // return record;
+  // }
+
+  int getPageNo() {
+    if (page < 0) {
+      page = Integer.parseInt(response.getFirstHeader("Page").getValue());
+    }
+    return page;
+
   }
 
   @Override
   public String[] getFieldNames() {
     JSONArray array = JsonPath.read(getBodyDocument(), "$.columns");
     return array.toArray(new String[] {});
+  }
+
+  @Override
+  public void refresh() {
+    // LOGGER.info("resetting size");
+    // count = -1L;
+    followLink("self");
+  }
+
+  @Override
+  public Iterator<Record> iterator() {
+    return new RestRyvrSourceIterator(this);
+  }
+
+  @Override
+  public Iterator<Record> iterator(long position) {
+    return new RestRyvrSourceIterator(this, position);
+  }
+
+  public long getUnderlyingCurrentPageSize() {
+    if (currentPageSize < 0) {
+      currentPageSize = Integer.parseInt(response.getFirstHeader("Current-Page-Size").getValue());
+    }
+    return currentPageSize;
+  }
+
+  @Override
+  public long getRecordsRemaining(long fromPosition) {
+    throw new NotImplementedException("TODO");
+  }
+
+  public boolean isArchivePage() {
+    if (!archivePageSet) {
+      archivePage = Boolean.parseBoolean(response.getFirstHeader("Archive-Page").getValue());
+      archivePageSet = true;
+    }
+    return archivePage;
+  }
+
+  @Override
+  public boolean isLoaded(long page) {
+    return response != null;
   }
 
 }
