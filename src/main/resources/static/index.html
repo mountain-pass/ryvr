@@ -103,10 +103,6 @@
             </tr>
           </thead>
           <tbody>
-            <tr ng-repeat="(key, value) in resourceProperties()" class="propertyRow">
-              <th>{{key}}</th>
-              <td id="property-{{key}}">{{value}}</td>
-            </tr>
             <tr ng-repeat="(key, value) in controller.resourceHeaders" class="propertyRow">
               <th>{{key}}</th>
               <td id="header-{{key}}">{{[].concat(controller.resourceHeaders[key]).join(',')}}</td>

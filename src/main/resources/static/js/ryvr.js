@@ -17,6 +17,7 @@ define(['angular'], function(angular) {
                     angular.element(document.getElementById('controller')).scope().controller.loading = true;
                     angular.element(document.getElementById('controller')).scope().controller.viewLoaded = false;
                     config.headers['Accept'] = 'application/hal+json;q=1,application/json;q=0.8,*/*;q=0.1';
+                    config.headers['Cache-Control'] = 'max-stale';
                     if(getLocation(config.url).pathname == '/api-docs') {
                         window.location.href = config.url;
                     }

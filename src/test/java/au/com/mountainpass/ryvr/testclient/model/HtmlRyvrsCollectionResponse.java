@@ -28,7 +28,7 @@ public class HtmlRyvrsCollectionResponse implements RyvrsCollectionResponse {
 
   @Override
   public void assertCount(int count) {
-    assertThat(Integer.parseInt(webDriver.findElement(By.id("property-count")).getText()),
+    assertThat(webDriver.findElements(By.cssSelector("#linkedItems > ul > li")).size(),
         equalTo(count));
   }
 
