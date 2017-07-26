@@ -125,6 +125,12 @@
 
       <div id="items" ng-if="controller.resource.hasOwnProperty('columns') && controller.resource.columns.length > 0">
         <h2>Records</h2>
+        <div class="btn-group" role="group" aria-label="navigation" id="itemNavLinksBefore">
+          <a class="btn btn-default" ng-repeat="rel in ['first', 'prev', 'next', 'last']"
+            ng-class="{disabled: !controller.resourceLinks.hasOwnProperty(rel)}"
+            href="{{controller.resourceLinks[rel][0]}}" rel="{{rel}}">{{rel}}</a>
+        </div>
+        
         <table class="table records table-striped table-hover">
           <thead>
             <tr>
