@@ -122,8 +122,8 @@ public class HtmlRyvrSource extends RyvrSource {
   // }
 
   public int getUnderlyingPageSize() {
-    HtmlRyvrClient.waitTillVisible(webDriver, 1000, "header-Page-Size");
-    return Integer.parseInt(webDriver.findElement(By.id("header-Page-Size")).getText());
+    HtmlRyvrClient.waitTillVisible(webDriver, 1000, "header-page-size");
+    return Integer.parseInt(webDriver.findElement(By.id("header-page-size")).getText());
   }
 
   // @Override
@@ -154,8 +154,8 @@ public class HtmlRyvrSource extends RyvrSource {
   }
 
   public int getPageNo() {
-    HtmlRyvrClient.waitTillVisible(webDriver, 1000, "header-Page");
-    return Integer.parseInt(webDriver.findElement(By.id("header-Page")).getText());
+    HtmlRyvrClient.waitTillVisible(webDriver, 1000, "header-page");
+    return Integer.parseInt(webDriver.findElement(By.id("header-page")).getText());
   }
 
   public void followUri(URI resolve) throws IOException {
@@ -171,8 +171,8 @@ public class HtmlRyvrSource extends RyvrSource {
     // } catch (InterruptedException e) {
     // // meh
     // }
-    HtmlRyvrClient.waitTillVisible(webDriver, 1000, "header-Archive-Page");
-    return Boolean.parseBoolean(webDriver.findElement(By.id("header-Archive-Page")).getText());
+    HtmlRyvrClient.waitTillVisible(webDriver, 1000, "header-archive-page");
+    return Boolean.parseBoolean(webDriver.findElement(By.id("header-archive-page")).getText());
   }
 
   private boolean isViewLoaded() {

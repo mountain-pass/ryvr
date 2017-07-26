@@ -168,6 +168,8 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [X] Performance test with multiple clients
  - [X] Add performance test on write -> read latency
  - [X] Add rest ryvr
+ - [ ] Test with not self-signed certificates, because [Chrome doesn't cache when using self-signed certs](https://www.sitepoint.com/solve-caching-conundrums/)
+ - [ ] Add very response header
  - [ ] refactor remaining endpoints to use link headers and remove hal
  - [ ] remove dead code
  - [ ] Stablise API
@@ -185,3 +187,4 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [ ] Add support for more non-DB datasources
  - [ ] Add client library
  - [ ] decouple rest ryvr page size and UI page size
+ - [ ] Add change notification service

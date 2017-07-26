@@ -121,13 +121,12 @@ public class JsonController {
         isLastPage = !lastOnPageIterator.hasNext();
       }
     }
-    // BodyBuilder responseBuilder = ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE);
     res.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    res.addHeader(HttpHeaders.VARY, String.join(",", HttpHeaders.ACCEPT,
+        HttpHeaders.ACCEPT_ENCODING, HttpHeaders.ACCEPT_LANGUAGE, HttpHeaders.ACCEPT_CHARSET));
     if (isLastPage) {
       res.addHeader(HttpHeaders.CACHE_CONTROL,
           CacheControl.maxAge(currentPageMaxAge, currentPageMaxAgeUnit).getHeaderValue());
-      // responseBuilder.cacheControl(CacheControl.maxAge(currentPageMaxAge,
-      // currentPageMaxAgeUnit));
       long pageRecordCount = ryvr.getSource()
           .getRecordsRemaining(getPageStartPosition(page, pageSize));
       res.addHeader(HttpHeaders.ETAG,

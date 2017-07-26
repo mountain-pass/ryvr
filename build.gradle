@@ -149,7 +149,7 @@ dependencies {
   compile('org.webjars:bootstrap:3.3.7-1')
   compile('org.webjars:jquery:3.1.1-1')
   compile('org.webjars:angularjs:1.6.4')
-
+  
   compile group: 'org.shredzone.acme4j', name: 'acme4j-client', version: '0.10'
   compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
   compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.2.0'
@@ -181,7 +181,9 @@ dependencies {
   compile group: 'org.postgresql', name: 'postgresql', version: '42.1.1'
 
 
-
+  runtime group: 'org.jacoco', name: 'org.jacoco.agent', version: '0.7.7.201606060606'
+  
+  
 
   codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.10'
 }
@@ -207,10 +209,6 @@ task "unzipDistZip" (type: Copy, dependsOn: 'distZip', group: 'distribution') {
   }
 }
 
-task "distZipRun"(type: Exec, group: 'application', description: "run this project via the distZip", dependsOn: 'unzipDistZip') {
-  workingDir "${unzipDistZip.outputDir}/ryvr/bin"
-  commandLine "${unzipDistZip.outputDir}/ryvr/bin/ryvr"
-}
 
 test { exclude '**' }
 
@@ -239,6 +237,26 @@ def SAUCE_LABS_USERNAME = project.getProperties().get("SAUCE_LABS_USERNAME") ?: 
 def SAUCE_LABS_KEY = project.getProperties().get("SAUCE_LABS_KEY") ?: ""
 Boolean withSauce = project.getProperties().get("withSauce") ?: false
 
+task "distZipRun"(type: Exec, group: 'application', description: "run this project via the distZip", dependsOn: 'unzipDistZip') {
+  workingDir "${unzipDistZip.outputDir}/ryvr/bin"
+  def jacocoAgent = ""
+  println "Dependencies:"
+  configurations.runtime.resolve().each {
+    String absolutPath=it.getAbsolutePath();
+    if(absolutPath.contains("org.jacoco/org.jacoco.agent/")){
+      jacocoAgent = absolutPath
+    }
+  }
+  if( project.hasProperty("jacoco.destinationFile") ) {
+    args "-javaagent=${jacocoAgent},destFile=${jacoco.destinationFile}"
+  }
+  else {
+    args "-javaagent=${jacocoAgent},destFile=${coverageOutputDir}/coverage-results-distZipRun/jacoco"
+  }
+  commandLine "${unzipDistZip.outputDir}/ryvr/bin/ryvr"
+}
+
+
 jacoco {
   toolVersion = "0.7.7.201606060606"
   reportsDir = file("${buildDir}/test-results/jacoco")
@@ -265,6 +283,7 @@ testClasses.each { File testClass ->
     systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
     systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
     systemProperty 'au.com.mountainpass.ryvr.test.jar', jar.outputs.files.singleFile
+    systemProperty 'jacoco.destinationFile', "${coverageDir}/jacoco/${baseName}.exec"
     jacoco {
       append = false
       destinationFile = file("${coverageDir}/jacoco/${baseName}.exec")

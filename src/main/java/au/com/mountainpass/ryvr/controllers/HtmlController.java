@@ -125,7 +125,7 @@ public class HtmlController {
     HttpHeaders headers = new HttpHeaders();
     for (Iterator<String> i = rvyrRes.getHeaderNames().iterator(); i.hasNext();) {
       String headerName = i.next();
-      headers.put(headerName, rvyrRes.getHeaders(headerName));
+      headers.put(headerName.toLowerCase(), rvyrRes.getHeaders(headerName));
     }
     return getIndex(root, rvyrRes.getContentAsString(), headers);
   }

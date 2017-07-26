@@ -106,3 +106,9 @@ body.loading .main-content {
          -o-filter: blur(20px);
             filter: blur(20px);
 }
+
+tr:target {
+    background: #28656E !important;
+    color: white;
+    transition: color,background 0.5s ease-in-out;
+}

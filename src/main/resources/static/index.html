@@ -125,15 +125,15 @@
 
       <div id="items" ng-if="controller.resource.hasOwnProperty('columns') && controller.resource.columns.length > 0">
         <h2>Records</h2>
-        <table class="table records">
+        <table class="table records table-striped table-hover">
           <thead>
             <tr>
               <th ng-repeat="heading in controller.resource.columns" class="itemHeading">{{heading}}</th>
             </tr>
           </thead>
           <tbody>
-            <tr ng-repeat="record in controller.resource.rows" class="itemRow">
-              <td ng-repeat="field in record" data-heading="{{controller.resource.columns[$index]}}"
+            <tr ng-repeat="record in controller.resource.rows track by $index" class="itemRow" id="{{$index}}" ng-click="target($index)" >
+              <td ng-repeat="field in record track by $index" data-heading="{{controller.resource.columns[$index]}}"
                 data-type="{{typeOf(field)}}">{{field}}</td>
             </tr>
           </tbody>
