@@ -44,6 +44,7 @@ public class RyvrTestDistZipRunServerProcessBuilder implements RyvrTestServerPro
     }
     try (FileReader fr = new FileReader(APPLICATION_YML);
         FileWriter fw = new FileWriter("build/distributions/ryvr/etc/application.yml", true)) {
+      fw.write("\n");
       int c = fr.read();
       while (c != -1) {
         fw.write(c);
@@ -52,8 +53,9 @@ public class RyvrTestDistZipRunServerProcessBuilder implements RyvrTestServerPro
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-
-    return new ProcessBuilder("bash", "./gradlew", "distZipRun");
+    // make sure we don't let gradle unzip the dist again, as that would
+    // overwrite our config changes
+    return new ProcessBuilder("bash", "./gradlew", "distZipRun", "-x", "unzipDistZip");
   }
 
   @Override
@@ -63,19 +65,18 @@ public class RyvrTestDistZipRunServerProcessBuilder implements RyvrTestServerPro
     new File(APPLICATION_YML).delete();
     final FileWriter fileWriter = new FileWriter(APPLICATION_YML);
     final StringWriter writer = new StringWriter();
-    writer.write("au.com.mountainpass.ryvr:\n");
-    writer.write("  data-sources:\n");
-    writer.write("    - url: " + springDatasourceUrl + "\n");
-    writer.write("      username: " + springDatasourceUsername + "\n");
-    writer.write("      password: " + springDatasourcePassword + "\n");
+    writer.write("au.com.mountainpass.ryvr.data-sources:\n");
+    writer.write("  - url: " + springDatasourceUrl + "\n");
+    writer.write("    username: " + springDatasourceUsername + "\n");
+    writer.write("    password: " + springDatasourcePassword + "\n");
     if (!dataSourcesRyvrConfigs.isEmpty()) {
-      writer.write("      ryvrs:\n");
+      writer.write("    ryvrs:\n");
       for (final Map<String, String> config : dataSourcesRyvrConfigs) {
-        writer.write("        " + config.get("name") + ":\n");
-        writer.write("          page-size: " + config.get("page size") + "\n");
-        writer.write("          catalog: " + config.get("database") + "\n");
-        writer.write("          table: " + config.get("table") + "\n");
-        writer.write("          ordered-by: " + config.get("ordered by") + "\n");
+        writer.write("      " + config.get("name") + ":\n");
+        writer.write("        page-size: " + config.get("page size") + "\n");
+        writer.write("        catalog: " + config.get("database") + "\n");
+        writer.write("        table: " + config.get("table") + "\n");
+        writer.write("        ordered-by: " + config.get("ordered by") + "\n");
       }
     }
     writer.close();
