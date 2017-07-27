@@ -2,7 +2,7 @@
 <configuration>
 	<include resource="org/springframework/boot/logging/logback/base.xml" />
 	<logger name="org.springframework.web" level="off" />
-	<logger name="org.apache.http.wire" level="off" />
+	<logger name="org.apache.http.wire" level="trace" />
 	<logger name="org.springframework.jdbc.core.JdbcTemplate" level="off" />
 	<logger name="h2database" level="off" />
 </configuration>

@@ -240,7 +240,6 @@ Boolean withSauce = project.getProperties().get("withSauce") ?: false
 task "distZipRun"(type: Exec, group: 'application', description: "run this project via the distZip", dependsOn: 'unzipDistZip') {
   workingDir "${unzipDistZip.outputDir}/ryvr/bin"
   def jacocoAgent = ""
-  println "Dependencies:"
   configurations.runtime.resolve().each {
     String absolutPath=it.getAbsolutePath();
     if(absolutPath.contains("org.jacoco/org.jacoco.agent/")){
