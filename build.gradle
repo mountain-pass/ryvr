@@ -153,14 +153,17 @@ dependencies {
   compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
   compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.2.0'
 
-  compile group: 'com.lmax', name: 'disruptor', version: '3.3.6'
+  //compile group: 'com.lmax', name: 'disruptor', version: '3.3.6'
 
+  compile group: 'org.json', name: 'json', version: '20170516'
 
   // we use the MockHttpServletRequest for the HttpController.
   // Change this back to a testCompile dependency when we have
   // removed the use of the Mock.
   compile('org.springframework.boot:spring-boot-starter-test')
 
+  
+  
   testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'
   testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
 
@@ -176,7 +179,7 @@ dependencies {
 
 
   compile('com.h2database:h2')
-  compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.39'
+  compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.6'
   compile group: 'org.postgresql', name: 'postgresql', version: '42.1.1'
 
 

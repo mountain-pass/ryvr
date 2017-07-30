@@ -25,7 +25,7 @@ au.com.mountainpass.ryvr:
     hostname: localhost
     genCert: selfSigned
   data-sources:
-    - url: jdbc:mysql://localhost
+    - url: jdbc:mysql://localhost?serverTimezone=UTC
       username: dbuser
       password: dbpass
       ryvrs:

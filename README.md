@@ -173,6 +173,7 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [ ] Add test for getting a RyvrsCollection as HTML
  - [ ] Add test with negative page (404)
  - [ ] Add test with different SQL types
+ - [ ] Add test with different characters that require JSON escaping
  - [ ] Test with non-self-signed certificates, because [Chrome doesn't cache when using self-signed certs](https://www.sitepoint.com/solve-caching-conundrums/)
  - [ ] refactor remaining endpoints to use link headers and remove hal
  - [ ] remove dead code
