@@ -33,7 +33,7 @@ if( ci ) {
       def latestVersion = result.tag_name
       println "latestVersion: ${latestVersion}"
       def splitVerison = latestVersion.split("\\.")
-      splitVerison[1] = (splitVerison[1] as Integer) + 1
+      splitVerison[0] = (splitVerison[0] as Integer) + 1
       project.version = "${splitVerison[0]}.${splitVerison[1]}.${splitVerison[2]}"
       i.close()
     }
