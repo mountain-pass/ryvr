@@ -2,6 +2,7 @@ package au.com.mountainpass.ryvr.testclient;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 import java.net.URI;
 import java.util.List;
@@ -10,7 +11,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -83,12 +83,9 @@ public class HtmlRyvrClient implements RyvrTestClient {
 
   @Override
   public void after(Scenario scenario) {
-    if (webDriver instanceof TakesScreenshot) {
-      byte[] screenshot = ((TakesScreenshot) webDriver).getScreenshotAs(OutputType.BYTES);
-      scenario.embed(screenshot, "image/png");
-    } else {
-      scenario.embed(webDriver.getPageSource().getBytes(), "text/html");
-    }
+    assumeTrue(webDriver instanceof TakesScreenshot);
+    byte[] screenshot = ((TakesScreenshot) webDriver).getScreenshotAs(OutputType.BYTES);
+    scenario.embed(screenshot, "image/png");
     String status = scenario.getStatus();
     if (sauceLabsTunnel != null) {
       ((JavascriptExecutor) webDriver)
@@ -141,12 +138,8 @@ public class HtmlRyvrClient implements RyvrTestClient {
 
   public static void waitTillVisible(WebDriver webDriver, long timeoutInSeconds, String id) {
     LOGGER.info("waiting till {} loaded...", id);
-    try {
-      HtmlRyvrClient.waitTillLoaded(webDriver, timeoutInSeconds,
-          ExpectedConditions.visibilityOfElementLocated(By.id(id)));
-    } catch (TimeoutException e) {
-      LOGGER.info("...timeout", id);
-    }
+    HtmlRyvrClient.waitTillLoaded(webDriver, timeoutInSeconds,
+        ExpectedConditions.visibilityOfElementLocated(By.id(id)));
     LOGGER.info("...loaded", id);
   }
 

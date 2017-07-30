@@ -23,11 +23,9 @@ apply plugin: 'application'
 
 group = 'au.com.mountainpass'
 
-import org.apache.commons.lang.NotImplementedException;
-
-println "System.env.SHIPPABLE: ${System.env.SHIPPABLE}"
-def shippable = System.env.SHIPPABLE == 'true'
-if( shippable ) {
+println "System.env.CI: ${System.env.CI}"
+def ci = System.env.CI == 'true'
+if( ci ) {
   try {
     new URL("https://api.github.com/repos/mountain-pass/ryvr/releases/latest").withInputStream{ i ->
       def slurper = new groovy.json.JsonSlurper().setType(groovy.json.JsonParserType.INDEX_OVERLAY);
@@ -95,6 +93,7 @@ applicationDistribution.from("LICENSE") { into "." }
 
 
 bootRun.doFirst() { applicationDefaultJvmArgs = []}
+
 applicationDefaultJvmArgs = [
   "-Dspring.config.location=file:../etc/application.yml",
   "-Dlogging.config=file:../etc/logback-spring.xml"
@@ -181,8 +180,7 @@ dependencies {
   compile group: 'org.postgresql', name: 'postgresql', version: '42.1.1'
 
 
-  runtime group: 'org.jacoco', name: 'org.jacoco.agent', version: '0.7.7.201606060606'
-  
+  runtime 'org.jacoco:org.jacoco.agent:0.7.7.201606060606:runtime'
   
 
   codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.10'
@@ -242,15 +240,18 @@ task "distZipRun"(type: Exec, group: 'application', description: "run this proje
   def jacocoAgent = ""
   configurations.runtime.resolve().each {
     String absolutPath=it.getAbsolutePath();
-    if(absolutPath.contains("org.jacoco/org.jacoco.agent/")){
+    if(absolutPath.contains("org.jacoco/org.jacoco.agent/") && absolutPath.endsWith("-runtime.jar")){
       jacocoAgent = absolutPath
     }
   }
-  if( project.hasProperty("jacoco.destinationFile") ) {
-    args "-javaagent=${jacocoAgent},destFile=${jacoco.destinationFile}"
+  //RYVR_OPTS
+  if( project.hasProperty("testclass") ) {
+    mkdir "${coverageOutputDir}/coverage-results-${testclass}/jacoco"
+    environment RYVR_OPTS: "-javaagent:${jacocoAgent}=destfile=${coverageOutputDir}/coverage-results-${testclass}/jacoco/${testclass}-server.exec"
   }
   else {
-    args "-javaagent=${jacocoAgent},destFile=${coverageOutputDir}/coverage-results-distZipRun/jacoco"
+    mkdir "${coverageOutputDir}/coverage-results-distZipRun/jacoco"
+    environment RYVR_OPTS: "-javaagent:${jacocoAgent}=destfile=${coverageOutputDir}/coverage-results-distZipRun/jacoco/distZipRun.exec"
   }
   commandLine "${unzipDistZip.outputDir}/ryvr/bin/ryvr"
 }
@@ -310,7 +311,12 @@ test.dependsOn {
 
 jacocoTestReport {
   executionData = fileTree(dir: "${coverageOutputDir}", include: '**/jacoco/*.exec')
-
+  additionalSourceDirs = files(sourceSets.test.allJava.srcDirs)
+  additionalClassDirs = files(sourceSets.test.output)
+  additionalSourceDirs.each { File f ->
+    println "additionalSourceDirs: ${f}"
+  }
+  
   reports {
     xml.enabled true
     xml.destination "${coverageOutputDir}/coverage-results/jacoco/${archivesBaseName}.xml"

@@ -33,8 +33,6 @@ public class RestRyvrClient implements RyvrTestClient {
   @Autowired
   private RyvrConfiguration config;
 
-  private String lastResponse;
-
   private SwaggerParser swaggerParser = new SwaggerParser();
 
   @Autowired
@@ -77,9 +75,6 @@ public class RestRyvrClient implements RyvrTestClient {
 
   @Override
   public void after(Scenario scenario) {
-    if (lastResponse != null) {
-      scenario.embed(lastResponse.getBytes(), "application/json");
-    }
   }
 
   @Override

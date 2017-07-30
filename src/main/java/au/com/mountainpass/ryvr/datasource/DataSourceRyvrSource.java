@@ -3,9 +3,9 @@ package au.com.mountainpass.ryvr.datasource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Iterator;
-import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,13 +91,6 @@ public class DataSourceRyvrSource extends RyvrSource {
     return localRowSet;
   }
 
-  public void refreshRowSet(long position) throws SQLException {
-    ResultSet localRowSet = refreshRowSet();
-    if (position != 0) {
-      localRowSet.absolute((int) position);
-    }
-  }
-
   private ResultSet refreshRowSet() throws SQLException {
     rowSet = null;
     return getRowSet();
@@ -115,36 +108,19 @@ public class DataSourceRyvrSource extends RyvrSource {
 
   final Record record = new DataSourceRecord(this);
 
-  // @Override
-  // public Record get(int index) {
-  // while (true) {
-  // try {
-  // getRowSet().absolute(index + 1);
-  // // LOGGER.info("Current Row: {}", getRowSet().getRow());
-  // return record;
-  // } catch (InvalidResultSetAccessException e) {
-  // LOGGER.error("Error getting record", e);
-  // refreshRowSet();
-  // }
-  // }
-  // }
-
   @Override
   public String[] getFieldNames() {
     if (columnNames == null) {
       try {
-        columnNames = IntStream.range(0, getRowSet().getMetaData().getColumnCount()).mapToObj(i -> {
-          try {
-            return getRowSet().getMetaData().getColumnName(i + 1);
-          } catch (Exception e) {
-            // TODO Auto-generated catch block
-            throw new RuntimeException(e);
-          }
-        }).toArray(String[]::new);
+        ResultSetMetaData metaData = getRowSet().getMetaData();
+        int columnCount = metaData.getColumnCount();
+        columnNames = new String[columnCount];
+        for (int i = 0; i < columnCount; ++i) {
+          columnNames[i] = metaData.getColumnName(i + 1);
+        }
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
-      // columnNames = getRowSet().getMetaData().getColumnNames();
     }
     return columnNames;
 

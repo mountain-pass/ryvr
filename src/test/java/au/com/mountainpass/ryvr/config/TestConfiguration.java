@@ -2,7 +2,6 @@ package au.com.mountainpass.ryvr.config;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -125,13 +124,13 @@ public class TestConfiguration
     return factory;
   }
 
-  public URI getBaseUri() {
-    return URI.create("https://" + sslHostname + ":" + getPort());
-  }
+  // public URI getBaseUri() {
+  // return URI.create("https://" + sslHostname + ":" + getPort());
+  // }
 
-  public int getPort() {
-    return port;
-  }
+  // public int getPort() {
+  // return port;
+  // }
 
   @Bean
   @Profile(value = { "restApi" })

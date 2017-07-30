@@ -133,8 +133,7 @@ public class JsonController {
           "\"" + Long.toHexString(page) + "." + Long.toHexString(pageRecordCount) + "\"");
       res.addHeader("Current-Page-Size", Long.toString(pageRecordCount));
       res.addHeader("Archive-Page", "false");
-      // responseBuilder.eTag(Long.toHexString(page) + "." + Long.toHexString(pageRecordCount));
-      // responseBuilder.header("Current-Page-Size", Long.toString(pageRecordCount));
+
     } else {
       res.addHeader(HttpHeaders.CACHE_CONTROL,
           CacheControl.maxAge(archivePageMaxAge, archivePageMaxAgeUnit).getHeaderValue());
@@ -142,10 +141,6 @@ public class JsonController {
       res.addHeader("Current-Page-Size", Long.toString(pageSize));
       res.addHeader("Archive-Page", "true");
 
-      // responseBuilder.cacheControl(CacheControl.maxAge(archivePageMaxAge,
-      // archivePageMaxAgeUnit));
-      // responseBuilder.eTag(Long.toHexString(page));
-      // responseBuilder.header("Current-Page-Size", Long.toString(pageSize));
     }
     res.addHeader("Page", Long.toString(page));
     res.addHeader("Page-Size", Long.toString(pageSize));
@@ -178,11 +173,7 @@ public class JsonController {
 
     String base = "/ryvrs/" + ryvr.getTitle();
     addLink("current", base, res);
-    if (page > 0L) {
-      addLink("self", base + "?page=" + page, res);
-    } else {
-      addLink("self", base + "?page=" + page, res);
-    }
+    addLink("self", base + "?page=" + page, res);
     addLink("first", base + "?page=1", res);
     if (page > 1L) {
       addLink("prev", base + "?page=" + (page - 1L), res);
@@ -205,18 +196,8 @@ public class JsonController {
 
   public void getRyvr(HttpServletResponse res, HttpServletRequest req, String ryvrName)
       throws URISyntaxException, IOException {
-    // we can't redirect to the last page, becasue by the time we get that page, it might no longer
-    // be
-    // the last, in which case we can't get the count of records, which is what we need for
-    // AbstractList::size()
-    // hmm maybe we don't use abstract list...
+    // we can't redirect to the last page, because by the time we get that page, it might no longer
+    // be the last
     getRyvr(res, req, ryvrName, -1L);
-    // Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
-    // if (ryvr == null) {
-    // return ResponseEntity.notFound().build();
-    // }
-    // String lastHref = "/ryvrs/" + ryvr.getTitle() + "?page=" + (ryvr.getPages());
-    // return ResponseEntity.status(HttpStatus.SEE_OTHER)
-    // .location(config.getBaseUri().resolve(lastHref)).build();
   }
 }

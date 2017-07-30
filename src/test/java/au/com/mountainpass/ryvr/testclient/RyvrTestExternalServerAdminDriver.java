@@ -144,7 +144,7 @@ public class RyvrTestExternalServerAdminDriver implements RyvrTestServerAdminDri
     throw new TimeoutException("timeout waiting for server to start");
   }
 
-  protected ProcessBuilder getProcessBuilder() {
+  protected ProcessBuilder getProcessBuilder() throws IOException {
     return processBuilder.getProcessBuilder();
   }
 
@@ -181,7 +181,7 @@ public class RyvrTestExternalServerAdminDriver implements RyvrTestServerAdminDri
           try {
             Thread.sleep(1000);
           } catch (final InterruptedException e) {
-            throw new RuntimeException(e);
+            // meh
           }
         }
         final URI baseUri = ryvrConfig.getBaseUri();

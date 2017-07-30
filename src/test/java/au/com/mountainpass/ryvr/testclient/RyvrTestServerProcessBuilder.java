@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface RyvrTestServerProcessBuilder {
 
-  public ProcessBuilder getProcessBuilder();
+  public ProcessBuilder getProcessBuilder() throws IOException;
 
   public void createApplicationProperties(List<Map<String, String>> dataSourcesRyvrConfigs)
       throws IOException;

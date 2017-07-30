@@ -34,12 +34,12 @@ public class RyvrTestDistZipRunServerProcessBuilder implements RyvrTestServerPro
   protected static final String APPLICATION_YML = "build/distZipRun-application.yml";
 
   @Override
-  public ProcessBuilder getProcessBuilder() {
+  public ProcessBuilder getProcessBuilder() throws IOException {
     ProcessBuilder setupPb = new ProcessBuilder("bash", "./gradlew", "unzipDistZip").inheritIO();
     try {
       Process setupProcess = setupPb.start();
       setupProcess.waitFor(30, TimeUnit.SECONDS);
-    } catch (IOException | InterruptedException e) {
+    } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
     try (FileReader fr = new FileReader(APPLICATION_YML);
@@ -50,12 +50,13 @@ public class RyvrTestDistZipRunServerProcessBuilder implements RyvrTestServerPro
         fw.write(c);
         c = fr.read();
       }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
     }
     // make sure we don't let gradle unzip the dist again, as that would
     // overwrite our config changes
-    return new ProcessBuilder("bash", "./gradlew", "distZipRun", "-x", "unzipDistZip");
+    String testClass = System.getProperty("au.com.mountainpass.testclass");
+    LOGGER.info("au.com.mountainpass.testclass: {}", testClass);
+    return new ProcessBuilder("bash", "./gradlew", "distZipRun", "-x", "unzipDistZip",
+        "-Ptestclass=" + testClass);
   }
 
   @Override
