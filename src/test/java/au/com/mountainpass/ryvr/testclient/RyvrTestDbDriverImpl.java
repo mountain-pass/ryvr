@@ -63,12 +63,12 @@ public class RyvrTestDbDriverImpl implements RyvrTestDbDriver {
     statementBuffer
         .append(identifierQuoteString + catalog + identifierQuoteString + catalogSeparator);
     statementBuffer.append(identifierQuoteString + table + identifierQuoteString);
-    statementBuffer.append(" (" + identifierQuoteString + "id" + identifierQuoteString
-        + " INT UNSIGNED, " + identifierQuoteString + "account" + identifierQuoteString
-        + " VARCHAR(255), " + identifierQuoteString + "description" + identifierQuoteString
-        + " VARCHAR(255), " + identifierQuoteString + "amount" + identifierQuoteString
-        + " Decimal(19,4), CONSTRAINT " + identifierQuoteString + "pk_id" + identifierQuoteString
-        + " PRIMARY KEY (" + identifierQuoteString + "id" + identifierQuoteString + "))");
+    statementBuffer.append(" (" + identifierQuoteString + "id" + identifierQuoteString + " INT, "
+        + identifierQuoteString + "account" + identifierQuoteString + " VARCHAR(255), "
+        + identifierQuoteString + "description" + identifierQuoteString + " VARCHAR(255), "
+        + identifierQuoteString + "amount" + identifierQuoteString + " Decimal(19,4), CONSTRAINT "
+        + identifierQuoteString + "pk_id" + identifierQuoteString + " PRIMARY KEY ("
+        + identifierQuoteString + "id" + identifierQuoteString + "))");
     LOGGER.info("TABLE: {}", statementBuffer.toString());
     currentJt.execute(statementBuffer.toString());
     currentJt.update("DELETE FROM " + identifierQuoteString + catalog + identifierQuoteString
