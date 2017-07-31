@@ -133,7 +133,8 @@ The system tests verify that Ryvr behaves as we expect when it's run as a sepera
 The System tests are run with the `systemTest` Spring profile, which launches
 Ryvr in a separate.
 
-At this time, Ryvr is launched using the `bootRun` gradle task. Other profiles will be 
+At this time, Ryvr can be launched using the `bootRun` and `distZipRun` gradle tasks. Other profiles will be added
+in the future
 
 ### Profiles
 
