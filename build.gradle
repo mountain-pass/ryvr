@@ -427,7 +427,8 @@ github {
 
   body = project.releaseNotes.exists() ? file(releaseNotes.path).text : "TBC"
   assets = [
-    "build/libs/ryvr-${project.version}.jar"
+    "build/distributions/ryvr-${project.version}.zip"
+    "build/distributions/ryvr-${project.version}.tar.gz"
   ]
   prerelease = true
   draft = true

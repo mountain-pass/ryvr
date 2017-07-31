@@ -189,7 +189,7 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [ ] Add logic to calculate optimal page size
  - [ ] Switch to async io
  - [ ] Add support for more databases
- - [ ] Add logic to create triggers or use change data capture to allow ryvrs from non-event based tables
+ - [ ] Add logic to create triggers or use [change data capture|https://github.com/shyiko/mysql-binlog-connector-java] to allow ryvrs from non-event based tables
  - [ ] Add support for more non-DB datasources
  - [ ] Add client library
  - [ ] decouple rest ryvr page size and UI page size
