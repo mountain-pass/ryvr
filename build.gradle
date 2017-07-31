@@ -150,7 +150,7 @@ dependencies {
   compile('org.webjars:angularjs:1.6.4')
   
   compile group: 'org.shredzone.acme4j', name: 'acme4j-client', version: '0.10'
-  compile 'org.bouncycastle:bcpkix-jdk15on:1.56'
+  compile 'org.bouncycastle:bcpkix-jdk15on:1.57'
   compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
 
   //compile group: 'com.lmax', name: 'disruptor', version: '3.3.6'
