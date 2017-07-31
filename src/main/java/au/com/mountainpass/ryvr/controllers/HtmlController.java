@@ -68,7 +68,7 @@ public class HtmlController {
 
   public ResponseEntity<?> getApiDocs(HttpServletRequest req, String group) {
     return ResponseEntity.status(HttpStatus.SEE_OTHER)
-        .location(URI.create("/webjars/swagger-ui/2.2.10/index.html?url=/api-docs")).build();
+        .location(URI.create("/webjars/swagger-ui/3.0.19/index.html?url=/api-docs")).build();
   }
 
   public ResponseEntity<?> getRyvrsCollection(HttpServletRequest req) {

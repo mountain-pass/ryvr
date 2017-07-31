@@ -48,7 +48,8 @@ public class HtmlRyvrClient implements RyvrTestClient {
   public SwaggerResponse getApiDocs() {
     URI url = config.getBaseUri().resolve("/api-docs");
     webDriver.get(url.toString());
-    waitTillLoaded(webDriver, 5, ExpectedConditions.visibilityOfElementLocated(By.id("api_info")));
+    waitTillLoaded(webDriver, 5,
+        ExpectedConditions.visibilityOfElementLocated(By.id("operations-tag-system")));
     return new HtmlSwaggerResponse(webDriver);
   }
 
