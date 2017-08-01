@@ -11,6 +11,11 @@ buildscript {
   }
 }
 
+plugins {
+  id "com.srcclr.gradle" version "2.2.7"
+}
+
+
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
@@ -21,6 +26,7 @@ apply plugin: 'jacoco'
 apply plugin: 'co.riiid.gradle'
 apply plugin: 'application'
 
+  
 group = 'au.com.mountainpass'
 
 println "System.env.CI: ${System.env.CI}"
@@ -93,7 +99,7 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 applicationDistribution.from("LICENSE") { into "." }
 
 
-bootRun.doFirst() { applicationDefaultJvmArgs = []}
+bootRun.doFirst() { applicationDefaultJvmArgs = [ "-Djavax.net.debug=ssl:handshake"]}
 
 applicationDefaultJvmArgs = [
   "-Dspring.config.location=file:../etc/application.yml",
@@ -120,7 +126,7 @@ dependencies {
   compile('commons-io:commons-io:2.5')
 
   compile('org.springframework.boot:spring-boot-starter-actuator')
-  compile('org.springframework.boot:spring-boot-starter-web') { exclude(module: 'spring-boot-starter-tomcat') }
+  compile('org.springframework.boot:spring-boot-starter-web') //{ exclude(module: 'spring-boot-starter-tomcat') }
   compile('org.springframework.boot:spring-boot-starter-undertow')
   compile('org.springframework.boot:spring-boot-starter-jdbc')
   compile('org.springframework.boot:spring-boot-autoconfigure')
@@ -151,7 +157,10 @@ dependencies {
   compile('org.webjars:angularjs:1.6.4')
   
   compile group: 'org.shredzone.acme4j', name: 'acme4j-client', version: '0.10'
-  compile 'org.bouncycastle:bcpkix-jdk15on:1.57'
+  
+  //compile 'org.bouncycastle:bcpkix-jdk15on:1.57'
+  compile group: 'org.keycloak', name: 'keycloak-common', version: '3.2.0.Final'
+  
   compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
 
   //compile group: 'com.lmax', name: 'disruptor', version: '3.3.6'
@@ -452,6 +461,11 @@ task printOutputs(group: 'build') {
     println jar.outputs.files.singleFile
   }
 }
+
+srcclr {
+  apiToken = project.getProperties().get("srcClrApiToken") ?: "NOT SET"
+}
+
 
 gradle.taskGraph.afterTask { Task task, TaskState state ->
   if (state.failure) {
