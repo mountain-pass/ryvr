@@ -16,6 +16,7 @@ Feature: DB Ryvr
       | ordered by | id           |
       | page size  |         8192 |
 
+  @current
   Scenario: Get Ryvr First Hit
     When the "transactions" ryvr is retrieved
     And all the events are retrieved
@@ -35,7 +36,6 @@ Feature: DB Ryvr
     Then 95% of the pages should be loaded within 50ms
     And 100% of the pages should be loaded within 1000ms
 
-  @current
   Scenario: Get Ryvr New Records
     When the "transactions" ryvr is retrieved
     And 100000 records are added at a rate of 10 records/s

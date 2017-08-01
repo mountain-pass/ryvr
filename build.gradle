@@ -165,8 +165,16 @@ dependencies {
 
   //compile group: 'com.lmax', name: 'disruptor', version: '3.3.6'
 
-  compile group: 'org.json', name: 'json', version: '20170516'
-
+  
+  // for escaping json values
+  // performance testing showed:
+  // - org.json:json:20170516 is faster than org.unbescape:unbescape:1.1.5.RELEASE
+  // - org.apache.commons:commons-text:1.1:StringEscapeUtils.ESCAPE_JSON.translate(CharSequence, writer) is faster than org.json:json:20170516
+  // - org.apache.commons:commons-text:1.1:StringEscapeUtils.escapeJson(String) is faster than org.apache.commons:commons-text:1.1:StringEscapeUtils.ESCAPE_JSON.translate(CharSequence, writer) 
+  // results with other test data may vary
+  compile group: 'org.apache.commons', name: 'commons-text', version: '1.1'
+  
+  
   // we use the MockHttpServletRequest for the HttpController.
   // Change this back to a testCompile dependency when we have
   // removed the use of the Mock.

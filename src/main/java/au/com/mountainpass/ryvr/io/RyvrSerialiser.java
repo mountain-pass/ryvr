@@ -7,7 +7,8 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Iterator;
 
-import org.json.JSONObject;
+import org.apache.commons.lang3.StringEscapeUtils;
+//import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -56,7 +57,9 @@ public class RyvrSerialiser {
         }
         final Object value = record.getField(j).getValue();
         if (value instanceof String) {
-          JSONObject.quote((String) value, writer);
+          writer.write('"');
+          writer.write(StringEscapeUtils.escapeJson((String) value));
+          writer.write('"');
         } else {
           writer.write(value.toString());
         }
@@ -70,7 +73,9 @@ public class RyvrSerialiser {
         if (i != 0) {
           writer.write(',');
         }
-        JSONObject.quote(fieldNames[i], writer);
+        writer.write('"');
+        writer.write(StringEscapeUtils.escapeJson(fieldNames[i]));
+        writer.write('"');
       }
     }
     writer.write(']');
