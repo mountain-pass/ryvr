@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.NoSuchElementException;
-import java.util.function.Consumer;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.http.Header;
@@ -150,142 +147,6 @@ public class RestRyvrSource extends RyvrSource {
     return parsedBody;
   }
 
-  private class RyvrIterator implements ListIterator<Record> {
-    long pagePosition = -1;
-    long currentPage = -1;
-
-    public RyvrIterator() {
-
-    }
-
-    public RyvrIterator(long position) {
-      currentPage = position / getUnderlyingPageSize();
-      pagePosition = position % getUnderlyingPageSize();
-
-    }
-
-    @Override
-    public boolean hasNext() {
-      if (currentPage < 0) {
-        // first call to hasNext, so load the first page and check if we have records;
-        followLink("first");
-        currentPage = 0;
-        return getUnderlyingPageSize() != 0;
-      } else if (getNextLink() != null) {
-        // if there is a next link, then there are definitely next records
-        return true;
-      } else {
-
-        // otherwise we are on the most recent page (AKA the current page)
-        // so check if there are rows after the row we are pointing to at
-        // the moment.
-        int recordsOnPage = getUnderlyingPageSize();
-        if (pagePosition < recordsOnPage - 1) {
-          return true;
-        } else {
-          // otehrwise, relaod and see if we have new events
-          followLink("self");
-          recordsOnPage = getUnderlyingPageSize();
-        }
-        return pagePosition < recordsOnPage - 1;
-      }
-    }
-
-    @Override
-    public Record next() {
-      if (!hasNext()) {
-        throw new NoSuchElementException();
-      }
-
-      final Record rval = new Record() {
-
-        @Override
-        public int size() {
-          return JsonPath.read(getBodyDocument(), "$.columns.length()");
-        }
-
-        @Override
-        public Field getField(int fieldIndex) {
-          final Field field = new Field() {
-
-            private int fieldIndex;
-
-            @Override
-            public Object getValue() {
-              return JsonPath.read(getBodyDocument(),
-                  "$.rows[" + pagePosition + "][" + fieldIndex + "]");
-            }
-
-            @Override
-            public String getName() {
-              return JsonPath.read(getBodyDocument(), "$.columns[" + fieldIndex + "]");
-            }
-
-            @Override
-            public void setFieldIndex(int fieldIndex) {
-              this.fieldIndex = fieldIndex;
-            }
-          };
-          field.setFieldIndex(fieldIndex);
-          return field;
-        }
-      };
-      ++pagePosition;
-      if (pagePosition == getUnderlyingPageSize()) {
-        followNextLink();
-        this.pagePosition = 0;
-        ++this.currentPage;
-      }
-      return rval;
-    }
-
-    @Override
-    public void remove() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void forEachRemaining(Consumer<? super Record> consumer) {
-      if (!hasNext()) {
-        return;
-      }
-      while (hasNext()) {
-        consumer.accept(next());
-      }
-    }
-
-    @Override
-    public boolean hasPrevious() {
-      throw new NotImplementedException("TODO");
-    }
-
-    @Override
-    public Record previous() {
-      throw new NotImplementedException("TODO");
-    }
-
-    @Override
-    public int nextIndex() {
-      throw new NotImplementedException("TODO");
-    }
-
-    @Override
-    public int previousIndex() {
-      throw new NotImplementedException("TODO");
-    }
-
-    @Override
-    public void set(Record e) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void add(Record e) {
-      throw new UnsupportedOperationException();
-    }
-
-  }
-
   // @Override
   // public Iterator<Record> iterator() {
   // return new RyvrIterator();
@@ -423,7 +284,7 @@ public class RestRyvrSource extends RyvrSource {
     return new RestRyvrSourceIterator(this, position);
   }
 
-  public long getUnderlyingCurrentPageSize() {
+  public int getUnderlyingCurrentPageSize() {
     if (currentPageSize < 0) {
       currentPageSize = Integer.parseInt(response.getFirstHeader("Current-Page-Size").getValue());
     }

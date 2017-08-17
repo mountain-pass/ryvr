@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -30,6 +32,8 @@ import au.com.mountainpass.ryvr.model.RyvrsCollection;
 
 @Component()
 public class JsonController {
+
+  private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
   public static final MediaType APPLICATION_HAL_JSON_TYPE = new MediaType("application",
       "hal+json");
@@ -99,36 +103,43 @@ public class JsonController {
     }
     boolean isLastPage = false;
     long pageSize = ryvr.getPageSize();
-    if (page == -1L) {
-      isLastPage = true;
-      long count = ryvr.getSource().getRecordsRemaining(0L);
-      page = (count / pageSize) + 1L;
-    } else {
-      // get the iterator for the last possible element on this page
-      // this might be beyond the end of the ryvr
-      boolean isLoaded = ryvr.getSource().isLoaded(page);
+    long pageRecordCount = 0;
 
-      long pageEndPosition = getPageEndPosition(page, pageSize);
-      Iterator<Record> lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition);
+    // if (page == -1L) {
+    // isLastPage = true;
+    // boolean isLoaded = ryvr.getSource().isLoaded(page);
+    // if (isLoaded) {
+    // ryvr.getSource().refresh();
+    // }
+    // long count = ryvr.getSource().getRecordsRemaining(0L);
+    //
+    // page = (count / pageSize) + 1L;
+    // } else {
+    // get the iterator for the last possible element on this page
+    // this might be beyond the end of the ryvr
+    boolean isLoaded = ryvr.getSource().isLoaded(page);
+    // LOGGER.info("isLoaded: {}", isLoaded);
+    long pageEndPosition = getPageEndPosition(page, pageSize);
+    Iterator<Record> lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition);
 
+    isLastPage = !lastOnPageIterator.hasNext();
+    // LOGGER.info("isLastPage: {}", isLastPage);
+    if (isLastPage && isLoaded) {
+      // since we are on the last page, and we already had the page loaded, refresh to see if
+      // there are new records
+      // and then check if we are on the lastPage again.
+      ryvr.getSource().refresh();
+      lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition);
       isLastPage = !lastOnPageIterator.hasNext();
-      if (isLastPage && isLoaded) {
-        // since we are on the last page, and we already had the page loaded, refresh to see if
-        // there are new records
-        // and then check if we are on the lastPage again.
-        ryvr.getSource().refresh();
-        lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition);
-        isLastPage = !lastOnPageIterator.hasNext();
-      }
     }
+    // }
     res.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
     res.addHeader(HttpHeaders.VARY, String.join(",", HttpHeaders.ACCEPT,
         HttpHeaders.ACCEPT_ENCODING, HttpHeaders.ACCEPT_LANGUAGE, HttpHeaders.ACCEPT_CHARSET));
     if (isLastPage) {
       res.addHeader(HttpHeaders.CACHE_CONTROL,
           CacheControl.maxAge(currentPageMaxAge, currentPageMaxAgeUnit).getHeaderValue());
-      long pageRecordCount = ryvr.getSource()
-          .getRecordsRemaining(getPageStartPosition(page, pageSize));
+      pageRecordCount = ryvr.getSource().getRecordsRemaining(getPageStartPosition(page, pageSize));
       res.addHeader(HttpHeaders.ETAG,
           "\"" + Long.toHexString(page) + "." + Long.toHexString(pageRecordCount) + "\"");
       res.addHeader("Current-Page-Size", Long.toString(pageRecordCount));
@@ -192,12 +203,5 @@ public class JsonController {
   private void addLink(String rel, String href, HttpServletResponse res) {
     String headerValue = "<" + href + ">; rel=\"" + rel + "\"";
     res.addHeader(HttpHeaders.LINK, headerValue);
-  }
-
-  public void getRyvr(HttpServletResponse res, HttpServletRequest req, String ryvrName)
-      throws URISyntaxException, IOException {
-    // we can't redirect to the last page, because by the time we get that page, it might no longer
-    // be the last
-    getRyvr(res, req, ryvrName, -1L);
   }
 }

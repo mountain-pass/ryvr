@@ -3,24 +3,23 @@ package au.com.mountainpass.ryvr.steps;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.LongSummaryStatistics;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.jdbc.support.DatabaseMetaDataCallback;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -45,6 +44,9 @@ import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import io.prometheus.client.Collector.MetricFamilySamples;
+import io.prometheus.client.Collector.MetricFamilySamples.Sample;
+import io.prometheus.client.Summary;
 
 @EnableAsync
 @ContextConfiguration(classes = { Application.class, TestConfiguration.class })
@@ -85,12 +87,16 @@ public class StepDefs {
 
   private long finishedReading;
 
-  private int expectedRecordCount;
+  private int expectedRecordCount = 0;
+
+  private int consumers;
+
+  private long recordCount;
 
   @Given("^a database \"([^\"]*)\"$")
   public void aDatabase(final String dbName) throws Throwable {
 
-    dbClient.createDatabase(dbName);
+    assertThat(dbClient.getCatalog(dbName), equalTo(dbName));
     databaseName = dbName;
   }
 
@@ -109,7 +115,8 @@ public class StepDefs {
   @Given("^a database ryvr with the following configuration$")
   public void a_database_ryvr_with_the_following_configuration(Map<String, String> config)
       throws Throwable {
-    configClient.createDataSourceRyvr(config);
+    Map<String, String> newConfig = dbClient.adjustConfig(config);
+    configClient.createDataSourceRyvr(newConfig);
 
     // assertThat(ryvrsCollection.getRyvrs().keySet(),
     // hasItem(config.get("name")));
@@ -128,53 +135,30 @@ public class StepDefs {
     // ryvrsCollection.getRyvrs().put(config.get("name"), ryvr);
   }
 
-  @Given("^it has a table \"([^\"]*)\" with the following events$")
-  public void itHasATableWithTheFollowingEvents(final String table,
+  @Given("^the \"([^\"]*)\" table has the following events$")
+  public void theTableHasTheFollowingEvents(final String table,
       final List<Map<String, String>> events) throws Throwable {
-    createTable(databaseName, table);
-
-    insertRows(databaseName, table, events);
-  }
-
-  public void insertRows(final String catalog, final String table,
-      final List<Map<String, String>> events) throws Throwable {
+    final String catalog = databaseName;
     dbClient.insertRows(catalog, table, events);
-
-  }
-
-  class GetTableNames implements DatabaseMetaDataCallback {
-
-    @Override
-    public Object processMetaData(DatabaseMetaData dbmd) throws SQLException {
-      ResultSet rs = dbmd.getTables(dbmd.getUserName(), null, null, new String[] { "TABLE" });
-      ArrayList<String> l = new ArrayList<>();
-      while (rs.next()) {
-        l.add(rs.getString(3));
-      }
-      return l;
-    }
-  }
-
-  public void createTable(String catalog, final String table) throws Throwable {
-    dbClient.createTable(catalog, table);
-
   }
 
   @Then("^it will contain$")
   public void itWillContain(final List<Map<String, String>> events) throws Throwable {
     Iterator<Record> actualIterator = ryvr.getSource().iterator();
     Iterator<Map<String, String>> expectedIterator = events.iterator();
-    do {
+    while (actualIterator.hasNext() && expectedIterator.hasNext()) {
       Record actualRecord = actualIterator.next();
       Map<String, String> expectedRecord = expectedIterator.next();
       for (int i = 0; i < actualRecord.size(); ++i) {
         Field actualField = actualRecord.getField(i);
-        Object actualValue = actualField.getValue();
-        String expectedValue = expectedRecord.get(actualField.getName());
-        Util.assertEqual(actualField.getName() + " should be " + expectedValue, actualValue,
-            expectedValue);
+        if (!"created".equals(actualField.getName())) {
+          Object actualValue = actualField.getValue();
+          String expectedValue = expectedRecord.get(actualField.getName().toLowerCase());
+          Util.assertEqual("`" + actualField.getName() + "` should be " + expectedValue,
+              actualValue, expectedValue);
+        }
       }
-    } while (actualIterator.hasNext() && expectedIterator.hasNext());
+    }
     assertThat("Neither iterator should haveNext()", actualIterator.hasNext(),
         equalTo(expectedIterator.hasNext()));
   }
@@ -248,24 +232,38 @@ public class StepDefs {
   }
 
   @Given("^it has a table \"([^\"]*)\" with the following structure$")
-  public void itHasATableWithTheFollowingStructure(final String table, final List<String> structure)
-      throws Throwable {
-    createTable("test_db", table);
+  public void itHasATableWithTheFollowingStructure(final String table,
+      final Map<String, String> structure) throws Throwable {
+    dbClient.createTable("test_db", table, structure);
     this.currentTable = table;
   }
 
   @Given("^it has (\\d+) events$")
   public void itHasEvents(int noOfEvents) throws Throwable {
-    List<Map<String, String>> events = new ArrayList<>(noOfEvents);
-    for (int i = 0; i < noOfEvents; ++i) {
-      Map<String, String> event = new HashMap<>(4);
-      event.put("id", Integer.toString(i));
-      event.put("account", "78901234");
-      event.put("description", "Buying Stuff");
-      event.put("amount", Double.toString(i * -20.00 - i));
-      events.add(event);
+    int batchSize = 8192;
+    int batches = noOfEvents / batchSize;
+    for (int batch = 0; batch <= batches; ++batch) {
+      int eventsInBatch = batchSize;
+      if (batch == batches) {
+        eventsInBatch = noOfEvents % batchSize;
+      }
+      List<Map<String, String>> events = new ArrayList<>(eventsInBatch);
+      for (int i = 0; i < eventsInBatch; ++i) {
+        Map<String, String> event = new HashMap<>(4);
+        event.put("id", Integer.toString(i + batch * batchSize));
+        event.put("account", "78901234");
+        event.put("description", "Buying Stuff");
+        event.put("amount", Double.toString(i * -20.00 - (i + batch * batchSize)));
+        event.put("created", Long.toString(System.currentTimeMillis()));
+        events.add(event);
+      }
+      final String table = this.currentTable;
+      final List<Map<String, String>> events1 = events;
+      dbClient.insertRows("test_db", table, events1);
+      int added = eventsInBatch + batch * batchSize;
+      LOGGER.info("Added {} records of {}. {}%", added, noOfEvents,
+          (added * 1.0) / noOfEvents * 100.0);
     }
-    insertRows("test_db", this.currentTable, events);
     expectedRecordCount = noOfEvents;
   }
 
@@ -286,18 +284,37 @@ public class StepDefs {
     assertThat(actualCount, equalTo(noOfEvents));
   }
 
+  // static protected final Summary readLatencyMetrics = Summary.build().quantile(0.5, 0.01)
+  // .quantile(0.95, 0.01).quantile(0.99, 0.01).quantile(1, 0.01).name("read_latency_seconds")
+  // .help("Read latency in seconds.").register();
+
   @When("^all the events are retrieved$")
   public void all_the_events_are_retrieved() throws Throwable {
+    consumers = 1;
     clearMetrics();
     System.gc();
     long before = System.nanoTime();
+    long before2 = before;
+    // readLatencyMetrics.clear();
+    ryvr.getSource().stream().count();
+    // for (Record record : ryvr.getSource()) {
+    // long now = System.nanoTime();
+    // readLatencyMetrics.observe((now - before2) / 1000000.0);
+    // before2 = now;
+    // }
 
-    long count = ryvr.getSource().stream().count();
+    // List<MetricFamilySamples> results = readLatencyMetrics.collect();
+    // Stream<Sample> quantiles = results.get(0).samples.stream()
+    // .filter(sample -> sample.labelNames.contains("quantile"));
+    // quantiles.forEachOrdered(sample -> {
+    // LOGGER.info("read latency - {}th percentile: {}ms",
+    // (int) (Double.parseDouble(sample.labelValues.get(0)) * 100), sample.value);
+    // });
 
     long after = System.nanoTime();
     double localLatencyµs = (after - before) / 1000.0;
     LOGGER.info("total latency: {}µs", localLatencyµs);
-    LOGGER.info("MTPS(local): {}", count / localLatencyµs);
+    LOGGER.info("MTPS(local): {}", recordCount / localLatencyµs);
 
     if (httpThroughputCounter != null) {
       double byteCount = httpThroughputCounter.getBytes();
@@ -307,7 +324,7 @@ public class StepDefs {
           byteCount / 1024.0 / 1024.0 / localLatencyµs * 1000000);
       LOGGER.info("throughput: {}MB/s", byteCount / 1024.0 / 1024.0 / latencySeconds);
       LOGGER.info("total latency(prom): {}µs", latencySeconds * 1000000.0);
-      LOGGER.info("MTPS(prom): {}", count / latencySeconds / 1000000);
+      LOGGER.info("MTPS(prom): {}", recordCount / latencySeconds / 1000000);
       httpThroughputCounter.logLatencies();
     }
 
@@ -315,6 +332,7 @@ public class StepDefs {
 
   @When("^all the events are retrieved by (\\d+) consumers$")
   public void all_the_events_are_retrieved_by_consumers(int consumers) throws Throwable {
+    this.consumers = consumers;
     List<Ryvr> ryvrs = new ArrayList<>(consumers);
     for (int i = 0; i < consumers; ++i) {
       ryvrs.add(client.getRyvr(ryvr.getTitle()));
@@ -328,7 +346,8 @@ public class StepDefs {
 
     DoubleSummaryStatistics executionTimes = ryvrs.parallelStream().mapToDouble(r -> {
       long b = System.nanoTime();
-      assertThat(r.getSource().stream().count(), equalTo(100000L));
+      recordCount = r.getSource().stream().count();
+      assertThat(recordCount, equalTo(100000L));
       long a = System.nanoTime();
       return (a - b) / 1000.0 / 1000.0 / 1000.0;
     }).summaryStatistics();
@@ -336,9 +355,9 @@ public class StepDefs {
     LOGGER.info("total latency min: {}s", executionTimes.getMin());
     LOGGER.info("total latency ave: {}s", executionTimes.getAverage());
     LOGGER.info("total latency max: {}s", executionTimes.getMax());
-    LOGGER.info("MTPS(local  min): {}", 100000.0 / executionTimes.getMin() / 1000000.0);
-    LOGGER.info("MTPS(local  ave): {}", 100000.0 / executionTimes.getAverage() / 1000000.0);
-    LOGGER.info("MTPS(local  max): {}", 100000.0 / executionTimes.getMax() / 1000000.0);
+    LOGGER.info("MTPS(local  min): {}", recordCount / executionTimes.getMin() / 1000000.0);
+    LOGGER.info("MTPS(local  ave): {}", recordCount / executionTimes.getAverage() / 1000000.0);
+    LOGGER.info("MTPS(local  max): {}", recordCount / executionTimes.getMax() / 1000000.0);
 
     if (httpThroughputCounter != null) {
 
@@ -357,7 +376,8 @@ public class StepDefs {
       LOGGER.info("throughput (local max): {}MB/s",
           megaBytes / executionTimes.getMax() / consumers);
       LOGGER.info("throughput (prom): {}MB/s", megaBytes / latencySeconds);
-      LOGGER.info("MTPS(prom): {}", 100000.0 * consumers / latencySeconds / 1000000.0);
+
+      LOGGER.info("MTPS(prom): {}", recordCount * consumers / latencySeconds / 1000000.0);
 
       httpThroughputCounter.logLatencies();
     }
@@ -375,21 +395,61 @@ public class StepDefs {
     }
   }
 
-  public void assertLoadedWithin(int percentile, int maxMs) {
+  public void assertLoadedWithin(int percentile, double maxMs) {
     if (httpThroughputCounter != null) {
-      assertThat(httpThroughputCounter.getLatency(percentile) * 1000.0, lessThan(maxMs * 1.0));
+      assertThat(httpThroughputCounter.getLatency(percentile) * 1000.0, lessThan(maxMs));
     }
   }
 
-  @Then("^(\\d+)% of the pages should be loaded within (\\d+)ms$")
-  public void of_the_pages_should_be_loaded_within_ms(int percentile, int maxMs) throws Throwable {
+  @Then("^(\\d+)% of the pages should be loaded within (\\d+\\.?\\d*)ms$")
+  public void of_the_pages_should_be_loaded_within_ms(int percentile, double maxMs)
+      throws Throwable {
     assertLoadedWithin(percentile, maxMs);
   }
 
-  @Then("^on the second retrieve, (\\d+)% of the pages should be loaded within (\\d+)ms$")
+  @Then("^the average page should be loaded within (\\d+\\.?\\d*)ms$")
+  public void the_average_page_should_be_loaded_within_ms(double maxMs) throws Throwable {
+    assertLoadedWithin(50, maxMs);
+  }
+
+  @Then("^on the second retrieve, (\\d+)% of the pages should be loaded within (\\d+\\.?\\d*)ms$")
   public void on_the_second_retrieve_of_the_pages_should_be_loaded_within_ms(int percentile,
-      int maxMs) throws Throwable {
+      double maxMs) throws Throwable {
     assertLoadedWithin(percentile, maxMs);
+  }
+
+  @Then("^on the second retrieve, the average page should be loaded within (\\d+\\.?\\d*)ms$")
+  public void on_the_second_retrieve_the_average_page_should_be_loaded_within_ms(double maxMs)
+      throws Throwable {
+    assertLoadedWithin(50, maxMs);
+  }
+
+  @Then("^the event retrieval throughput should be at least (\\d+\\.?\\d*)MB/s$")
+  public void the_event_retrieval_throughput_should_be_at_least_MB_s(double minMBps)
+      throws Throwable {
+    if (httpThroughputCounter != null) {
+
+      double byteCount = httpThroughputCounter.getBytes();
+      double latencySeconds = httpThroughputCounter.getTotalLatency();
+      double megaBytes = byteCount / 1024.0 / 1024.0;
+      assertThat(megaBytes / latencySeconds, greaterThan(minMBps));
+    }
+  }
+
+  @Then("^the event retrieval rate should be at least (\\d+\\.?\\d*)TPS$")
+  public void the_event_retrieval_rate_should_be_at_least_TPS(double minTps) throws Throwable {
+    if (httpThroughputCounter != null) {
+      double latencySeconds = httpThroughputCounter.getTotalLatency();
+      assertThat(recordCount * consumers / latencySeconds, greaterThan(minTps));
+    }
+  }
+
+  @Then("^the event retrieval rate should be at least (\\d+\\.?\\d*)MTPS$")
+  public void the_event_retrieval_rate_should_be_at_least_MTPS(double minMTps) throws Throwable {
+    if (httpThroughputCounter != null) {
+      double latencySeconds = httpThroughputCounter.getTotalLatency();
+      assertThat(recordCount * consumers / latencySeconds / 1000000.0, greaterThan(minMTps));
+    }
   }
 
   @Then("^it will come from cache$")
@@ -403,31 +463,37 @@ public class StepDefs {
     throw new PendingException();
   }
 
+  static protected final Summary writeReadLatency = Summary.build().quantile(0.5, 0.01)
+      .quantile(0.95, 0.01).quantile(0.99, 0.01).quantile(1, 0.01)
+      .name("write_read_latency_seconds").help("Write Read latency in seconds.").register();
+
   @When("^(\\d+) records are added at a rate of (\\d+) records/s$")
   public void records_are_added_at_a_rate_of_records_s(int noOfEvents, int rate) throws Throwable {
+    writeReadLatency.clear();
     addingRecords = true;
     int countSoFar = expectedRecordCount;
     expectedRecordCount += noOfEvents;
 
+    long tick = 1000000000L / rate;
+
     CompletableFuture.runAsync(() -> {
       long start = System.nanoTime();
       for (int i = 0; i < noOfEvents; ++i) {
-        List<Map<String, String>> events = new ArrayList<>(noOfEvents);
         Map<String, String> event = new HashMap<>(4);
         event.put("id", Integer.toString(i + countSoFar));
         event.put("account", "78901234");
         event.put("description", "Buying Stuff");
         event.put("amount", Double.toString(i * -20.00 - i));
-        events.add(event);
         try {
-          insertRows("test_db", this.currentTable, events);
+          dbClient.insertRow("test_db", this.currentTable, event);
+
           // if (i % 100 == 99) {
           // LOGGER.info("added record: {}", i + countSoFar + 1);
           // }
         } catch (Throwable e) {
           throw new RuntimeException(e);
         }
-        long next = start + 1000000000L / rate;
+        long next = start + tick * i;
         long now = System.nanoTime();
         long sleepFor = next - now;
         if (sleepFor > 0) {
@@ -436,6 +502,8 @@ public class StepDefs {
           } catch (Exception e) {
             throw new RuntimeException(e);
           }
+        } else {
+          LOGGER.error("Falling behind ({}): {}ms", i, -sleepFor / 1000000L);
         }
       }
       finishedAdding = System.nanoTime();
@@ -451,7 +519,7 @@ public class StepDefs {
     // if (first.isPresent()) {
     // LOGGER.info("FIRST ID: {}", first.get().getField(0).getValue());
     // }
-    actualCount = ryvr.getSource().stream().count();
+    actualCount = 0;
     // Optional<Record> last = ryvr.getSource().stream(actualCount - 1).findFirst();
     // if (last.isPresent()) {
     // LOGGER.info("LAST ID: {}", last.get().getField(0).getValue());
@@ -459,26 +527,36 @@ public class StepDefs {
     // LOGGER.info("NO RECORD FOUND FOR POSTION: {}", actualCount - 1);
     // }
     finishedReading = System.nanoTime();
-    LOGGER.info("Reached end: {}", actualCount);
     while (actualCount < expectedRecordCount) {
-      Thread.sleep(100);
       ryvr.getSource().refresh();
       // first = ryvr.getSource().stream(actualCount).findFirst();
       // if (first.isPresent()) {
       // LOGGER.info("FIRST ID: {}", first.get().getField(0).getValue());
       // }
-      long additionalCount = ryvr.getSource().stream(actualCount).count();
+      LongSummaryStatistics stats = ryvr.getSource().stream(actualCount).mapToLong(record -> {
+        Long created = (Long) record.getField(4).getValue();
+        writeReadLatency.observe((System.currentTimeMillis() - created) * 0.001);
+        return System.currentTimeMillis() - created;
+      }).summaryStatistics();
+      long additionalCount = stats.getCount();
       actualCount += additionalCount;
       finishedReading = System.nanoTime();
       LOGGER.info("New Records: {}", additionalCount);
-      // last = ryvr.getSource().stream(actualCount - 1).findFirst();
-      // if (last.isPresent()) {
-      // LOGGER.info("LAST ID: {}", last.get().getField(0).getValue());
-      // } else {
-      // LOGGER.info("NO RECORD FOUND FOR POSTION: {}", actualCount - 1);
-      // }
       LOGGER.info("Reached end: {}", actualCount);
+      if (actualCount < expectedRecordCount) {
+        Thread.sleep(100);
+      }
     }
+
+    List<MetricFamilySamples> results = writeReadLatency.collect();
+    Stream<Sample> quantiles = results.get(0).samples.stream()
+        .filter(sample -> sample.labelNames.contains("quantile"));
+    quantiles.forEachOrdered(sample -> {
+      LOGGER.info("latency - {}th percentile: {}ms",
+          (int) (Double.parseDouble(sample.labelValues.get(0)) * 100),
+          Math.round(sample.value * 1000));
+    });
+
   }
 
   @Then("^(\\d+) records will be retrieved$")
@@ -486,9 +564,50 @@ public class StepDefs {
     assertThat(actualCount, equalTo(count));
   }
 
-  @Then("^the write-read latency shuld be less than (\\d+)ms$")
-  public void the_write_read_latency_shuld_be_less_than_ms(double latency) throws Throwable {
-    LOGGER.info("Write-Read Latency: {}ms", (finishedReading - finishedAdding) / 1000000.0);
-    assertThat((finishedReading - finishedAdding) / 1000000.0, lessThan(latency));
+  public double getWriteReadLatency(int percentile) {
+    List<MetricFamilySamples> results = writeReadLatency.collect();
+    String stringPercentile;
+    switch (percentile) {
+    case 50:
+      stringPercentile = "0.5";
+      break;
+    case 95:
+      stringPercentile = "0.95";
+      break;
+    case 99:
+      stringPercentile = "0.99";
+      break;
+    case 100:
+      stringPercentile = "1.0";
+      break;
+    default:
+      throw new NotImplementedException("percentile not supported: " + percentile);
+    }
+    Stream<Sample> quantiles = results.get(0).samples.stream()
+        .filter(sample -> sample.labelNames.contains("quantile"));
+    Sample result = quantiles.filter(sample -> sample.labelValues.contains(stringPercentile))
+        .findAny().get();
+    return result.value;
+  }
+
+  public void assertWriteReadLatencyWithin(int percentile, double maxMs) {
+    assertThat(getWriteReadLatency(percentile) * 1000.0, lessThan(maxMs));
+  }
+
+  @Then("^the average write-read latency should be less that (\\d+)ms$")
+  public void the_average_write_read_latency_should_be_less_that_ms(int maxMs) throws Throwable {
+    // Write code here that turns the phrase above into concrete actions
+    assertWriteReadLatencyWithin(50, maxMs);
+  }
+
+  @Then("^write-read latency for (\\d+)% of the records should be less that (\\d+)ms$")
+  public void write_read_latency_for_of_the_records_should_be_less_that_ms(int percentile,
+      int maxMs) throws Throwable {
+    assertWriteReadLatencyWithin(percentile, maxMs);
+  }
+
+  @Then("^the maximium write-read latency should be less that (\\d+)ms$")
+  public void the_maximium_write_read_latency_should_be_less_that_ms(int maxMs) throws Throwable {
+    assertWriteReadLatencyWithin(100, maxMs);
   }
 }

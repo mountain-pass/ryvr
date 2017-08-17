@@ -5,11 +5,17 @@ import java.util.Map;
 
 public interface RyvrTestDbDriver {
 
-    void createDatabase(String dbName) throws Throwable;
+  public String getCatalog(String dbName) throws Throwable;
 
-    void insertRows(String catalog, String table,
-            List<Map<String, String>> events) throws Throwable;
+  public void insertRows(String catalog, String table, List<Map<String, String>> events)
+      throws Throwable;
 
-    void createTable(String catalog, String table) throws Throwable;
+  public void createTable(String catalog, String table, Map<String, String> structure)
+      throws Throwable;
+
+  public void insertRow(String string, String currentTable, Map<String, String> event)
+      throws Throwable;
+
+  public Map<String, String> adjustConfig(Map<String, String> config) throws Throwable;
 
 }

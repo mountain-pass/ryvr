@@ -46,6 +46,8 @@ The key of the map specifies the name of the ryvr, which must be unique.
 
 These properties can be set using an `application.yml` file within the same directory as Ryvr.
 
+*NOTE:* Only string, numeric and boolean datatypes are supported at this time.
+
 ##### Example
 
     au.com.mountainpass.ryvr:

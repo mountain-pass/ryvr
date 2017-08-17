@@ -1,7 +1,9 @@
 package au.com.mountainpass.ryvr.datasource;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import au.com.mountainpass.ryvr.model.Record;
 
@@ -9,16 +11,21 @@ class DataSourceRyvrSourceIterator implements Iterator<Record> {
   /**
    * 
    */
-  private final DataSourceRyvrSource dataSourceRyvrSource;
+  // private final DataSourceRyvrSource dataSourceRyvrSource;
+  private final ResultSet rowSet;
+  private final Record record;
 
   public DataSourceRyvrSourceIterator(DataSourceRyvrSource dataSourceRyvrSource, long position) {
+    // this.dataSourceRyvrSource = dataSourceRyvrSource;
+    record = new DataSourceRecord(dataSourceRyvrSource);
     try {
-      this.dataSourceRyvrSource = dataSourceRyvrSource;
+      this.rowSet = dataSourceRyvrSource.getRowSet();
+      // this.dataSourceRyvrSource = dataSourceRyvrSource;
       // todo: handle int overflow, by moving it to max int and then using relative movements
       if (position == 0L) {
-        this.dataSourceRyvrSource.getRowSet().beforeFirst();
+        rowSet.beforeFirst();
       } else {
-        this.dataSourceRyvrSource.getRowSet().absolute(Math.toIntExact(position));
+        rowSet.absolute(Math.toIntExact(position));
       }
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -26,9 +33,16 @@ class DataSourceRyvrSourceIterator implements Iterator<Record> {
   }
 
   public DataSourceRyvrSourceIterator(DataSourceRyvrSource dataSourceRyvrSource) {
-    this.dataSourceRyvrSource = dataSourceRyvrSource;
+    // this.dataSourceRyvrSource = dataSourceRyvrSource;
+    record = new DataSourceRecord(dataSourceRyvrSource);
     try {
-      this.dataSourceRyvrSource.getRowSet().beforeFirst();
+      ResultSet rs = dataSourceRyvrSource.getRowSet();
+      if (rs == null) {
+        rs = dataSourceRyvrSource.refreshRowSet();
+      } else {
+        rs.beforeFirst();
+      }
+      rowSet = rs;
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -37,8 +51,8 @@ class DataSourceRyvrSourceIterator implements Iterator<Record> {
   @Override
   public boolean hasNext() {
     try {
-      return !this.dataSourceRyvrSource.getRowSet().isLast()
-          && !dataSourceRyvrSource.getRowSet().isAfterLast();
+      return !(rowSet.isLast() || rowSet.isAfterLast()
+          || (rowSet.getRow() == 0 && !rowSet.isBeforeFirst()));
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -47,8 +61,11 @@ class DataSourceRyvrSourceIterator implements Iterator<Record> {
   @Override
   public Record next() {
     try {
-      this.dataSourceRyvrSource.getRowSet().next();
-      return this.dataSourceRyvrSource.record;
+      if (rowSet.next()) {
+        return record;
+      } else {
+        throw new NoSuchElementException();
+      }
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }

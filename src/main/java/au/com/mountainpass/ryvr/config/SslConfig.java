@@ -15,9 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.boot.context.embedded.EmbeddedServletContainer;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
-import org.springframework.boot.web.servlet.ServletContextInitializer;
+import org.springframework.boot.context.embedded.undertow.UndertowEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -63,35 +61,26 @@ public class SslConfig {
     return cert;
   }
 
-  @Bean
-  public TomcatEmbeddedServletContainerFactory tomcatFactory() throws Exception {
-    cert();
-    return new TomcatEmbeddedServletContainerFactory() {
-      @Override
-      public EmbeddedServletContainer getEmbeddedServletContainer(
-          ServletContextInitializer... initializers) {
-        return super.getEmbeddedServletContainer(initializers);
-      }
-    };
-  }
-
   // @Bean
-  // public UndertowEmbeddedServletContainerFactory embeddedServletContainerFactory()
-  // throws InvalidKeyException, CertificateException, NoSuchAlgorithmException,
-  // NoSuchProviderException, IllegalStateException, SignatureException, KeyStoreException,
-  // IOException {
+  // public TomcatEmbeddedServletContainerFactory tomcatFactory() throws Exception {
   // cert();
-  // UndertowEmbeddedServletContainerFactory factory = new
-  // UndertowEmbeddedServletContainerFactory();
-  // // factory.addBuilderCustomizers(new UndertowBuilderCustomizer() {
-  // //
-  // // @Override
-  // // public void customize(Builder builder) {
-  // // builder.se
-  // // }
-  // //
-  // // });
-  // return factory;
+  // return new TomcatEmbeddedServletContainerFactory() {
+  // @Override
+  // public EmbeddedServletContainer getEmbeddedServletContainer(
+  // ServletContextInitializer... initializers) {
+  // return super.getEmbeddedServletContainer(initializers);
   // }
+  // };
+  // }
+
+  @Bean
+  public UndertowEmbeddedServletContainerFactory embeddedServletContainerFactory()
+      throws InvalidKeyException, CertificateException, NoSuchAlgorithmException,
+      NoSuchProviderException, IllegalStateException, SignatureException, KeyStoreException,
+      IOException {
+    cert();
+    UndertowEmbeddedServletContainerFactory factory = new UndertowEmbeddedServletContainerFactory();
+    return factory;
+  }
 
 }

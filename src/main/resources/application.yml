@@ -1,16 +1,19 @@
 server:
   port: 8443
+  compression.enabled: true
+  use-forward-headers: true
   ssl:
     key-store: keystore.jks
     key-store-password: secret
     key-password: secret
     key-alias: selfSigned
   servlet-path: /
-#  undertow:
-#    buffer-size: 8388608
-#    direct-buffers: true
-#    io-threads: 1
-#    worker-threads: 1
+  undertow:
+    buffer-size: 8388608
+    direct-buffers: true
+    io-threads: 1
+    worker-threads: 1
+    accesslog.enabled: true
 
 spring:
   application:
@@ -24,19 +27,19 @@ au.com.mountainpass.ryvr:
   ssl:
     hostname: localhost
     genCert: selfSigned
-  data-sources:
-    - url: jdbc:mysql://localhost?serverTimezone=UTC
-      username: dbuser
-      password: dbpass
-      ryvrs:
-        transactions:
-          page-size: 128
-          catalog: test_db
-          table: TRANSACTIONS
-          ordered-by: ID
+#  data-sources:
+#    - url: jdbc:mysql://localhost?serverTimezone=UTC
+#      username: dbuser
+#      password: dbpass
+#      ryvrs:
+#        transactions:
+#          page-size: 128
+#          catalog: test_db
+#          table: TRANSACTIONS
+#          ordered-by: ID
   cache:
     archive-page-max-age: 30
     archive-page-max-age-unit: DAYS
-    current-page-max-age: 1000
-    current-page-max-age-unit: MILLISECONDS
+    current-page-max-age: 1
+    current-page-max-age-unit: SECONDS
     

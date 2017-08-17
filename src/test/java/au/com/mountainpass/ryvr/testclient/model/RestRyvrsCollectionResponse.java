@@ -60,7 +60,10 @@ public class RestRyvrsCollectionResponse implements RyvrsCollectionResponse {
   @Override
   public Ryvr followRyvrLink(String name) {
     try {
-      URI ryvrUri = contextUrl.toURI().resolve("/ryvrs/" + name);
+      au.com.mountainpass.ryvr.model.Link[] items = ryvrsCollection.getLinks().get("item");
+      String href = Arrays.stream(items).filter(item -> name.equals(item.getTitle())).findAny()
+          .get().getHref();
+      URI ryvrUri = contextUrl.toURI().resolve(href);
       final HttpGet httpget = new HttpGet(ryvrUri);
       httpget.reset();
       httpget.addHeader("Accept", "application/json");

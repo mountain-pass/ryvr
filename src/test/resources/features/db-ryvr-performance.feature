@@ -7,37 +7,38 @@ Feature: DB Ryvr
   Background: 
     Given a database "test_db"
     And it has a table "transactions" with the following structure
-      | id | account | description | amount |
+      | id          | INT           |
+      | account     | VARCHAR(255)  |
+      | description | VARCHAR(255)  |
+      | amount      | DECIMAL(19,4) |
     And it has 100000 events
     And a database ryvr with the following configuration
-      | name       | transactions |
-      | database   | test_db      |
-      | table      | transactions |
-      | ordered by | id           |
-      | page size  |         8192 |
+      | name      | transactions                                                                          |
+      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | page size |                                                                                  8192 |
 
   @current
-  Scenario: Get Ryvr First Hit
+  Scenario: Get Ryvr Fir st Hit
     When the "transactions" ryvr is retrieved
     And all the events are retrieved
-    Then 95% of the pages should be loaded within 50ms
-    And 100% of the pages should be loaded within 700ms
+    Then the average page should be loaded within 37ms
+    And 95% of the pages should be loaded within 69ms
+    And 100% of the pages should be loaded within 76ms
+    And the event retrieval throughput should be at least 9.8MB/s
+    And the event retrieval rate should be at least 200000TPS
 
   Scenario: Get Ryvr Multiple Hits
     When the "transactions" ryvr is retrieved
     And all the events are retrieved
     And all the events are retrieved again
-    Then on the second retrieve, 95% of the pages should be loaded within 10ms
-    And on the second retrieve, 100% of the pages should be loaded within 200ms
+    Then on the second retrieve, the average page should be loaded within 0.4ms
+    And 95% of the pages should be loaded within 0.65ms
+    And 100% of the pages should be loaded within 0.7ms
+    And the event retrieval throughput should be at least 900MB/s
+    And the event retrieval rate should be at least 20MTPS
 
   Scenario: Get Ryvr Multiple Consumers
     When the "transactions" ryvr is retrieved
     And all the events are retrieved by 1000 consumers
     Then 95% of the pages should be loaded within 50ms
     And 100% of the pages should be loaded within 1000ms
-
-  Scenario: Get Ryvr New Records
-    When the "transactions" ryvr is retrieved
-    And 100000 records are added at a rate of 10 records/s
-    And all the records are retrieved while the records are added
-    Then the write-read latency shuld be less than 1000ms

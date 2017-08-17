@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import au.com.mountainpass.ryvr.config.RyvrConfiguration;
+
 @RestController
 @RequestMapping("/ryvrs/{name}")
 public class RyvrController {
@@ -30,13 +33,19 @@ public class RyvrController {
   @Autowired
   private JsonController jsonController;
 
+  @Autowired
+  private RyvrConfiguration config;
+
   @RequestMapping(method = RequestMethod.GET, produces = { "application/hal+json",
       MediaType.APPLICATION_JSON_VALUE })
   public void getJson(final HttpServletResponse res, final HttpServletRequest req,
       @PathVariable String name, @RequestParam(required = false) Long page)
       throws URISyntaxException, IOException {
     if (page == null) {
-      jsonController.getRyvr(res, req, name);
+      // jsonController.getRyvr(res, req, name);
+      res.setStatus(HttpStatus.PERMANENT_REDIRECT.value());
+      res.addHeader(HttpHeaders.LOCATION,
+          config.getBaseUri().resolve("/ryvrs/" + name + "?page=1").toString());
     } else {
       if (page <= 0L) {
         res.setStatus(HttpStatus.NOT_FOUND.value());

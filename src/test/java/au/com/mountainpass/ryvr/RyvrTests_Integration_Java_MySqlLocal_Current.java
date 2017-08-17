@@ -10,6 +10,7 @@ import cucumber.api.CucumberOptions;
 @CucumberOptions(plugin = { "pretty" }, features = {
     "src/test/resources/features/" }, strict = false, glue = {
         "au.com.mountainpass.ryvr" }, tags = { "@current", "~@performance" })
-@ActiveProfiles({ "integrationTest", "javaApi", "h2" })
-public class RyvrTests_Integration_Java_H2Local_Current {
+@ActiveProfiles({ "integrationTest", "javaApi", "mysql" })
+public class RyvrTests_Integration_Java_MySqlLocal_Current {
+
 }

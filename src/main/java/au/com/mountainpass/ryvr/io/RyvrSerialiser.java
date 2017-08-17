@@ -1,14 +1,14 @@
 package au.com.mountainpass.ryvr.io;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringEscapeUtils;
-//import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -25,69 +25,98 @@ public class RyvrSerialiser {
     toJsonWithWriter(ryvr, page, o);
   }
 
-  private ByteArrayOutputStream baos = new ByteArrayOutputStream(outputBufferSize);
-  private Writer writer = new OutputStreamWriter(baos); // new BufferedWriter(new
+  // private ByteArrayOutputStream baos = new ByteArrayOutputStream(outputBufferSize);
+  // private Writer writer = new OutputStreamWriter(baos); // new BufferedWriter(new
   // // OutputStreamWriter(baos),
   // // outputBufferSize);
 
+  private StringWriter writer = new StringWriter(outputBufferSize);
+
+  private static final char[] titlePre = "{\"title\":\"".toCharArray();
+  private static final char[] pagePre = "\",\"page\":".toCharArray();
+  private static final char[] pageSizePre = ",\"pageSize\":".toCharArray();
+  private static final char[] rowsPre = ",\"rows\":[".toCharArray();
+  private static final char[] comma = ",".toCharArray();
+  private static char[] openArray = "[".toCharArray();
+  private static final char[] quote = "\"".toCharArray();
+  private static final char[] closeArrays = "]".toCharArray();
+  private static final char[] columnsPre = "],\"columns\":[".toCharArray();
+  private static final char[] closeObjects = "}".toCharArray();
+
   public void toJsonWithWriter(Ryvr ryvr, long page, OutputStream o) throws IOException {
-    baos.reset();
+    // baos.reset();
+    writer.getBuffer().setLength(0);
     // if (page <= 0) {
     // page = ryvr.getPages();
     // }
     // Writer writer = new BufferedWriter(w, outputBufferSize);
     Iterator<Record> iterator = ryvr.getSource().iterator((page - 1) * ryvr.getPageSize());
-    writer.write("{\"title\":\"", 0, 10);
+    writer.write(titlePre, 0, 10);
     writer.write(ryvr.getTitle());
-    writer.write("\",\"page\":", 0, 9);
+    writer.write(pagePre, 0, 9);
     writer.write(Long.toString(page));
-    writer.write(",\"pageSize\":", 0, 12);
+    writer.write(pageSizePre, 0, 12);
     writer.write(Integer.toString(ryvr.getPageSize()));
-    writer.write(",\"rows\":[", 0, 9);
-
-    for (int i = 0, pageSize = ryvr.getPageSize(); i < pageSize && iterator.hasNext(); ++i) {
-      Record record = iterator.next();
-      if (i != 0) {
-        writer.write(',');
-      }
-      writer.write('[');
-      for (int j = 0, size = record.size(); j < size; ++j) {
-        if (j != 0) {
-          writer.write(',');
+    writer.write(rowsPre, 0, 9);
+    for (int i = 0, pageSize = ryvr.getPageSize(); i < pageSize; ++i) {
+      try {
+        Record record = iterator.next();
+        if (i != 0) {
+          writer.write(comma, 0, 1);
         }
-        final Object value = record.getField(j).getValue();
-        if (value instanceof String) {
-          writer.write('"');
-          writer.write(StringEscapeUtils.escapeJson((String) value));
-          writer.write('"');
-        } else {
-          writer.write(value.toString());
+        writer.write(openArray, 0, 1);
+        for (int j = 0, size = record.size(); j < size; ++j) {
+          if (j != 0) {
+            writer.write(comma, 0, 1);
+          }
+          final Object value = record.getField(j).getValue();
+          if (value instanceof String) {
+            writer.write(quote, 0, 1);
+            escapeAndWrite((String) value);
+            writer.write(quote, 0, 1);
+            // } else if (value instanceof Timestamp) {
+            // Timestamp ts = (Timestamp) value;
+            // writer.write(Long.toString(ts.getTime()));
+          } else {
+            writer.write(value.toString());
+          }
         }
+        writer.write(closeArrays, 0, 1);
+      } catch (NoSuchElementException e) {
+        break;
       }
-      writer.write(']');
     }
-    writer.write("],\"columns\":[", 0, 13);
+    writer.write(columnsPre, 0, 13);
     String[] fieldNames = ryvr.getFieldNames();
     if (fieldNames != null) {
       for (int i = 0, size = fieldNames.length; i < size; ++i) {
         if (i != 0) {
-          writer.write(',');
+          writer.write(comma, 0, 1);
         }
-        writer.write('"');
-        writer.write(StringEscapeUtils.escapeJson(fieldNames[i]));
-        writer.write('"');
+        writer.write(quote, 0, 1);
+        escapeAndWrite(fieldNames[i]);
+        writer.write(quote, 0, 1);
       }
     }
-    writer.write(']');
-    // if (page == ryvr.getPages()) {
-    // writer.write(",\"count\":", 0, 9);
-    // writer.write(Long.toString(ryvr.getCount()));
-    // }
-    writer.write('}');
-    writer.flush();
+    writer.write(closeArrays, 0, 1);
+    writer.write(closeObjects, 0, 1);
+    // writer.flush();
 
-    o.write(baos.toByteArray());
+    o.write(writer.getBuffer().toString().getBytes());
     o.flush();
+  }
+
+  private final static Map<String, String> escaped = new HashMap<>(8192);
+
+  private void escapeAndWrite(final String value) throws IOException {
+    final String e = escaped.get(value);
+    if (e == null) {
+      String e2 = StringEscapeUtils.escapeJson(value);
+      escaped.put(value, e2);
+      writer.write(e2);
+    } else {
+      writer.write(e);
+    }
   }
 
 }

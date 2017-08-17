@@ -2,13 +2,15 @@ package au.com.mountainpass.ryvr.testclient;
 
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.datasource.DataSourceRyvrSource;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
@@ -18,12 +20,15 @@ import cucumber.api.Scenario;
 @Profile(value = { "integrationTest" })
 public class RyvrTestEmbeddedServerAdminDriver implements RyvrTestServerAdminDriver {
   @Autowired
-  private JdbcTemplate currentJt;
+  private DataSource dataSource;
 
   public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
   @Autowired
   private RyvrsCollection ryvrsCollection;
+
+  @Autowired
+  private RyvrConfiguration rc;
 
   @Override
   public void _after(final Scenario scenario) {
@@ -42,8 +47,7 @@ public class RyvrTestEmbeddedServerAdminDriver implements RyvrTestServerAdminDri
 
   @Override
   public void createDataSourceRyvr(final Map<String, String> config) throws Throwable {
-    final DataSourceRyvrSource ryvr = new DataSourceRyvrSource(currentJt, config.get("database"),
-        config.get("table"), config.get("ordered by"), Integer.parseInt(config.get("page size")));
+    final DataSourceRyvrSource ryvr = new DataSourceRyvrSource(dataSource, config.get("query"));
     ryvrsCollection
         .addRyvr(new Ryvr(config.get("name"), Integer.parseInt(config.get("page size")), ryvr));
 

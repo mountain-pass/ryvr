@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
+import org.apache.http.client.cache.HttpCacheContext;
+import org.apache.http.client.methods.HttpRequestWrapper;
 import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +40,10 @@ public class HttpThroughputCounter implements HttpResponseInterceptor, HttpReque
   public void process(HttpResponse response, HttpContext context)
       throws HttpException, IOException {
     Timer timer = (Timer) context.getAttribute(TIMER);
-    // double duration =
-    timer.observeDuration() // * 1000000.0
-    ;
-    // HttpRequestWrapper request = (HttpRequestWrapper) context
-    // .getAttribute(HttpCacheContext.HTTP_REQUEST);
-    // LOGGER.info("latency: {}µs\t{}", Math.round(duration), request.getURI());
+    double duration = timer.observeDuration() * 1000000.0;
+    HttpRequestWrapper request = (HttpRequestWrapper) context
+        .getAttribute(HttpCacheContext.HTTP_REQUEST);
+    LOGGER.info("latency: {}µs\t{}", Math.round(duration), request.getURI());
     receivedBytes.observe(response.getEntity().getContentLength());
   }
 
@@ -75,7 +76,23 @@ public class HttpThroughputCounter implements HttpResponseInterceptor, HttpReque
 
   public double getLatency(int percentile) {
     List<MetricFamilySamples> results = requestLatency.collect();
-    String stringPercentile = percentile == 95 ? "0.95" : "1.0";
+    String stringPercentile;
+    switch (percentile) {
+    case 50:
+      stringPercentile = "0.5";
+      break;
+    case 95:
+      stringPercentile = "0.95";
+      break;
+    case 99:
+      stringPercentile = "0.99";
+      break;
+    case 100:
+      stringPercentile = "1.0";
+      break;
+    default:
+      throw new NotImplementedException("percentile not supported: " + percentile);
+    }
     Stream<Sample> quantiles = results.get(0).samples.stream()
         .filter(sample -> sample.labelNames.contains("quantile"));
     Sample result = quantiles.filter(sample -> sample.labelValues.contains(stringPercentile))

@@ -7,75 +7,69 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Iterator;
 
+import javax.sql.DataSource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-import au.com.mountainpass.ryvr.model.Field;
 import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.RyvrSource;
 
 public class DataSourceRyvrSource extends RyvrSource {
-  public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+  public static final Logger LOGGER = LoggerFactory.getLogger(DataSourceRyvrSource.class);
 
-  private JdbcTemplate jt;
   private ResultSet rowSet;
   String[] columnNames;
   private PreparedStatement rowsQuery;
-  // private String rowsQuery;
-  private String table;
-  private String orderedBy;
-  private long count = -1;
 
-  private int[] columnTypes;
+  public DataSourceRyvrSource(DataSource dataSource, String query) throws SQLException {
 
-  public DataSourceRyvrSource(JdbcTemplate jt, String catalog, String table, String orderedBy,
-      int pageSize) throws SQLException {
-    this.table = table;
-    this.orderedBy = orderedBy;
-    this.jt = jt;
-    Connection connection = this.jt.getDataSource().getConnection();
-    connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
-    String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
-    String catalogSeparator = connection.getMetaData().getCatalogSeparator();
+    try (Connection connection = dataSource.getConnection()) {
 
-    rowsQuery = generateRowQuery(catalog, table, orderedBy, identifierQuoteString,
-        catalogSeparator);
-    LOGGER.info("ROWS QUERY: {}", rowsQuery);
-    connection.close();
+      connection.setHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT);
+
+      rowsQuery = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE,
+          ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+      LOGGER.info("ROWS QUERY: {}", rowsQuery);
+      refreshRowSet();
+      findFieldNames();
+
+    }
   }
 
-  public PreparedStatement generateRowQuery(String database, String table, String orderedBy,
-      String identifierQuoteString, String catalogSeparator) throws SQLException {
-    String statement = "select " + identifierQuoteString + database + identifierQuoteString
-        + catalogSeparator + identifierQuoteString + table + identifierQuoteString + ".* from "
-        + identifierQuoteString + database + identifierQuoteString + catalogSeparator
-        + identifierQuoteString + table + identifierQuoteString + " ORDER BY "
-        + identifierQuoteString + database + identifierQuoteString + catalogSeparator
-        + identifierQuoteString + table + identifierQuoteString + "." + identifierQuoteString
-        + orderedBy + identifierQuoteString + " ASC";
-    return jt.getDataSource().getConnection().prepareStatement(statement,
-        ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY,
-        ResultSet.HOLD_CURSORS_OVER_COMMIT);
-  }
+  // public PreparedStatement generateRowQuery(Connection connection, String database, String table,
+  // String orderedBy, String identifierQuoteString, String catalogSeparator, String[] columns)
+  // throws SQLException {
+  // String statement = "select ";
+  // statement += Arrays.stream(columns).map(column -> {
+  // return identifierQuoteString + database + identifierQuoteString + catalogSeparator
+  // + identifierQuoteString + table + identifierQuoteString + "." + column;
+  // }).collect(Collectors.joining(", "));
+  //
+  // statement += " from " + identifierQuoteString + database + identifierQuoteString
+  // + catalogSeparator + identifierQuoteString + table + identifierQuoteString + " ORDER BY "
+  // + identifierQuoteString + database + identifierQuoteString + catalogSeparator
+  // + identifierQuoteString + table + identifierQuoteString + "." + identifierQuoteString
+  // + orderedBy + identifierQuoteString + " ASC";
+  // return connection.prepareStatement(statement, ResultSet.TYPE_SCROLL_INSENSITIVE,
+  // ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
+  // }
 
   public void refreshCount() {
-    // LOGGER.info("Refreshing - Current Row: {}", getRowSet().getRow());
     try {
+      // LOGGER.info("Refreshing - Current Row: {}", rowSet.getRow());
       int currentRow = 0;
-      ResultSet localRowSet = rowSet;
-      if (localRowSet != null) {
-        currentRow = localRowSet.getRow();
+      if (rowSet != null) {
+        currentRow = rowSet.getRow();
       }
-      localRowSet = refreshRowSet();
-      localRowSet.last();
-      count = localRowSet.getRow();
+      refreshRowSet();
+      rowSet.last();
       if (currentRow == 0) {
-        localRowSet.beforeFirst();
+        rowSet.beforeFirst();
       } else {
-        localRowSet.absolute(currentRow);
+        rowSet.absolute(currentRow);
       }
-      // LOGGER.info("Refreshed - Current Row: {}", getRowSet().getRow());
+      // LOGGER.info("Refreshed - Current Row: {}", rowSet.getRow());
       // LOGGER.info("Refreshed - Total Rows: {}", count);
     } catch (SQLException e) {
       throw new RuntimeException(e);
@@ -83,17 +77,12 @@ public class DataSourceRyvrSource extends RyvrSource {
   }
 
   public ResultSet getRowSet() throws SQLException {
-    ResultSet localRowSet = rowSet;
-    if (localRowSet == null) {
-      localRowSet = rowsQuery.executeQuery();
-      rowSet = localRowSet;
-    }
-    return localRowSet;
+    return rowSet == null ? rowSet = rowsQuery.executeQuery() : rowSet;
   }
 
-  private ResultSet refreshRowSet() throws SQLException {
-    rowSet = null;
-    return getRowSet();
+  ResultSet refreshRowSet() throws SQLException {
+    rowSet = rowsQuery.executeQuery();
+    return rowSet;
   }
 
   // @Override
@@ -104,14 +93,18 @@ public class DataSourceRyvrSource extends RyvrSource {
   // return count;
   // }
 
-  final Field field = new DataSourceField(this);
-
-  final Record record = new DataSourceRecord(this);
-
   @Override
   public String[] getFieldNames() {
+    return columnNames;
+
+  }
+
+  private String[] findFieldNames() {
     if (columnNames == null) {
       try {
+        if (rowSet == null) {
+          rowSet = rowsQuery.executeQuery();
+        }
         ResultSetMetaData metaData = getRowSet().getMetaData();
         int columnCount = metaData.getColumnCount();
         columnNames = new String[columnCount];
@@ -123,7 +116,6 @@ public class DataSourceRyvrSource extends RyvrSource {
       }
     }
     return columnNames;
-
   }
 
   @Override
@@ -144,12 +136,15 @@ public class DataSourceRyvrSource extends RyvrSource {
   @Override
   public long getRecordsRemaining(long fromPosition) {
     try {
-      getRowSet().last();
-      long records = getRowSet().getRow() - fromPosition;
+      if (rowSet == null) {
+        refreshRowSet();
+      }
+      rowSet.last();
+      long records = rowSet.getRow() - fromPosition;
       if (fromPosition == 0L) {
-        getRowSet().beforeFirst();
+        rowSet.beforeFirst();
       } else {
-        getRowSet().absolute((int) fromPosition);
+        rowSet.absolute((int) fromPosition);
       }
       return records;
     } catch (SQLException e) {

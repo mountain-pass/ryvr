@@ -7,9 +7,12 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
+import javax.sql.DataSource;
 
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponseInterceptor;
@@ -49,6 +52,7 @@ import org.springframework.http.client.AsyncClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsAsyncClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.jdbc.datasource.DelegatingDataSource;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -333,10 +337,30 @@ public class TestConfiguration
   }
 
   @Bean
-  TrustManagerFactory trustManagerFactory() throws NoSuchAlgorithmException {
+  public TrustManagerFactory trustManagerFactory() throws NoSuchAlgorithmException {
     final TrustManagerFactory tmf = TrustManagerFactory
         .getInstance(TrustManagerFactory.getDefaultAlgorithm());
     return tmf;
+  }
+
+  @Autowired
+  private DataSource dataSource;
+
+  class MyDelegatingDS extends DelegatingDataSource {
+    private final String catalogName;
+
+    public MyDelegatingDS(final String catalogName, final DataSource dataSource) {
+      super(dataSource);
+      this.catalogName = catalogName;
+    }
+
+    @Override
+    public Connection getConnection() throws SQLException {
+      final Connection cnx = super.getConnection();
+      cnx.setCatalog(this.catalogName);
+      return cnx;
+    }
+
   }
 
 }

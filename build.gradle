@@ -1,5 +1,6 @@
 buildscript {
-  ext { springBootVersion = '1.5.6.RELEASE' }
+  // spring boot 1.5.3+ is broken for undertow using SSL
+  ext { springBootVersion = '1.5.2.RELEASE' }
   repositories {
     jcenter()
     maven { url "https://plugins.gradle.org/m2/" }
@@ -11,9 +12,7 @@ buildscript {
   }
 }
 
-plugins {
-  id "com.srcclr.gradle" version "2.2.7"
-}
+plugins { id "com.srcclr.gradle" version "2.2.7" }
 
 
 apply plugin: 'java'
@@ -26,7 +25,7 @@ apply plugin: 'jacoco'
 apply plugin: 'co.riiid.gradle'
 apply plugin: 'application'
 
-  
+
 group = 'au.com.mountainpass'
 
 println "System.env.CI: ${System.env.CI}"
@@ -99,7 +98,11 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 applicationDistribution.from("LICENSE") { into "." }
 
 
-bootRun.doFirst() { applicationDefaultJvmArgs = [ "-Djavax.net.debug=ssl:handshake"]}
+bootRun.doFirst() { applicationDefaultJvmArgs = [
+    "-Dserver.ssl.key-store=${buildDir}/keystore.jks",
+    "-Dlogging.path=${buildDir}/logs",
+    "-Dserver.undertow.accesslog.dir=${buildDir}/logs"
+  ]}
 
 applicationDefaultJvmArgs = [
   "-Dspring.config.location=file:../etc/application.yml",
@@ -126,7 +129,7 @@ dependencies {
   compile('commons-io:commons-io:2.5')
 
   compile('org.springframework.boot:spring-boot-starter-actuator')
-  compile('org.springframework.boot:spring-boot-starter-web') //{ exclude(module: 'spring-boot-starter-tomcat') }
+  compile('org.springframework.boot:spring-boot-starter-web') { exclude(module: 'spring-boot-starter-tomcat') }
   compile('org.springframework.boot:spring-boot-starter-undertow')
   compile('org.springframework.boot:spring-boot-starter-jdbc')
   compile('org.springframework.boot:spring-boot-autoconfigure')
@@ -155,25 +158,35 @@ dependencies {
   compile('org.webjars:bootstrap:3.3.7-1')
   compile('org.webjars:jquery:3.2.1')
   compile('org.webjars:angularjs:1.6.4')
-  
+
   compile group: 'org.shredzone.acme4j', name: 'acme4j-client', version: '0.10'
-  
+
   //compile 'org.bouncycastle:bcpkix-jdk15on:1.57'
   compile group: 'org.keycloak', name: 'keycloak-common', version: '3.2.0.Final'
-  
-  compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
 
+  compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
+  
+  //compile group: 'com.github.shyiko', name: 'mysql-binlog-connector-java', version: '0.13.0'
+  
   //compile group: 'com.lmax', name: 'disruptor', version: '3.3.6'
 
-  
+
   // for escaping json values
   // performance testing showed:
   // - org.json:json:20170516 is faster than org.unbescape:unbescape:1.1.5.RELEASE
   // - org.apache.commons:commons-text:1.1:StringEscapeUtils.ESCAPE_JSON.translate(CharSequence, writer) is faster than org.json:json:20170516
-  // - org.apache.commons:commons-text:1.1:StringEscapeUtils.escapeJson(String) is faster than org.apache.commons:commons-text:1.1:StringEscapeUtils.ESCAPE_JSON.translate(CharSequence, writer) 
+  // - org.apache.commons:commons-text:1.1:StringEscapeUtils.escapeJson(String) is faster than org.apache.commons:commons-text:1.1:StringEscapeUtils.ESCAPE_JSON.translate(CharSequence, writer)
+  // - org.apache.commons:commons-text:1.1:StringEscapeUtils.escapeJson(String) is faster than com.googlecode.json-simple:1.1.1
+  // - org.apache.commons:commons-text:1.1:StringEscapeUtils.escapeJson(String) is faster than net.minidev:json-smart:2.3
+  // - org.apache.commons:commons-text:1.1:StringEscapeUtils.escapeJson(String) is faster org.apache.commons:commons-text:1.1:StringEscapeUtils.escapeJson(String)
   // results with other test data may vary
   compile group: 'org.apache.commons', name: 'commons-text', version: '1.1'
+  //compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
   
+  compile('com.h2database:h2')
+  compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.6'
+  compile group: 'org.postgresql', name: 'postgresql', version: '42.1.3'
+
   
   // we use the MockHttpServletRequest for the HttpController.
   // Change this back to a testCompile dependency when we have
@@ -181,7 +194,8 @@ dependencies {
   compile('org.springframework.boot:spring-boot-starter-test')
 
   
-  
+
+
   testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'
   testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
 
@@ -196,13 +210,10 @@ dependencies {
   testCompile group: 'io.prometheus', name: 'simpleclient', version: '0.0.21'
 
 
-  compile('com.h2database:h2')
-  compile group: 'mysql', name: 'mysql-connector-java', version: '6.0.6'
-  compile group: 'org.postgresql', name: 'postgresql', version: '42.1.3'
 
 
   runtime 'org.jacoco:org.jacoco.agent:0.7.9:runtime'
-  
+
 
   codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.10'
 }
@@ -334,10 +345,8 @@ jacocoTestReport {
   executionData = fileTree(dir: "${coverageOutputDir}", include: '**/jacoco/*.exec')
   additionalSourceDirs = files(sourceSets.test.allJava.srcDirs)
   additionalClassDirs = files(sourceSets.test.output)
-  additionalSourceDirs.each { File f ->
-    println "additionalSourceDirs: ${f}"
-  }
-  
+  additionalSourceDirs.each { File f -> println "additionalSourceDirs: ${f}" }
+
   reports {
     xml.enabled true
     xml.destination "${coverageOutputDir}/coverage-results/jacoco/${archivesBaseName}.xml"

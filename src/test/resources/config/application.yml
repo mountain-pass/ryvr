@@ -21,10 +21,8 @@ server.undertow.worker-threads: 1
 javax.net.ssl.trustStore: build/truststore.jks
 javax.net.ssl.trustStorePassword: changeit
 
-spring.jackson.serialization.indent_output: false
-
 # used for to create tables and data for the tests
 spring.datasource:
-  url: jdbc:h2:mem:test_db;DB_CLOSE_ON_EXIT=FALSE;TRACE_LEVEL_FILE=4;
+  url: jdbc:h2:mem:test_db;DB_CLOSE_ON_EXIT=FALSE;TRACE_LEVEL_FILE=4;DATABASE_TO_UPPER=FALSE 
   username: sa
   password: ""

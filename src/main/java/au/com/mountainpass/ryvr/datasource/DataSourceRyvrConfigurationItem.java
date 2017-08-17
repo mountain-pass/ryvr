@@ -2,6 +2,7 @@ package au.com.mountainpass.ryvr.datasource;
 
 import javax.validation.constraints.Min;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.hibernate.validator.constraints.NotEmpty;
 
 public class DataSourceRyvrConfigurationItem {
@@ -71,6 +72,10 @@ public class DataSourceRyvrConfigurationItem {
    */
   public void setTable(final String table) {
     this.table = table;
+  }
+
+  public String getQuery() {
+    throw new NotImplementedException("TODO");
   }
 
 }

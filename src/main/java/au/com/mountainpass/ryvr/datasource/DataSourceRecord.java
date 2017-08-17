@@ -7,6 +7,8 @@ class DataSourceRecord implements Record {
   /**
    * 
    */
+  final Field field;
+
   private final DataSourceRyvrSource dataSourceRyvrSource;
 
   /**
@@ -14,6 +16,7 @@ class DataSourceRecord implements Record {
    */
   DataSourceRecord(DataSourceRyvrSource dataSourceRyvrSource) {
     this.dataSourceRyvrSource = dataSourceRyvrSource;
+    field = new DataSourceField(dataSourceRyvrSource);
   }
 
   @Override
@@ -23,7 +26,7 @@ class DataSourceRecord implements Record {
 
   @Override
   public Field getField(int fieldIndex) {
-    this.dataSourceRyvrSource.field.setFieldIndex(fieldIndex);
-    return this.dataSourceRyvrSource.field;
+    field.setFieldIndex(fieldIndex);
+    return field;
   }
 }

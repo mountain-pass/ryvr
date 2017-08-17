@@ -21,9 +21,9 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.validation.annotation.Validated;
 
+import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 
@@ -32,10 +32,13 @@ import au.com.mountainpass.ryvr.model.RyvrsCollection;
 @Validated
 public class DataSourcesRyvrConfiguration {
 
-  public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+  private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
   @Autowired
-  RyvrsCollection ryvrs;
+  private RyvrsCollection ryvrs;
+
+  @Autowired
+  private RyvrConfiguration rc;
 
   @Autowired
   @Qualifier("spring.datasource-org.springframework.boot.autoconfigure.jdbc.DataSourceProperties")
@@ -76,17 +79,12 @@ public class DataSourcesRyvrConfiguration {
   @Bean
   public List<DataSource> dataSources() {
     if (dataSources != null) {
-      return dataSources.stream().map(config -> config.initializeDataSourceBuilder().build())
-          .collect(Collectors.toList());
+      return dataSources.stream().map(config -> {
+        DataSource dataSource = config.initializeDataSourceBuilder().build();
+        return dataSource;
+      }).collect(Collectors.toList());
     }
     return new ArrayList<>();
-  }
-
-  @Bean
-  public List<JdbcTemplate> jdbcTemplates() {
-    List<JdbcTemplate> jts = dataSources().stream().map(ds -> new JdbcTemplate(ds))
-        .collect(Collectors.toList());
-    return jts;
   }
 
   @Bean
@@ -96,16 +94,13 @@ public class DataSourcesRyvrConfiguration {
       for (int i = 0; i < dataSources.size(); ++i) {
         DataSourceRyvrConfiguration config = dataSources.get(i);
         if (config.getRyvrs() != null) {
-          JdbcTemplate jdbcTemplate = jdbcTemplates().get(i);
+          DataSource dataSource = dataSources().get(i);
           for (Entry<String, DataSourceRyvrConfigurationItem> dataSourceRyvrConfig : config
               .getRyvrs().entrySet()) {
-            DataSourceRyvrSource source = new DataSourceRyvrSource(jdbcTemplate,
-                dataSourceRyvrConfig.getValue().getCatalog(),
-                dataSourceRyvrConfig.getValue().getTable(),
-                dataSourceRyvrConfig.getValue().getOrderedBy(),
-                dataSourceRyvrConfig.getValue().getPageSize());
-            rval.put(dataSourceRyvrConfig.getKey(), new Ryvr(dataSourceRyvrConfig.getKey(),
-                dataSourceRyvrConfig.getValue().getPageSize(), source));
+            DataSourceRyvrConfigurationItem value = dataSourceRyvrConfig.getValue();
+            DataSourceRyvrSource source = new DataSourceRyvrSource(dataSource, value.getQuery());
+            rval.put(dataSourceRyvrConfig.getKey(),
+                new Ryvr(dataSourceRyvrConfig.getKey(), value.getPageSize(), source));
 
           }
         }

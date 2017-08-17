@@ -31,6 +31,7 @@ class RestRyvrSourceIterator implements Iterator<Record> {
       String newQuery = "page=" + page;
       try {
         // LOGGER.info("getting new page: {} for position {}", page, position);
+        // TODO: use provided Link-Template
         restRyvrSource.followUri(restRyvrSource.currentUri.resolve(currentFile + "?" + newQuery));
       } catch (IOException e) {
         throw new RuntimeException(e);
@@ -48,6 +49,11 @@ class RestRyvrSourceIterator implements Iterator<Record> {
 
   @Override
   public boolean hasNext() {
+    // LOGGER.info("restRyvrSource.pagePosition: {}", restRyvrSource.pagePosition);
+    // LOGGER.info("currentPageSize: {}", currentPageSize);
+    // LOGGER.info("restRyvrSource.pagePosition < currentPageSize - 1: {}",
+    // restRyvrSource.pagePosition < currentPageSize - 1);
+    // LOGGER.info("isArchivePage: {}", isArchivePage);
     return isArchivePage || restRyvrSource.pagePosition < currentPageSize - 1;
     // if (isArchivePage) {
     // return true;
