@@ -3,11 +3,10 @@ package au.com.mountainpass.ryvr.io;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +45,7 @@ public class RyvrSerialiser {
   public void toJsonWithWriter(Ryvr ryvr, long page, OutputStream o) throws IOException {
     // baos.reset();
     writer.getBuffer().setLength(0);
+    o.flush();
     // if (page <= 0) {
     // page = ryvr.getPages();
     // }
@@ -106,10 +106,10 @@ public class RyvrSerialiser {
     o.flush();
   }
 
-  private final static Map<String, String> escaped = new HashMap<>(8192);
+  private final static LRUMap escaped = new LRUMap(8192);
 
   private void escapeAndWrite(final String value) throws IOException {
-    final String e = escaped.get(value);
+    final String e = (String) escaped.get(value);
     if (e == null) {
       String e2 = StringEscapeUtils.escapeJson(value);
       escaped.put(value, e2);

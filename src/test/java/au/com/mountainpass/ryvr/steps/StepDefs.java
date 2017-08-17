@@ -294,9 +294,8 @@ public class StepDefs {
     clearMetrics();
     System.gc();
     long before = System.nanoTime();
-    long before2 = before;
     // readLatencyMetrics.clear();
-    ryvr.getSource().stream().count();
+    recordCount = ryvr.getSource().stream().count();
     // for (Record record : ryvr.getSource()) {
     // long now = System.nanoTime();
     // readLatencyMetrics.observe((now - before2) / 1000000.0);
