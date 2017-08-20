@@ -10,8 +10,6 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
-import org.apache.http.client.cache.HttpCacheContext;
-import org.apache.http.client.methods.HttpRequestWrapper;
 import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +38,11 @@ public class HttpThroughputCounter implements HttpResponseInterceptor, HttpReque
   public void process(HttpResponse response, HttpContext context)
       throws HttpException, IOException {
     Timer timer = (Timer) context.getAttribute(TIMER);
-    double duration = timer.observeDuration() * 1000000.0;
-    HttpRequestWrapper request = (HttpRequestWrapper) context
-        .getAttribute(HttpCacheContext.HTTP_REQUEST);
-    LOGGER.info("latency: {}µs\t{}", Math.round(duration), request.getURI());
+    double duration = timer.observeDuration();
+
+    // HttpRequestWrapper request = (HttpRequestWrapper) context
+    // .getAttribute(HttpCacheContext.HTTP_REQUEST);
+    // LOGGER.info("latency: {}µs\t{}", Math.round(duration * 1000000.0), request.getURI());
     receivedBytes.observe(response.getEntity().getContentLength());
   }
 

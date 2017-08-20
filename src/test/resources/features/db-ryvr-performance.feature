@@ -17,8 +17,7 @@ Feature: DB Ryvr
       | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
       | page size |                                                                                  8192 |
 
-  @current
-  Scenario: Get Ryvr Fir st Hit
+  Scenario: Get Ryvr First Hit
     When the "transactions" ryvr is retrieved
     And all the events are retrieved
     Then the average page should be loaded within 37ms
@@ -39,6 +38,9 @@ Feature: DB Ryvr
 
   Scenario: Get Ryvr Multiple Consumers
     When the "transactions" ryvr is retrieved
+    And all the events are retrieved
+    And all the events are retrieved again
     And all the events are retrieved by 1000 consumers
-    Then 95% of the pages should be loaded within 50ms
-    And 100% of the pages should be loaded within 1000ms
+    Then the average page should be loaded within 0.1ms
+    And 95% of the pages should be loaded within 0.2ms
+    And 100% of the pages should be loaded within 900ms

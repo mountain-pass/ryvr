@@ -58,7 +58,6 @@ Feature: DB Ryvr
     Then it will contain
       | id | account | description | amount |
 
-  @current
   Scenario: Get Ryvr - Multiple Transactions
     Given a database "test_db"
     And it has a table "transactions" with the following structure

@@ -7,16 +7,14 @@ Feature: DB Ryvr
   Background: 
     Given a database "test_db"
     And it has a table "transactions" with the following structure
-      | id          | INT           |
-      | account     | VARCHAR(255)  |
-      | description | VARCHAR(255)  |
-      | amount      | DECIMAL(19,4) |
-      | created     | TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) |
+      | id          | INT                                                |
+      | account     | VARCHAR(255)                                       |
+      | description | VARCHAR(255)                                       |
+      | amount      | DECIMAL(19,4)                                      |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                                                                                                                                                                                                                                |
-      | query     | select `id`, `account`, `description`, `amount`, unix_timestamp(`created`) as created from `transactions` ORDER BY `id` ASC |
-      | page size |                                                                                                                                                                                                                                                                                          10 |
-
+      | name      | transactions                                                                                                                |
+      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | page size |                                                                                                                          10 |
 
   # the write-read latency isn't that good at the moment.
   # This is because we set the TTL on the current/last page to 1 second, so that when there is a large
@@ -38,10 +36,10 @@ Feature: DB Ryvr
   #   of just over 100ms
   # - Notifications
   #   Some event sources provide a mechanism for alerting a registered subsriber when there are new events
-  #   For instance, for MySQL event sources, the 
+  #   For instance, for MySQL event sources, the
   #   (mysql-binlog-connector-java)[https://github.com/shyiko/mysql-binlog-connector-java] library allows a
   #   client to subsribe to and receive committed change events, such as inserts, on the database
-  #   A similar capability is provided by 
+  #   A similar capability is provided by
   #   [CouchDB's Continuous Changes](http://guide.couchdb.org/draft/notifications.html#continuous) if we
   #   had a CouchDB event source, and the
   #   [WatchService API](http://docs.oracle.com/javase/tutorial/essential/io/notification.html) for file system
@@ -49,11 +47,11 @@ Feature: DB Ryvr
   #   For these sorts of event sources, we can trigger a refresh only when there is an actual change. This
   #   would allow us to remove the TTL on the current/last page without increasing the query load on the
   #   data source.
-  #  
+  #
   #   At the same time we would look to implement a change notification service to advise ryvr clients when there
-  #   are new events. 
-  #   
-  #   With both of these in place, ryvr clients can subscribe to changes, when there is a new event in the 
+  #   are new events.
+  #
+  #   With both of these in place, ryvr clients can subscribe to changes, when there is a new event in the
   #   data source they ryvr will perform and refresh and then clients will get notified that they can refresh
   #   the current/last page, allowing to receive new events with a very small latency.
   #
@@ -64,7 +62,8 @@ Feature: DB Ryvr
   #   load balancing across multiple ryvr instances would be the most likely solution.
   #
   #   For data sources that don't have a change notifaction mechansim, the polling can be moved to Ryvr, which would
-  #   still allow us to provide a change notifications to ryvr clients (albeit less efficently). 
+  #   still allow us to provide a change notifications to ryvr clients (albeit less efficently).
+  @current
   Scenario: Get Ryvr New Records
     When the "transactions" ryvr is retrieved
     And 1000 records are added at a rate of 50 records/s

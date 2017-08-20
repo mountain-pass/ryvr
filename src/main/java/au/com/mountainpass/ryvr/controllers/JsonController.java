@@ -118,9 +118,9 @@ public class JsonController {
     // get the iterator for the last possible element on this page
     // this might be beyond the end of the ryvr
     boolean isLoaded = ryvr.getSource().isLoaded(page);
-    // LOGGER.info("isLoaded: {}", isLoaded);
+    LOGGER.info("isLoaded: {}", isLoaded);
     long pageEndPosition = getPageEndPosition(page, pageSize);
-    Iterator<Record> lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition);
+    Iterator<Record> lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition + 1L);
 
     isLastPage = !lastOnPageIterator.hasNext();
     // LOGGER.info("isLastPage: {}", isLastPage);
@@ -128,14 +128,16 @@ public class JsonController {
       // since we are on the last page, and we already had the page loaded, refresh to see if
       // there are new records
       // and then check if we are on the lastPage again.
+      LOGGER.info("refreshing...");
       ryvr.getSource().refresh();
-      lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition);
+      lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition + 1L);
       isLastPage = !lastOnPageIterator.hasNext();
     }
     // }
     res.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
     res.addHeader(HttpHeaders.VARY, String.join(",", HttpHeaders.ACCEPT,
         HttpHeaders.ACCEPT_ENCODING, HttpHeaders.ACCEPT_LANGUAGE, HttpHeaders.ACCEPT_CHARSET));
+
     if (isLastPage) {
       res.addHeader(HttpHeaders.CACHE_CONTROL,
           CacheControl.maxAge(currentPageMaxAge, currentPageMaxAgeUnit).getHeaderValue());

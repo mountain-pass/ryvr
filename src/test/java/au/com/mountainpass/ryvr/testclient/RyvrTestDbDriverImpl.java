@@ -65,105 +65,107 @@ public class RyvrTestDbDriverImpl implements RyvrTestDbDriver {
   @Override
   public void createTable(final String catalog, final String table,
       final Map<String, String> structure) throws Throwable {
-    final Connection connection = currentJt.getDataSource().getConnection();
-    connection.setCatalog(catalog);
-    String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
-    currentJt.execute("drop table if exists " + identifierQuoteString + table
-        + identifierQuoteString + " CASCADE");
+    try (final Connection connection = currentJt.getDataSource().getConnection()) {
+      connection.setCatalog(catalog);
+      String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
+      currentJt.execute("drop table if exists " + identifierQuoteString + table
+          + identifierQuoteString + " CASCADE");
 
-    final StringBuilder statementBuffer = new StringBuilder();
-    statementBuffer
-        .append("create table " + identifierQuoteString + table + identifierQuoteString + " (");
-    boolean first = true;
-    for (Entry<String, String> entry : structure.entrySet()) {
-      if (!first) {
-        statementBuffer.append(", ");
-      } else {
-        first = false;
+      final StringBuilder statementBuffer = new StringBuilder();
+      statementBuffer
+          .append("create table " + identifierQuoteString + table + identifierQuoteString + " (");
+      boolean first = true;
+      for (Entry<String, String> entry : structure.entrySet()) {
+        if (!first) {
+          statementBuffer.append(", ");
+        } else {
+          first = false;
+        }
+        statementBuffer.append(identifierQuoteString + entry.getKey() + identifierQuoteString + " "
+            + entry.getValue());
       }
-      statementBuffer.append(
-          identifierQuoteString + entry.getKey() + identifierQuoteString + " " + entry.getValue());
-    }
-    statementBuffer.append(", CONSTRAINT " + identifierQuoteString + "pk_id" + identifierQuoteString
-        + " PRIMARY KEY (" + identifierQuoteString + "id" + identifierQuoteString + "))");
-    LOGGER.info("TABLE: {}", statementBuffer.toString());
-    currentJt.execute(statementBuffer.toString());
-    currentJt.update("DELETE FROM " + identifierQuoteString + table + identifierQuoteString);
+      statementBuffer
+          .append(", CONSTRAINT " + identifierQuoteString + "pk_id" + identifierQuoteString
+              + " PRIMARY KEY (" + identifierQuoteString + "id" + identifierQuoteString + "))");
+      LOGGER.info("TABLE: {}", statementBuffer.toString());
+      currentJt.execute(statementBuffer.toString());
+      currentJt.update("DELETE FROM " + identifierQuoteString + table + identifierQuoteString);
 
-    first = true;
-    String insertSql = "insert into " + identifierQuoteString + table + identifierQuoteString + "(";
-    for (Entry<String, String> entry : structure.entrySet()) {
-      if (!first) {
-        insertSql += ", ";
-      } else {
-        first = false;
+      first = true;
+      String insertSql = "insert into " + identifierQuoteString + table + identifierQuoteString
+          + "(";
+      for (Entry<String, String> entry : structure.entrySet()) {
+        if (!first) {
+          insertSql += ", ";
+        } else {
+          first = false;
+        }
+        insertSql += identifierQuoteString + entry.getKey() + identifierQuoteString;
       }
-      insertSql += identifierQuoteString + entry.getKey() + identifierQuoteString;
-    }
-    insertSql += ") values (?, ?, ?, ?)";
+      insertSql += ") values (?, ?, ?, ?)";
 
-    PreparedStatement insertStatement = connection.prepareStatement(insertSql);
-    insertSqls.put(catalog + '.' + table, insertSql);
-    insertStatements.put(catalog + '.' + table, insertStatement);
-    connection.close();
+      PreparedStatement insertStatement = connection.prepareStatement(insertSql);
+      insertSqls.put(catalog + '.' + table, insertSql);
+      insertStatements.put(catalog + '.' + table, insertStatement);
+    }
   }
 
   @Override
   public void insertRows(final String catalog, final String table,
       final List<Map<String, String>> events) throws Throwable {
-    final Connection connection = currentJt.getDataSource().getConnection();
-    final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
-    final String dbProductName = connection.getMetaData().getDatabaseProductName();
+    try (final Connection connection = currentJt.getDataSource().getConnection()) {
+      final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
+      final String dbProductName = connection.getMetaData().getDatabaseProductName();
 
-    switch (dbProductName) {
-    case "MySQL":
-      if (events.size() > 100) {
-        Path path = Files.createTempFile(Paths.get("/tmp"), null, null,
-            PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-rw-rw-")));
-        path.toFile().deleteOnExit();
-        try (Writer writer = new FileWriter(path.toString());) {
-          for (Map<String, String> record : events) {
-            writer.write(record.get("id"));
-            writer.write('\t');
-            writer.write(record.get("account"));
-            writer.write('\t');
-            writer.write(record.get("description"));
-            writer.write('\t');
-            writer.write(record.get("amount"));
-            writer.write("\n");
+      switch (dbProductName) {
+      case "MySQL":
+        if (events.size() > 100) {
+          Path path = Files.createTempFile(Paths.get("/tmp"), null, null,
+              PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-rw-rw-")));
+          path.toFile().deleteOnExit();
+          try (Writer writer = new FileWriter(path.toString());) {
+            for (Map<String, String> record : events) {
+              writer.write(record.get("id"));
+              writer.write('\t');
+              writer.write(record.get("account"));
+              writer.write('\t');
+              writer.write(record.get("description"));
+              writer.write('\t');
+              writer.write(record.get("amount"));
+              writer.write("\n");
+            }
+            writer.flush();
+            writer.close();
+
           }
-          writer.flush();
-          writer.close();
-
+          String statement = "LOAD DATA INFILE '" + path.toString() + "' INTO TABLE `" + table
+              + "`(`id`, `account`, `description`, `amount`)";
+          LOGGER.info("INSERT STATEMENT: {}", statement);
+          currentJt.execute(statement);
+          break;
         }
-        String statement = "LOAD DATA INFILE '" + path.toString() + "' INTO TABLE `" + table
-            + "`(`id`, `account`, `description`, `amount`)";
-        LOGGER.info("INSERT STATEMENT: {}", statement);
-        currentJt.execute(statement);
-        break;
+        // else fall through
+      default:
+        String insertSql = insertSqls.get(catalog + "." + table);
+        currentJt.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
+
+          @Override
+          public int getBatchSize() {
+            return events.size();
+          }
+
+          @Override
+          public void setValues(final PreparedStatement ps, final int i) throws SQLException {
+            // TODO Auto-generated method stub
+            final Map<String, String> row = events.get(i);
+            ps.setInt(1, Integer.parseInt(row.get("id")));
+            ps.setString(2, row.get("account"));
+            ps.setString(3, row.get("description"));
+            ps.setBigDecimal(4, new BigDecimal(row.get("amount")));
+          }
+
+        });
       }
-      // else fall through
-    default:
-      String insertSql = insertSqls.get(catalog + "." + table);
-      currentJt.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
-
-        @Override
-        public int getBatchSize() {
-          return events.size();
-        }
-
-        @Override
-        public void setValues(final PreparedStatement ps, final int i) throws SQLException {
-          // TODO Auto-generated method stub
-          final Map<String, String> row = events.get(i);
-          ps.setInt(1, Integer.parseInt(row.get("id")));
-          ps.setString(2, row.get("account"));
-          ps.setString(3, row.get("description"));
-          ps.setBigDecimal(4, new BigDecimal(row.get("amount")));
-        }
-
-      });
-      connection.close();
     }
 
   }

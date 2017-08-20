@@ -8,7 +8,6 @@ import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.LongSummaryStatistics;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
@@ -44,6 +43,7 @@ import cucumber.api.java.Before;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
+import io.prometheus.client.Collector;
 import io.prometheus.client.Collector.MetricFamilySamples;
 import io.prometheus.client.Collector.MetricFamilySamples.Sample;
 import io.prometheus.client.Summary;
@@ -294,22 +294,7 @@ public class StepDefs {
     clearMetrics();
     System.gc();
     long before = System.nanoTime();
-    // readLatencyMetrics.clear();
     recordCount = ryvr.getSource().stream().count();
-    // for (Record record : ryvr.getSource()) {
-    // long now = System.nanoTime();
-    // readLatencyMetrics.observe((now - before2) / 1000000.0);
-    // before2 = now;
-    // }
-
-    // List<MetricFamilySamples> results = readLatencyMetrics.collect();
-    // Stream<Sample> quantiles = results.get(0).samples.stream()
-    // .filter(sample -> sample.labelNames.contains("quantile"));
-    // quantiles.forEachOrdered(sample -> {
-    // LOGGER.info("read latency - {}th percentile: {}ms",
-    // (int) (Double.parseDouble(sample.labelValues.get(0)) * 100), sample.value);
-    // });
-
     long after = System.nanoTime();
     double localLatencyµs = (after - before) / 1000.0;
     LOGGER.info("total latency: {}µs", localLatencyµs);
@@ -384,6 +369,9 @@ public class StepDefs {
 
   @When("^all the events are retrieved again$")
   public void all_the_events_are_retrieved_again() throws Throwable {
+    LOGGER.info("warm the cache");
+    ryvr.getSource().stream().count();
+    LOGGER.info("Clearing metrics");
     clearMetrics();
     all_the_events_are_retrieved();
   }
@@ -466,12 +454,15 @@ public class StepDefs {
       .quantile(0.95, 0.01).quantile(0.99, 0.01).quantile(1, 0.01)
       .name("write_read_latency_seconds").help("Write Read latency in seconds.").register();
 
+  static private double[] insertTimes;
+
   @When("^(\\d+) records are added at a rate of (\\d+) records/s$")
   public void records_are_added_at_a_rate_of_records_s(int noOfEvents, int rate) throws Throwable {
     writeReadLatency.clear();
     addingRecords = true;
     int countSoFar = expectedRecordCount;
     expectedRecordCount += noOfEvents;
+    insertTimes = new double[expectedRecordCount];
 
     long tick = 1000000000L / rate;
 
@@ -479,15 +470,17 @@ public class StepDefs {
       long start = System.nanoTime();
       for (int i = 0; i < noOfEvents; ++i) {
         Map<String, String> event = new HashMap<>(4);
-        event.put("id", Integer.toString(i + countSoFar));
+        int id = i + countSoFar;
+        event.put("id", Integer.toString(id));
         event.put("account", "78901234");
         event.put("description", "Buying Stuff");
         event.put("amount", Double.toString(i * -20.00 - i));
         try {
+          insertTimes[id] = System.nanoTime();
           dbClient.insertRow("test_db", this.currentTable, event);
 
           // if (i % 100 == 99) {
-          // LOGGER.info("added record: {}", i + countSoFar + 1);
+          // LOGGER.info("added record: {}", id + 1);
           // }
         } catch (Throwable e) {
           throw new RuntimeException(e);
@@ -532,10 +525,13 @@ public class StepDefs {
       // if (first.isPresent()) {
       // LOGGER.info("FIRST ID: {}", first.get().getField(0).getValue());
       // }
-      LongSummaryStatistics stats = ryvr.getSource().stream(actualCount).mapToLong(record -> {
-        Long created = (Long) record.getField(4).getValue();
-        writeReadLatency.observe((System.currentTimeMillis() - created) * 0.001);
-        return System.currentTimeMillis() - created;
+      DoubleSummaryStatistics stats = ryvr.getSource().stream(actualCount).mapToDouble(record -> {
+        long readTime = System.nanoTime();
+        // Long created = (Long) record.getField(4).getValue();
+        int id = (Integer) record.getField(0).getValue();
+        double latency = (readTime - insertTimes[id]) / Collector.NANOSECONDS_PER_SECOND;
+        writeReadLatency.observe(latency);
+        return latency;
       }).summaryStatistics();
       long additionalCount = stats.getCount();
       actualCount += additionalCount;
@@ -552,8 +548,7 @@ public class StepDefs {
         .filter(sample -> sample.labelNames.contains("quantile"));
     quantiles.forEachOrdered(sample -> {
       LOGGER.info("latency - {}th percentile: {}ms",
-          (int) (Double.parseDouble(sample.labelValues.get(0)) * 100),
-          Math.round(sample.value * 1000));
+          (int) (Double.parseDouble(sample.labelValues.get(0)) * 100), Math.round(sample.value));
     });
 
   }

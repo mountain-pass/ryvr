@@ -8,7 +8,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.client.cache.CacheResponseStatus;
 import org.apache.http.client.cache.HttpCacheContext;
-import org.apache.http.client.methods.HttpRequestWrapper;
 import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,8 +37,8 @@ class HttpCacheStatusHeaderAdder implements HttpResponseInterceptor {
     default:
       xCacheString = cacheResponseStatus.toString();
     }
-    HttpRequestWrapper request = (HttpRequestWrapper) context
-        .getAttribute(HttpCacheContext.HTTP_REQUEST);
+    // HttpRequestWrapper request = (HttpRequestWrapper) context
+    // .getAttribute(HttpCacheContext.HTTP_REQUEST);
     // LOGGER.info("X-Cache: {}\t{}", xCacheString, request.getURI());
     response.addHeader("X-Cache", xCacheString);
     long length = response.getEntity().getContentLength();

@@ -33,27 +33,8 @@ public class DataSourceRyvrSource extends RyvrSource {
       LOGGER.info("ROWS QUERY: {}", rowsQuery);
       refreshRowSet();
       findFieldNames();
-
     }
   }
-
-  // public PreparedStatement generateRowQuery(Connection connection, String database, String table,
-  // String orderedBy, String identifierQuoteString, String catalogSeparator, String[] columns)
-  // throws SQLException {
-  // String statement = "select ";
-  // statement += Arrays.stream(columns).map(column -> {
-  // return identifierQuoteString + database + identifierQuoteString + catalogSeparator
-  // + identifierQuoteString + table + identifierQuoteString + "." + column;
-  // }).collect(Collectors.joining(", "));
-  //
-  // statement += " from " + identifierQuoteString + database + identifierQuoteString
-  // + catalogSeparator + identifierQuoteString + table + identifierQuoteString + " ORDER BY "
-  // + identifierQuoteString + database + identifierQuoteString + catalogSeparator
-  // + identifierQuoteString + table + identifierQuoteString + "." + identifierQuoteString
-  // + orderedBy + identifierQuoteString + " ASC";
-  // return connection.prepareStatement(statement, ResultSet.TYPE_SCROLL_INSENSITIVE,
-  // ResultSet.CONCUR_READ_ONLY, ResultSet.HOLD_CURSORS_OVER_COMMIT);
-  // }
 
   public void refreshCount() {
     try {
@@ -105,7 +86,7 @@ public class DataSourceRyvrSource extends RyvrSource {
         if (rowSet == null) {
           rowSet = rowsQuery.executeQuery();
         }
-        ResultSetMetaData metaData = getRowSet().getMetaData();
+        ResultSetMetaData metaData = rowsQuery.getMetaData();
         int columnCount = metaData.getColumnCount();
         columnNames = new String[columnCount];
         for (int i = 0; i < columnCount; ++i) {
@@ -120,7 +101,11 @@ public class DataSourceRyvrSource extends RyvrSource {
 
   @Override
   public void refresh() {
-    refreshCount();
+    try {
+      refreshRowSet();
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

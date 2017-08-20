@@ -2,11 +2,11 @@ package au.com.mountainpass.ryvr.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.collections.map.LRUMap;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.Ryvr;
+import io.undertow.servlet.spec.ServletOutputStreamImpl;
 
 @Component
 public class RyvrSerialiser {
@@ -24,12 +25,7 @@ public class RyvrSerialiser {
     toJsonWithWriter(ryvr, page, o);
   }
 
-  // private ByteArrayOutputStream baos = new ByteArrayOutputStream(outputBufferSize);
-  // private Writer writer = new OutputStreamWriter(baos); // new BufferedWriter(new
-  // // OutputStreamWriter(baos),
-  // // outputBufferSize);
-
-  private StringWriter writer = new StringWriter(outputBufferSize);
+  private StringBuilderWriter writer = new StringBuilderWriter(outputBufferSize);
 
   private static final char[] titlePre = "{\"title\":\"".toCharArray();
   private static final char[] pagePre = "\",\"page\":".toCharArray();
@@ -44,7 +40,7 @@ public class RyvrSerialiser {
 
   public void toJsonWithWriter(Ryvr ryvr, long page, OutputStream o) throws IOException {
     // baos.reset();
-    writer.getBuffer().setLength(0);
+    writer.getBuilder().setLength(0);
     o.flush();
     // if (page <= 0) {
     // page = ryvr.getPages();
@@ -100,10 +96,9 @@ public class RyvrSerialiser {
     }
     writer.write(closeArrays, 0, 1);
     writer.write(closeObjects, 0, 1);
-    // writer.flush();
-
-    o.write(writer.getBuffer().toString().getBytes());
-    o.flush();
+    o.write(writer.getBuilder().toString().getBytes());
+    ServletOutputStreamImpl sosi = (ServletOutputStreamImpl) o;
+    sosi.closeAsync();
   }
 
   private final static LRUMap escaped = new LRUMap(8192);

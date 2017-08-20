@@ -36,13 +36,8 @@ class DataSourceRyvrSourceIterator implements Iterator<Record> {
     // this.dataSourceRyvrSource = dataSourceRyvrSource;
     record = new DataSourceRecord(dataSourceRyvrSource);
     try {
-      ResultSet rs = dataSourceRyvrSource.getRowSet();
-      if (rs == null) {
-        rs = dataSourceRyvrSource.refreshRowSet();
-      } else {
-        rs.beforeFirst();
-      }
-      rowSet = rs;
+      rowSet = dataSourceRyvrSource.getRowSet();
+      rowSet.beforeFirst();
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -51,8 +46,9 @@ class DataSourceRyvrSourceIterator implements Iterator<Record> {
   @Override
   public boolean hasNext() {
     try {
-      return !(rowSet.isLast() || rowSet.isAfterLast()
+      boolean rval = !(rowSet.isLast() || rowSet.isAfterLast()
           || (rowSet.getRow() == 0 && !rowSet.isBeforeFirst()));
+      return rval;
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
