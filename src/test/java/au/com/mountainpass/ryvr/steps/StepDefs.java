@@ -531,6 +531,7 @@ public class StepDefs {
         int id = (Integer) record.getField(0).getValue();
         double latency = (readTime - insertTimes[id]) / Collector.NANOSECONDS_PER_SECOND;
         writeReadLatency.observe(latency);
+        LOGGER.info("latency {}: {}ms", id, latency * Collector.MILLISECONDS_PER_SECOND);
         return latency;
       }).summaryStatistics();
       long additionalCount = stats.getCount();
@@ -548,7 +549,8 @@ public class StepDefs {
         .filter(sample -> sample.labelNames.contains("quantile"));
     quantiles.forEachOrdered(sample -> {
       LOGGER.info("latency - {}th percentile: {}ms",
-          (int) (Double.parseDouble(sample.labelValues.get(0)) * 100), Math.round(sample.value));
+          (int) (Double.parseDouble(sample.labelValues.get(0)) * 100),
+          Math.round(sample.value * Collector.MILLISECONDS_PER_SECOND));
     });
 
   }

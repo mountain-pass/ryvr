@@ -105,20 +105,8 @@ public class JsonController {
     long pageSize = ryvr.getPageSize();
     long pageRecordCount = 0;
 
-    // if (page == -1L) {
-    // isLastPage = true;
-    // boolean isLoaded = ryvr.getSource().isLoaded(page);
-    // if (isLoaded) {
-    // ryvr.getSource().refresh();
-    // }
-    // long count = ryvr.getSource().getRecordsRemaining(0L);
-    //
-    // page = (count / pageSize) + 1L;
-    // } else {
-    // get the iterator for the last possible element on this page
-    // this might be beyond the end of the ryvr
     boolean isLoaded = ryvr.getSource().isLoaded(page);
-    LOGGER.info("isLoaded: {}", isLoaded);
+    // LOGGER.info("isLoaded: {}", isLoaded);
     long pageEndPosition = getPageEndPosition(page, pageSize);
     Iterator<Record> lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition + 1L);
 
@@ -158,20 +146,10 @@ public class JsonController {
     res.addHeader("Page", Long.toString(page));
     res.addHeader("Page-Size", Long.toString(pageSize));
 
-    // responseBuilder.header("Page", Long.toString(page));
-    // responseBuilder.header("Page-Size", Integer.toString(pageSize));
-
     addLinks(ryvr, page, isLastPage, res);
-    // responseBuilder.header("Current-Page-Size", Integer.toString(ryvr.getCurrentPageSize(page)));
     serialiser.toJson(ryvr, page, res.getOutputStream());
     res.setStatus(HttpStatus.OK.value());
 
-    // return responseBuilder.body(new StreamingResponseBody() {
-    // @Override
-    // public void writeTo(OutputStream outputStream) throws IOException {
-    // serialiser.toJson(ryvr, page, outputStream);
-    // }
-    // });
   }
 
   private long getPageEndPosition(long page, long pageSize) {
