@@ -9,6 +9,8 @@ buildscript {
     classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     classpath('gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:1.4.17')
     classpath 'co.riiid:gradle-github-plugin:0.4.2'
+    
+    // for later https://github.com/stempler/gradle-versioneye-plugin
   }
 }
 
@@ -198,6 +200,7 @@ dependencies {
   testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'
   testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
 
+  // can't upgrade to 3.5.1 due to guava incompatibilities
   testCompile ('org.seleniumhq.selenium:selenium-java:3.4.0') { exclude(module: 'commons-logging') } // 3.5.1
   testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.4.0' // 3.5.1
   testCompile 'com.saucelabs:sauce_junit:2.1.20' // 2.1.20
