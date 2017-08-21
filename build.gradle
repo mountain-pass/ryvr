@@ -159,17 +159,18 @@ dependencies {
   compile('org.webjars:jquery:3.2.1')
   compile('org.webjars:angularjs:1.6.4')
 
-//  compile group: 'org.shredzone.acme4j', name: 'acme4j-client', version: '0.10'
+  // For when we want to use Let's Encrypt certs.
+  //compile group: 'org.shredzone.acme4j', name: 'acme4j-client', version: '0.10'
 
-  compile group: 'org.keycloak', name: 'keycloak-common', version: '3.2.0.Final'
+  compile group: 'org.keycloak', name: 'keycloak-common', version: '3.2.1.Final'
 
   compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
   
   compile 'commons-collections:commons-collections:3.2.2'
+  
+  // For when we want to automatically refresh when there is new data
   //compile group: 'com.github.shyiko', name: 'mysql-binlog-connector-java', version: '0.13.0'
   
-  //compile group: 'com.lmax', name: 'disruptor', version: '3.3.6'
-
 
   // for escaping json values
   // performance testing showed:
