@@ -144,7 +144,7 @@ dependencies {
 
   compile 'de.otto.edison:edison-hal:1.0.0.RC5'
 
-  compile group: 'org.webjars', name: 'swagger-ui', version: '3.0.19'
+  compile group: 'org.webjars', name: 'swagger-ui', version: '3.1.5'
 
   compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
   compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
@@ -324,20 +324,13 @@ testClasses.each { File testClass ->
 
     ignoreFailures = true
   }
-  tasks["test${baseName}"].finalizedBy jacocoTestReport
 }
 
 test { ignoreFailures = true }
+test.finalizedBy jacocoTestReport
 
 test.dependsOn {
   tasks.findAll { task ->
-    //    println "${task.name}.local: ${project.ext.properties["${task.name}.local"]}"
-    //    println 'task.name.startsWith(\'test\')?: ' +         task.name.startsWith('test')
-    //    println 'task.name != "test"?: ' +        task.name != "test"
-    //    println 'project.hasProperty("${task.name}.local")?: ' +         project.hasProperty("${task.name}.local")
-    //    println 'project.ext.properties["${task.name}.local"]?: ' +          project.ext.properties["${task.name}.local"]=='true'
-    //    println 'test?: ' +        ( task.name.startsWith('test') && task.name != "test" && project.hasProperty("${task.name}.local") && project.ext.properties["${task.name}.local"]=='true' )
-    //
     task.name.startsWith('test') && task.name != "test" && project.hasProperty("${task.name}.enabled") && project.ext.properties["${task.name}.enabled"]=='true' }
 }
 

@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -23,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.stereotype.Component;
+import org.webjars.WebJarAssetLocator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mustachejava.DefaultMustacheFactory;
@@ -66,9 +68,19 @@ public class HtmlController {
   @Value("${au.com.mountainpass.ryvr.cache.current-page-max-age-unit}")
   private TimeUnit currentPageMaxAgeUnit;
 
+  private String swaggerUiVersion;
+
+  @PostConstruct
+  private void postConstruct() {
+    Map<String, String> webJars = new WebJarAssetLocator().getWebJars();
+    this.swaggerUiVersion = webJars.get("swagger-ui");
+  }
+
   public ResponseEntity<?> getApiDocs(HttpServletRequest req, String group) {
     return ResponseEntity.status(HttpStatus.SEE_OTHER)
-        .location(URI.create("/webjars/swagger-ui/3.0.19/index.html?url=/api-docs")).build();
+        .location(
+            URI.create("/webjars/swagger-ui/" + swaggerUiVersion + "/index.html?url=/api-docs"))
+        .build();
   }
 
   public ResponseEntity<?> getRyvrsCollection(HttpServletRequest req) {
