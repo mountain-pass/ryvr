@@ -17,51 +17,67 @@ import com.saucelabs.ci.sauceconnect.SauceTunnelManager;
 @Component
 @Profile("sauceLabs")
 public class SauceLabsTunnel implements DisposableBean {
-    private Logger logger = LoggerFactory.getLogger(SauceLabsTunnel.class);
+  private Logger logger = LoggerFactory.getLogger(SauceLabsTunnel.class);
 
-    @Value(value = "${webdriver.sauce.labs.username}")
-    private String sauceUsername;
+  @Value(value = "${SAUCE_LABS_USERNAME}")
+  private String sauceUsername;
 
-    @Value(value = "${webdriver.sauce.labs.key}")
-    private String sauceAccessKey;
+  @Value(value = "${SAUCE_LABS_KEY}")
+  private String sauceAccessKey;
 
-    @Value(value = "${webdriver.sauce.labs.verbose:false}")
-    private boolean verboseLogging;
+  @Value(value = "${webdriver.sauce.labs.verbose:false}")
+  private boolean verboseLogging;
 
-    @Value(value = "${webdriver.sauce.labs.port:4445}")
-    private int port;
+  @Value(value = "${webdriver.sauce.labs.port:4445}")
+  private int port;
 
-    @Value(value = "${webdriver.sauce.labs.options:}")
-    private String options = "";
+  @Value(value = "${webdriver.sauce.labs.options:--no-proxy-caching}")
+  private String options;
 
-    private Process sauceConnectProcess = null;
+  private Process sauceConnectProcess = null;
 
-    private SauceTunnelManager sauceConnectFourManager;
+  private SauceTunnelManager sauceConnectFourManager;
 
-    @PostConstruct
-    public void connect() throws IOException {
-        if (sauceConnectProcess == null) {
-            logger.info("Starting Sauce Connect");
-            sauceConnectFourManager = new SauceConnectFourManager(
-                    !verboseLogging);
-            try {
-                sauceConnectProcess = sauceConnectFourManager.openConnection(
-                        sauceUsername, sauceAccessKey, port, null, options,
-                        null, verboseLogging, null);
-            } catch (IOException e) {
-                logger.error("Error generated when launching Sauce Connect", e);
-                throw e;
-            }
-        }
+  private class Shutdowner extends Thread {
+    private SauceLabsTunnel tunnel;
+
+    Shutdowner(SauceLabsTunnel tunnel) {
+      this.tunnel = tunnel;
+      Runtime.getRuntime().addShutdownHook(this);
     }
 
     @Override
-    public void destroy() {
-        if (sauceConnectFourManager != null) {
-            logger.info("Stopping Sauce Connect");
-            sauceConnectFourManager.closeTunnelsForPlan(this.sauceUsername,
-                    options, null);
-            logger.info("Sauce Connect stopped");
-        }
+    public void run() {
+      tunnel.destroy();
     }
+  }
+
+  private Shutdowner shutdowner;
+
+  @PostConstruct
+  public void connect() throws IOException {
+    if (sauceConnectProcess == null) {
+      this.shutdowner = new Shutdowner(this);
+      logger.info("Starting Sauce Connect");
+      sauceConnectFourManager = new SauceConnectFourManager(!verboseLogging);
+      try {
+        sauceConnectProcess = sauceConnectFourManager.openConnection(sauceUsername, sauceAccessKey,
+            port, null, options, null, verboseLogging, null);
+      } catch (IOException e) {
+        logger.error("Error generated when launching Sauce Connect", e);
+        throw e;
+      }
+    }
+  }
+
+  @Override
+  public void destroy() {
+    if (sauceConnectFourManager != null) {
+      logger.info("Stopping Sauce Connect");
+      sauceConnectFourManager.closeTunnelsForPlan(this.sauceUsername, options, null);
+      sauceConnectProcess = null;
+      shutdowner = null;
+      logger.info("Sauce Connect stopped");
+    }
+  }
 }

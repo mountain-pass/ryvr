@@ -206,8 +206,8 @@ dependencies {
   testCompile group: 'com.google.guava', name: 'guava', version: '22.0'
   
   
-  testCompile 'com.saucelabs:sauce_junit:2.1.20' // 2.1.20
-  testCompile 'com.saucelabs:ci-sauce:1.123' // 1.128
+  testCompile 'com.saucelabs:sauce_junit:2.1.23' // 2.1.23
+  testCompile 'com.saucelabs:ci-sauce:1.128' // 1.128
 
 
   testCompile('io.swagger:swagger-parser:1.0.22') // 1.0.32
@@ -275,6 +275,7 @@ def SAUCE_LABS_USERNAME = project.getProperties().get("SAUCE_LABS_USERNAME") ?: 
 def SAUCE_LABS_KEY = project.getProperties().get("SAUCE_LABS_KEY") ?: ""
 Boolean withSauce = project.getProperties().get("withSauce") ?: false
 
+
 task "distZipRun"(type: Exec, group: 'application', description: "run this project via the distZip", dependsOn: 'unzipDistZip') {
   workingDir "${unzipDistZip.outputDir}/ryvr/bin"
   def jacocoAgent = ""
@@ -320,8 +321,8 @@ testClasses.each { File testClass ->
     ext.coverageDir = "${coverageOutputDir}/coverage-results-${baseName}"
     outputs.dir file(coverageDir)
     systemProperty 'cucumber.options',  "--plugin json:${outputDir}/cucumber.json --plugin html:${outputDir}/html --plugin junit:${outputDir}/TEST-cucumber.xml"
-    systemProperty 'webdriver.sauce.labs.username',  "${SAUCE_LABS_USERNAME}"
-    systemProperty 'webdriver.sauce.labs.key',  "${SAUCE_LABS_KEY}"
+    systemProperty 'SAUCE_LABS_USERNAME',  "${SAUCE_LABS_USERNAME}"
+    systemProperty 'SAUCE_LABS_KEY',  "${SAUCE_LABS_KEY}"
     systemProperty 'au.com.mountainpass.ryvr.test.jar', jar.outputs.files.singleFile
     systemProperty 'jacoco.destinationFile', "${coverageDir}/jacoco/${baseName}.exec"
     jacoco {
