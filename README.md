@@ -25,7 +25,7 @@ On subsequent reads (i.e. previously read data is in cache), clients can pull do
 
 Ryvrs have very good economies-of-scale when there are multiple consumers. With 1000 clients all consuming the same ryvr, the average client can pull down over 4 million records per second, with the fastest client pulling down **65 million records per second**. This provides a throughput of over **160MB/s** for the average client and over **2.5GB/s** for the fastest client.
 
-<span id="myfootnote-*">[*](#myfootnotelink-*)</span> All performance results measured on MacBook Pro 2.8 GHz Intel Core i7, with 16 GB 1600 MHz DDR3 and 1TB SSD, running OS X 10.11.6, using the REST API and a local running MySQL v5.7.18 data source.
+<a id="myfootnote-*" href="#myfootnotelink-*">*</a> All performance results measured on MacBook Pro 2.8 GHz Intel Core i7, with 16 GB 1600 MHz DDR3 and 1TB SSD, running OS X 10.11.6, using the REST API and a local running MySQL v5.7.18 data source.
 
 We often see performance test runs with significantly better results than the above, however the results
 above represent the performance results that are consistently achieved.
