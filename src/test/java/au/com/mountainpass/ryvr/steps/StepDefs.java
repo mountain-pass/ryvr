@@ -328,7 +328,7 @@ public class StepDefs {
     clearMetrics();
     System.gc();
 
-    DoubleSummaryStatistics executionTimes = ryvrs.parallelStream().mapToDouble(r -> {
+    executionTimes = ryvrs.parallelStream().mapToDouble(r -> {
       long b = System.nanoTime();
       recordCount = r.getSource().stream().count();
       assertThat(recordCount, equalTo(100000L));
@@ -339,9 +339,9 @@ public class StepDefs {
     LOGGER.info("total latency min: {}s", executionTimes.getMin());
     LOGGER.info("total latency ave: {}s", executionTimes.getAverage());
     LOGGER.info("total latency max: {}s", executionTimes.getMax());
-    LOGGER.info("MTPS(local  min): {}", recordCount / executionTimes.getMin() / 1000000.0);
+    LOGGER.info("MTPS(local  min): {}", recordCount / executionTimes.getMax() / 1000000.0);
     LOGGER.info("MTPS(local  ave): {}", recordCount / executionTimes.getAverage() / 1000000.0);
-    LOGGER.info("MTPS(local  max): {}", recordCount / executionTimes.getMax() / 1000000.0);
+    LOGGER.info("MTPS(local  max): {}", recordCount / executionTimes.getMin() / 1000000.0);
 
     if (httpThroughputCounter != null) {
 
@@ -350,15 +350,15 @@ public class StepDefs {
 
       LOGGER.info("total latency(prom): {}s", latencySeconds / consumers);
 
-      double megaBytes = byteCount / 1024.0 / 1024.0;
+      megaBytes = byteCount / 1024.0 / 1024.0;
       LOGGER.info("bytes total: {}MB", megaBytes);
       LOGGER.info("bytes/consumer : {}MB", megaBytes / consumers);
       LOGGER.info("throughput (local min): {}MB/s",
-          megaBytes / executionTimes.getMin() / consumers);
+          megaBytes / executionTimes.getMax() / consumers);
       LOGGER.info("throughput (local ave): {}MB/s",
           megaBytes / executionTimes.getAverage() / consumers);
       LOGGER.info("throughput (local max): {}MB/s",
-          megaBytes / executionTimes.getMax() / consumers);
+          megaBytes / executionTimes.getMin() / consumers);
       LOGGER.info("throughput (prom): {}MB/s", megaBytes / latencySeconds);
 
       LOGGER.info("MTPS(prom): {}", recordCount * consumers / latencySeconds / 1000000.0);
@@ -455,6 +455,10 @@ public class StepDefs {
       .name("write_read_latency_seconds").help("Write Read latency in seconds.").register();
 
   static private double[] insertTimes;
+
+  private DoubleSummaryStatistics executionTimes;
+
+  private double megaBytes;
 
   @When("^(\\d+) records are added at a rate of (\\d+) records/s$")
   public void records_are_added_at_a_rate_of_records_s(int noOfEvents, int rate) throws Throwable {
@@ -602,8 +606,44 @@ public class StepDefs {
     assertWriteReadLatencyWithin(percentile, maxMs);
   }
 
-  @Then("^the maximium write-read latency should be less that (\\d+)ms$")
+  @Then("^the maximium write-read latency should be less that (\\d+\\.?\\d*)ms$")
   public void the_maximium_write_read_latency_should_be_less_that_ms(int maxMs) throws Throwable {
     assertWriteReadLatencyWithin(100, maxMs);
   }
+
+  @Then("^the minmium event retrieval throughput should be at least (\\d+\\.?\\d*)MB/s$")
+  public void the_minmium_event_retrieval_throughput_should_be_at_least_MB_s(double mbPerS)
+      throws Throwable {
+    assertThat(megaBytes / executionTimes.getMax() / consumers, greaterThan(mbPerS));
+  }
+
+  @Then("^the average event retrieval throughput should be at least (\\d+\\.?\\d*)MB/s$")
+  public void the_average_event_retrieval_throughput_should_be_at_least_MB_s(double mbPerS)
+      throws Throwable {
+    assertThat(megaBytes / executionTimes.getAverage() / consumers, greaterThan(mbPerS));
+  }
+
+  @Then("^the peak event retrieval throughput should be at least (\\d+\\.?\\d*)GB/s$")
+  public void the_peak_event_retrieval_throughput_should_be_at_least_GB_s(double gbPerS)
+      throws Throwable {
+    assertThat(megaBytes / 1024.0 / executionTimes.getMin() / consumers, greaterThan(gbPerS));
+  }
+
+  @Then("^the minimum event retrieval rate should be at least (\\d+\\.?\\d*)TPS$")
+  public void the_minimum_event_retrieval_rate_should_be_at_least_MTPS(double tps)
+      throws Throwable {
+    assertThat(recordCount / executionTimes.getMax(), greaterThan(tps));
+  }
+
+  @Then("^the average event retrieval rate should be at least (\\d+\\.?\\d*)MTPS$")
+  public void the_average_event_retrieval_rate_should_be_at_least_MTPS(double mtps)
+      throws Throwable {
+    assertThat(recordCount / executionTimes.getAverage() / 1000000.0, greaterThan(mtps));
+  }
+
+  @Then("^the peak event retrieval rate should be at least (\\d+\\.?\\d*)MTPS$")
+  public void the_peak_event_retrieval_rate_should_be_at_least_MTPS(double mtps) throws Throwable {
+    assertThat(recordCount / executionTimes.getMin() / 1000000.0, greaterThan(mtps));
+  }
+
 }

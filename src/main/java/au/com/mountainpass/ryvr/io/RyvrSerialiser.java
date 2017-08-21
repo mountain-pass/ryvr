@@ -97,8 +97,12 @@ public class RyvrSerialiser {
     writer.write(closeArrays, 0, 1);
     writer.write(closeObjects, 0, 1);
     o.write(writer.getBuilder().toString().getBytes());
-    ServletOutputStreamImpl sosi = (ServletOutputStreamImpl) o;
-    sosi.closeAsync();
+    if (o instanceof ServletOutputStreamImpl) {
+      ServletOutputStreamImpl sosi = (ServletOutputStreamImpl) o;
+      sosi.closeAsync();
+    } else {
+      o.flush();
+    }
   }
 
   private final static LRUMap escaped = new LRUMap(8192);

@@ -3,3 +3,4 @@
 * Ryvrs now provide appropriate caching headers
 * Updated library dependencies
 * Added ZIP distribution
+* Large performance improvements

@@ -36,6 +36,7 @@ Feature: DB Ryvr
     And the event retrieval throughput should be at least 900MB/s
     And the event retrieval rate should be at least 20MTPS
 
+  @current
   Scenario: Get Ryvr Multiple Consumers
     When the "transactions" ryvr is retrieved
     And all the events are retrieved
@@ -43,4 +44,11 @@ Feature: DB Ryvr
     And all the events are retrieved by 1000 consumers
     Then the average page should be loaded within 0.1ms
     And 95% of the pages should be loaded within 0.2ms
-    And 100% of the pages should be loaded within 900ms
+    And 100% of the pages should be loaded within 1050ms
+    And the minmium event retrieval throughput should be at least 3.5MB/s
+    And the average event retrieval throughput should be at least 160MB/s
+    And the peak event retrieval throughput should be at least 2.5GB/s
+    And the minimum event retrieval rate should be at least 90000TPS
+    And the average event retrieval rate should be at least 4MTPS
+    And the peak event retrieval rate should be at least 65MTPS
+    

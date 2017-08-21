@@ -7,14 +7,14 @@ Feature: DB Ryvr
   Background: 
     Given a database "test_db"
     And it has a table "transactions" with the following structure
-      | id          | INT                                                |
-      | account     | VARCHAR(255)                                       |
-      | description | VARCHAR(255)                                       |
-      | amount      | DECIMAL(19,4)                                      |
+      | id          | INT           |
+      | account     | VARCHAR(255)  |
+      | description | VARCHAR(255)  |
+      | amount      | DECIMAL(19,4) |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                                                                |
+      | name      | transactions                                                                          |
       | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size |                                                                                                                          10 |
+      | page size |                                                                                   512 |
 
   # the write-read latency isn't that good at the moment.
   # This is because we set the TTL on the current/last page to 1 second, so that when there is a large
@@ -63,10 +63,9 @@ Feature: DB Ryvr
   #
   #   For data sources that don't have a change notifaction mechansim, the polling can be moved to Ryvr, which would
   #   still allow us to provide a change notifications to ryvr clients (albeit less efficently).
-  @current
   Scenario: Get Ryvr New Records
     When the "transactions" ryvr is retrieved
-    And 1000 records are added at a rate of 50 records/s
+    And 4000 records are added at a rate of 200 records/s
     And all the records are retrieved while the records are added
     Then the average write-read latency should be less that 600ms
     And write-read latency for 95% of the records should be less that 1050ms

@@ -166,6 +166,7 @@ dependencies {
 
   compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
   
+  compile 'commons-collections:commons-collections:3.2.2'
   //compile group: 'com.github.shyiko', name: 'mysql-binlog-connector-java', version: '0.13.0'
   
   //compile group: 'com.lmax', name: 'disruptor', version: '3.3.6'

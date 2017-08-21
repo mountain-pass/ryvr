@@ -11,17 +11,16 @@ import org.openqa.selenium.WebElement;
 
 public class HtmlSwaggerResponse implements SwaggerResponse {
 
-    private WebDriver webDriver;
+  private WebDriver webDriver;
 
-    public HtmlSwaggerResponse(WebDriver webDriver) {
-        this.webDriver = webDriver;
-    }
+  public HtmlSwaggerResponse(WebDriver webDriver) {
+    this.webDriver = webDriver;
+  }
 
-    @Override
-    public void assertHasGetApiDocsOperation() {
-        List<WebElement> elements = webDriver
-                .findElements(By.id("system_getApiDocs"));
-        assertThat(elements, not(empty()));
-    }
+  @Override
+  public void assertHasGetApiDocsOperation() {
+    List<WebElement> elements = webDriver.findElements(By.id("operations-system-getApiDocs"));
+    assertThat(elements, not(empty()));
+  }
 
 }

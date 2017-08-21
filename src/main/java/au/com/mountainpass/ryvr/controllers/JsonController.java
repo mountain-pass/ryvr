@@ -116,7 +116,7 @@ public class JsonController {
       // since we are on the last page, and we already had the page loaded, refresh to see if
       // there are new records
       // and then check if we are on the lastPage again.
-      LOGGER.info("refreshing...");
+      LOGGER.debug("refreshing ryvr {}...", ryvrName);
       ryvr.getSource().refresh();
       lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition + 1L);
       isLastPage = !lastOnPageIterator.hasNext();
