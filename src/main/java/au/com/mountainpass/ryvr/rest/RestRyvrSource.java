@@ -5,7 +5,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
@@ -92,7 +92,7 @@ public class RestRyvrSource extends RyvrSource {
     } catch (IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
-      throw new NotImplementedException();
+      throw new NotImplementedException(e);
     }
 
   }
