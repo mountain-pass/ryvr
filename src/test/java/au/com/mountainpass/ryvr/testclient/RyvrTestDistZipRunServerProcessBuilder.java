@@ -75,9 +75,7 @@ public class RyvrTestDistZipRunServerProcessBuilder implements RyvrTestServerPro
       for (final Map<String, String> config : dataSourcesRyvrConfigs) {
         writer.write("      " + config.get("name") + ":\n");
         writer.write("        page-size: " + config.get("page size") + "\n");
-        writer.write("        catalog: " + config.get("database") + "\n");
-        writer.write("        table: " + config.get("table") + "\n");
-        writer.write("        ordered-by: " + config.get("ordered by") + "\n");
+        writer.write("        query: " + config.get("query") + "\n");
       }
     }
     writer.close();

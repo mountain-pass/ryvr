@@ -8,7 +8,7 @@ _**- Let Your Data Flow**_
 
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/tompahoward.svg)](https://saucelabs.com/u/tompahoward)
 
-Ryvr provides fast optimised access to your data, when it's stored as a series of immutable events.
+Ryvr provides highly optimised access to your data, when it's stored as a series of immutable events.
 Think bank transaction lists, trade histories, log records, etc. 
 
 ## Performance<sup id="myfootnotelink-*">[*](#myfootnote-*)</sup>

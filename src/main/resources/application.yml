@@ -34,9 +34,7 @@ au.com.mountainpass.ryvr:
 #      ryvrs:
 #        transactions:
 #          page-size: 128
-#          catalog: test_db
-#          table: TRANSACTIONS
-#          ordered-by: ID
+#          query: select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC
   cache:
     archive-page-max-age: 30
     archive-page-max-age-unit: DAYS
