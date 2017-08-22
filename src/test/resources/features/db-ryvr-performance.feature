@@ -20,11 +20,11 @@ Feature: DB Ryvr
   Scenario: Get Ryvr First Hit
     When the "transactions" ryvr is retrieved
     And all the events are retrieved
-    Then the average page should be loaded within 37ms
-    And 95% of the pages should be loaded within 69ms
-    And 100% of the pages should be loaded within 76ms
-    And the event retrieval throughput should be at least 9.8MB/s
-    And the event retrieval rate should be at least 200000TPS
+    Then the average page should be loaded within 49ms
+    And 95% of the pages should be loaded within 70ms
+    And 100% of the pages should be loaded within 220ms
+    And the event retrieval throughput should be at least 5.3MB/s
+    And the event retrieval rate should be at least 129000TPS
 
   Scenario: Get Ryvr Multiple Hits
     When the "transactions" ryvr is retrieved

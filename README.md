@@ -15,7 +15,7 @@ Think bank transaction lists, trade histories, log records, etc.
 
 ### First Read
 
-When reading a ryvr for the first time (i.e. none of the data is in cache), clients can pull down over **200,000 records per second** at a throughput of **9.8MB/s**. That's an average of **less than 4.52µs per record**.
+When reading a ryvr for the first time (i.e. none of the data is in cache), clients can pull down over **100,000 records per second** at a throughput of **5.3MB/s**. That's an average of **less than 6µs per record**.
 
 ### Subsequent Reads
 
@@ -25,7 +25,9 @@ On subsequent reads (i.e. previously read data is in cache), clients can pull do
 
 Ryvrs have very good economies-of-scale when there are multiple consumers. With 1000 clients all consuming the same ryvr, the average client can pull down over 4 million records per second, with the fastest client pulling down **65 million records per second**. This provides a throughput of over **160MB/s** for the average client and over **2.5GB/s** for the fastest client.
 
-<a id="myfootnote-*" href="#myfootnotelink-*">*</a> All performance results measured on MacBook Pro 2.8 GHz Intel Core i7, with 16 GB 1600 MHz DDR3 and 1TB SSD, running OS X 10.11.6, using the REST API and a local running MySQL v5.7.18 data source.
+<a id="myfootnote-*" href="#myfootnotelink-*">*</a> All performance results measured on:
+ - [Shippable's Default Dedicated Dynamic Nodes](http://docs.shippable.com/platform/tutorial/runtime/dynamic-nodes/)'s, which are running Ubuntu 14.04.5 LTS on 2 Cores and 3.675 GB of Memory (AWS's C4.Large)
+ -  MacBook Pro 2.8 GHz Intel Core i7, with 16 GB 1600 MHz DDR3 and 1TB SSD, running OS X 10.11.6, using the REST API and a local running MySQL v5.7.18 data source. 
 
 We often see performance test runs with significantly better results than the above, however the results
 above represent the performance results that are consistently achieved.
@@ -36,7 +38,7 @@ You can reproduce the performance tests results yourself, by running  `RyvrTests
 
 ### Latency
 
-The write-read latency isn't that good at the moment. The average latency between adding a record to a data source and reading it from a ryvr is less than 0.6s. The 95th percentile is less than 1.05s and the maximum is 1.15s.
+The write-read latency isn't that good at the moment. The average latency between adding a record to a data source and reading it from a ryvr is less than 0.65s. The 95th percentile is less than 1.1s and the maximum is 1.25s.
 
 This is because we set the TTL on the current/last page to 1 second, so that when there is a large
 number of Ryvr clients, they don't smash the data source when polling for new records.
