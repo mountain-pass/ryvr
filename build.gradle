@@ -128,7 +128,6 @@ configurations {
 
 
 dependencies {
-  //compile('commons-lang:commons-lang:2.6')
   compile('commons-io:commons-io:2.5')
 
   compile('org.springframework.boot:spring-boot-starter-actuator')
@@ -185,7 +184,7 @@ dependencies {
   // - org.apache.commons:commons-text:1.1:StringEscapeUtils.escapeJson(String) is faster org.apache.commons:commons-text:1.1:StringEscapeUtils.escapeJson(String)
   // results with other test data may vary
   //compile group: 'org.apache.commons', name: 'commons-text', version: '1.1'
-  compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
+  compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
   
 
   
