@@ -15,7 +15,7 @@ Think bank transaction lists, trade histories, log records, etc.
 
 ### First Read
 
-When reading a ryvr for the first time (i.e. none of the data is in cache), clients can pull down over **100,000 records per second** at a throughput of **5.3MB/s**. That's an average of **less than 6µs per record**.
+When reading a ryvr for the first time (i.e. none of the data is in cache), clients can pull down over **100,000 records per second** at a throughput of **4.7MB/s**. That's an average of **less than 7µs per record**.
 
 ### Subsequent Reads
 
@@ -23,7 +23,7 @@ On subsequent reads (i.e. previously read data is in cache), clients can pull do
 
 ### Multiple Consumers
 
-Ryvrs have very good economies-of-scale when there are multiple consumers. With 1000 clients all consuming the same ryvr, the average client can pull down over 4 million records per second, with the fastest client pulling down **65 million records per second**. This provides a throughput of over **160MB/s** for the average client and over **2.5GB/s** for the fastest client.
+Ryvrs have very good economies-of-scale when there are multiple consumers. With 1000 clients all consuming the same ryvr, the average client can pull down over 4 million records per second, with the fastest client pulling down **55 million records per second**. This provides a throughput of over **160MB/s** for the average client and over **2.1GB/s** for the fastest client.
 
 <a id="myfootnote-*" href="#myfootnotelink-*">*</a> All performance results measured on:
  - [Shippable's Default Dedicated Dynamic Nodes](http://docs.shippable.com/platform/tutorial/runtime/dynamic-nodes/)'s, which are running Ubuntu 14.04.5 LTS on 2 Cores and 3.675 GB of Memory (AWS's C4.Large)
