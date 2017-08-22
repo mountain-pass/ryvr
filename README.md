@@ -38,7 +38,7 @@ You can reproduce the performance tests results yourself, by running  `RyvrTests
 
 ### Latency
 
-The write-read latency isn't that good at the moment. The average latency between adding a record to a data source and reading it from a ryvr is less than 0.68s. The 95th percentile is less than 1.2s and the maximum is 1.4s.
+The write-read latency isn't that good at the moment. The average latency between adding a record to a data source and reading it from a ryvr is less than 0.72s. The 95th percentile is less than 1.25s and the maximum is 1.5s.
 
 This is because we set the TTL on the current/last page to 1 second, so that when there is a large
 number of Ryvr clients, they don't smash the data source when polling for new records.

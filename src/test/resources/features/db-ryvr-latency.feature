@@ -67,6 +67,6 @@ Feature: DB Ryvr
     When the "transactions" ryvr is retrieved
     And 4000 records are added at a rate of 200 records/s
     And all the records are retrieved while the records are added
-    Then the average write-read latency should be less that 680ms
-    And write-read latency for 95% of the records should be less that 1150ms
-    And the maximium write-read latency should be less that 1400ms
+    Then the average write-read latency should be less that 720ms
+    And write-read latency for 95% of the records should be less that 1250ms
+    And the maximium write-read latency should be less that 1500ms
