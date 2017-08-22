@@ -436,6 +436,7 @@ ext {
 
 task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
   main = "com.codacy.CodacyCoverageReporter"
+  def token = project.getProperties().get("CODACY_PROJECT_TOKEN") ?: "NOT SET"
   classpath = configurations.codacy
   args = [
     "-l",
@@ -443,7 +444,7 @@ task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
     "-r",
     "${coverageOutputDir}/coverage-results/jacoco/${archivesBaseName}.xml",
     "--projectToken",
-    "${CODACY_PROJECT_TOKEN}"
+    "${token}"
   ]
 }
 
