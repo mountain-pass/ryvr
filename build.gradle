@@ -200,8 +200,6 @@ dependencies {
   testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
 
   testCompile ('org.seleniumhq.selenium:selenium-java:3.5.1') { exclude(module: 'commons-logging') } 
-  // had library compatibility issues with 3.5.1 which uses guava 23.0
-  testCompile group: 'com.google.guava', name: 'guava', version: '22.0'
   testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.5.1' 
   
   
@@ -223,6 +221,15 @@ dependencies {
 
 
   codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '2.0.0' // 2.0.0
+}
+
+configurations.all {
+  resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+      if (details.requested.group == 'com.google.guava' && details.requested.name == 'guava' && details.requested.version == '23.0') {
+          // had compatibility issues with selenium 3.5.1 which uses guava 23.0
+          details.useVersion '22.0'
+      }
+  }
 }
 
 bootRun {
