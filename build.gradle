@@ -416,12 +416,12 @@ jacocoTestReport {
 ext {
   // TODO: Increase these
   limits = [
-    'instruction': 70,
-    'branch'     : 70,
-    'line'       : 70,
-    'complexity' : 70,
-    'method'     : 70,
-    'class'      : 70
+    'instruction': 60,
+    'branch'     : 60,
+    'line'       : 60,
+    'complexity' : 60,
+    'method'     : 60,
+    'class'      : 60
   ]
 }
 
