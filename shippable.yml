@@ -17,7 +17,9 @@ build:
     - mkdir -p ~/.gradle
     - cp gradle-shippable.properties ~/.gradle/gradle.properties
     - mysql -e "CREATE USER dbuser@localhost IDENTIFIED BY 'dbpass'; GRANT ALL ON *.* TO dbuser@localhost; FLUSH PRIVILEGES;"
+    - mysql -e 'create database test_db;'
     - psql -c "create role dbuser with superuser login password 'dbpass';" -U postgres
+    - psql -c 'create database test_db;' -U postgres
     - ./gradlew test -PtestOutputDir=shippable/testresults -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY --info 
     - cp build/coverage-results/jacoco/ryvr.xml shippable/codecoverage/target/site/jacoco/jacoco.xml
     - cp -r build/coverage-results/jacoco/html/* shippable/codecoverage/target/site/jacoco/.
