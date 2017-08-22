@@ -4,7 +4,7 @@ jdk:
   - oraclejdk8
 
 env:
-  - secure: PbV8H8Uop7tenNqq/FvbDTQqFVHejHmPLJlM56oB0tFjv5xQlw4/nN36j+dezD0GvdQzzWmU7yw/gk3038xuO9sQot6cHKn2Kjm9OAN6qJnP3SRpSqRQGdLp1HFqMycyo71nNS4YsKZgrX6TkbyEFla35RUSqLpweYFGwWXskJnknFHl/bpJ6K77cCl/7DjHyfsFCNXiOtUamN4BtWa2uuUdpQWT3eBWivvYJGWATlyprFFLgkZL9lads+Ek9hf8yywhidXDOAvJrUg72Y+l8mv8tGrG7uqKCaPs1Lb7nNuvN4QxNY9En1LI3/4ITzErH4XqsF3/yAQZmazuLKm2Pg==
+ - secure: keQH3xVq32k2iNaVPgDmQLXLh6gzqpI1/WUhOmHD7yZGqhJKi300iaKYLC17PDq4gJnmCnemGZ77BSvWI8XasG1i7jwCqY+gAZAY3TCppuVanf5owqQo127zuJpE17glY1HnvWmDOVSLpLF4uJafHEEZy9c7HvrhN/FcFDt1UUJzPSFh5hGlKiU12+25QPfqu1OgJWqpHG4fI3k6nd+Vb+jsln7VtneBZs84jkUwy+YPRwDa1pimEyFIHmPCtmikQBWFubKdvv5OuiSOe9d9K9IGGfrCdkm/EG8K0p0cdAX2UoSO5DJUHE2365ua38daSu48SyRv7nLxs3eil9e7TkhAV7uIaqGkijKCWr/SZJL6yHqKF5g/DdlVxPKbQ/YNrFxyw3okirFzC/ocFupq/BwXM3JXcReB2gaEzAWAdtQXXAAMfhRlT81heOS8cUgaUzlHH7MEDzuh66gbg4o4INi6p8IbwTFVvY9HXCGvIfUFAkkCIilsosy/uYMEmEzeq1ZfOqe5ApaTJLaG9pX1ExsYRMSHUOeHmqqcuJHKPV1CMP85rQUnoSXAYC52xWT6u5y4yyL2nuzK5x2TSP0kOAfyjVKWWPeFCozkMw+UeYVeP9jcuIKDALSBBov32hepz9DkdoDdQtKvE3XR7oGQzLLvOM0iJ0/Bd/DVEwOL4SRqnNlrcpw9MtZdKV62WMQw7HB9lTrcQDElKOAR1sC/iXQthMXuCkWvmppF4mF2CRW39uovyT1nigcChMzl9UwJxXpzTRCCByf1clU1IUIPQ7f7mkX5IdQ6xC4/lY6xWnnECeY4MU+T/9rU3OGwlR6EcTIxKrbWF0m24BgB8CIPxbsPWs1KExbhTQeow0dF8uO34r59JMhADtImqqnw3uNwmBIqMcmDmsk/i1LN0YE7Kjwa/+mNkTatDLB4VwrCqZz0liLGDLEcWmE24i+B8Ibq5dFyP8xjrUbiiLMkCVc52v6ptJP1cs9+3RS/44fxgJrz/kOhM49GP/UySEVJXtdX
 
 services:
  - mysql
@@ -23,4 +23,8 @@ build:
     - ./gradlew test -PtestOutputDir=shippable/testresults -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY --info 
     - cp build/coverage-results/jacoco/ryvr.xml shippable/codecoverage/target/site/jacoco/jacoco.xml
     - cp -r build/coverage-results/jacoco/html/* shippable/codecoverage/target/site/jacoco/.
-    - ./gradlew uploadCoverageToCodacy --info 
+    - ./gradlew uploadCoverageToCodacy -PCODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN}--info 
+    - ./gradlew srcclr -PsrcClrApiToken=$SRC_CLR_API_TOKEN
+    - ./gradlew githubRelease -PgithubToken=$GITHUB_TOKEN
+
+    

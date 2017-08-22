@@ -200,9 +200,9 @@ dependencies {
   testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
 
   testCompile ('org.seleniumhq.selenium:selenium-java:3.5.1') { exclude(module: 'commons-logging') } 
-  testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.5.1' 
   // had library compatibility issues with 3.5.1 which uses guava 23.0
   testCompile group: 'com.google.guava', name: 'guava', version: '22.0'
+  testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.5.1' 
   
   
   testCompile 'com.saucelabs:sauce_junit:2.1.23' 
@@ -222,7 +222,7 @@ dependencies {
   runtime 'org.jacoco:org.jacoco.agent:0.7.9:runtime'
 
 
-  codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '1.0.10' // 2.0.0
+  codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '2.0.0' // 2.0.0
 }
 
 bootRun {
@@ -434,7 +434,9 @@ task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
     "-l",
     "Java",
     "-r",
-    "${coverageOutputDir}/coverage-results/jacoco/${archivesBaseName}.xml"
+    "${coverageOutputDir}/coverage-results/jacoco/${archivesBaseName}.xml",
+    "--projectToken",
+    "${CODACY_PROJECT_TOKEN}"
   ]
 }
 

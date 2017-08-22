@@ -249,8 +249,8 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [X] Add performance test on write -> read latency
  - [X] Add rest ryvr
  - [X] Add vary response header
+ - [X] Add integration with SourceClear for security scans
  - [ ] Use a different ryvr name for each test, so as to avoid the need to clear cache between test scenarios
- - [ ] Add integration with SourceClear for security scans
  - [ ] Add test for incorrect Ryvr name (404)
  - [ ] Add test for getting a RyvrsCollection as HTML
  - [ ] Add test with negative page (404)
