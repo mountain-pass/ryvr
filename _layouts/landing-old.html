@@ -21,7 +21,7 @@
     <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
     <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />
     <link rel="icon" type="image/png" href="/favicon-128.png" sizes="128x128" />
-    <meta name="application-name" content="ryvr"/>
+    <meta name="application-name" content="Ryvr"/>
     <meta name="msapplication-TileColor" content="#28656E" />
     <meta name="msapplication-TileImage" content="/mstile-144x144.png" />
     <meta name="msapplication-square70x70logo" content="/mstile-70x70.png" />
@@ -40,12 +40,13 @@
       {% if site.github.is_project_page %}
         <a href="{{ site.github.repository_url }}" class="btn">View on GitHub</a>
       {% endif %}
-        <a href="{{ site.github.latest_release.html_url }}" class="btn">xxxDownload {{ site.github.latest_release.name }}</a>
+        <a href="{{ site.github.latest_release.html_url }}" class="btn">Download {{ site.github.latest_release.name }}</a>
     </section>
 
     <section class="main-content">
       {{ content }}
 
+      <div class="cta"><a href="{{ site.github.releases_url }}" class="btn">Let Your Data Flow</a></div>
       <footer class="site-footer">
         {% if site.github.is_project_page %}
           <span class="site-footer-owner"><a href="{{ site.github.repository_url }}">{{ site.github.repository_name }}</a> is maintained by <a href="{{ site.github.owner_url }}">{{ site.github.owner_name }}</a>.</span>

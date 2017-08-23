@@ -3,18 +3,24 @@
 
 @import "{{ site.theme }}";
 
-body > section.main-content > div.cta {
+body div.cta {
     text-align: center;
 }
 
-body > section.main-content > div.cta > a.btn {
+body div.cta > a.btn {
     color: rgba(40, 101, 110, 0.7);
     background-color: rgba(40, 101, 110, 0.08);
     border-color: rgba(40, 101, 110, 0.2);
 }
 
-body > section.main-content > div.cta > a.btn:hover {
+body div.cta > a.btn:hover {
     color: rgba(40, 101, 110, 0.8);
     background-color: rgba(40, 101, 110, 0.2);
     border-color: rgba(40, 101, 110, 0.3);
+}
+
+p.copyright {
+  font-size: smaller;
+  margin-top: 1em;
+  color: #aaa;
 }
