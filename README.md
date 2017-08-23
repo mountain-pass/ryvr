@@ -118,9 +118,7 @@ The key of the map specifies the name of the ryvr, which must be unique.
 | Property | Description |
 | -------- | ----------- |
 | page-size | Specifies how many records to include in each page. You will need to tune this. Try 1024 to start with. |
-| catalog | The name of the schema/database your table/view is in |
-| table | The name of the table containing the records |
-| ordered-by | The name of the column in the table, which can be used for sorting the records into order. |
+| query | Specifies the SQL for querying the database. The records *MUST* be order from oldest to newest |
 
 These properties can be set using an `application.yml` file within the same directory as Ryvr.
 
@@ -136,9 +134,7 @@ These properties can be set using an `application.yml` file within the same dire
           ryvrs:
             transactions:
               page-size: 10
-              catalog: test_db
-              table: transactions
-              ordered-by: id
+              query: select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC
 
 
 **NOTE:** At this time, only MySQL, PostGresSQL and H2 Ryvrs are supported.
