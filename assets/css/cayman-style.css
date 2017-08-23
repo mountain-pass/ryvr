@@ -156,7 +156,7 @@ ul.longarrowlist li:before {
 	background-size:cover;
 	background-position:center center;
 	z-index:1;
-	background-image:url(/assets/img/header.jpg);
+	background-image:url('../img/header.jpg');
 	webkit-animation:10s ease-in;
 	-moz-animation:10s ease-in;
 	-o-animation:10s ease-in;
