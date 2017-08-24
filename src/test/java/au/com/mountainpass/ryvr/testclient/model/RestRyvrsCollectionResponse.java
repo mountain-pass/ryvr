@@ -78,9 +78,7 @@ public class RestRyvrsCollectionResponse implements RyvrsCollectionResponse {
       return new Ryvr(name, 10,
           new RestRyvrSource(httpClient, ryvrUri, response.getEntity(), response));
     } catch (URISyntaxException | IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-      throw new NotImplementedException();
+      throw new NotImplementedException(e);
     }
   }
 
@@ -88,6 +86,11 @@ public class RestRyvrsCollectionResponse implements RyvrsCollectionResponse {
     return itemLink -> {
       return name.equals(itemLink.getName());
     };
+  }
+
+  @Override
+  public URL getContextUrl() {
+    return this.contextUrl;
   }
 
 }

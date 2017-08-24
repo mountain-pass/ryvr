@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -95,6 +96,8 @@ public class StepDefs {
   private long recordCount;
 
   private String scenarioId;
+
+  private Throwable error;
 
   @Before
   public void _before(final Scenario scenario) {
@@ -214,8 +217,31 @@ public class StepDefs {
   @When("^the \"([^\"]*)\" ryvr is retrieved$")
   public void theRyvrIsRetrieved(final String name) throws Throwable {
     configClient.ensureStarted();
-    ryvr = client.getRyvr(uniquifyRyvrName(name));
-    assertThat(ryvr, notNullValue());
+    ryvr = null;
+    try {
+      ryvr = client.getRyvr(uniquifyRyvrName(name));
+    } catch (NoSuchElementException e) {
+      error = e;
+    }
+  }
+
+  @When("^the \"([^\"]*)\" ryvr is retrieved directly$")
+  public void the_ryvr_is_retrieved_directly(String name) throws Throwable {
+    configClient.ensureStarted();
+    ryvr = null;
+    try {
+      ryvr = client.getRyvrDirect(uniquifyRyvrName(name));
+    } catch (NoSuchElementException e) {
+      error = e;
+    }
+  }
+
+  @Then("^the ryvr will not be found$")
+  public void the_ryvr_will_not_be_found() throws Throwable {
+    assertThat(ryvr, nullValue());
+    assertThat(error, notNullValue());
+    assertThat(error, instanceOf(NoSuchElementException.class));
+
   }
 
   @When("^the ryvrs list is retrieved$")

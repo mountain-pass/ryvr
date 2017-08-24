@@ -46,8 +46,8 @@ public class JavaRyvrClient implements RyvrTestClient {
   }
 
   @Override
-  public Ryvr getRyvr(String name) {
-    return ryvrsCollection.getRyvr(name);
+  public Ryvr getRyvr(String name) throws Throwable {
+    return getRyvrDirect(name);
   }
 
   @Override
@@ -58,5 +58,10 @@ public class JavaRyvrClient implements RyvrTestClient {
   @Override
   public void before(Scenario scenario) {
     // nothing
+  }
+
+  @Override
+  public Ryvr getRyvrDirect(String name) throws Throwable {
+    return ryvrsCollection.getRyvr(name);
   }
 }

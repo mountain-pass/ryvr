@@ -3,6 +3,7 @@ package au.com.mountainpass.ryvr.model;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -48,7 +49,11 @@ public class RyvrsCollection {
   }
 
   public Ryvr getRyvr(String ryvrName) {
-    return ryvrs.get(ryvrName);
+    Ryvr ryvr = ryvrs.get(ryvrName);
+    if (ryvr == null) {
+      throw new NoSuchElementException("No value present");
+    }
+    return ryvr;
   }
 
   @JsonIgnore

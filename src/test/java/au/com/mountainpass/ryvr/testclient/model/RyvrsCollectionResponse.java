@@ -1,5 +1,6 @@
 package au.com.mountainpass.ryvr.testclient.model;
 
+import java.net.URL;
 import java.util.List;
 
 import au.com.mountainpass.ryvr.model.Ryvr;
@@ -13,5 +14,7 @@ public interface RyvrsCollectionResponse {
   public void assertHasItem(List<String> names);
 
   public Ryvr followRyvrLink(String name);
+
+  public URL getContextUrl();
 
 }

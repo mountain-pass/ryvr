@@ -3,9 +3,12 @@ package au.com.mountainpass.ryvr.testclient.model;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -50,6 +53,15 @@ public class HtmlRyvrsCollectionResponse implements RyvrsCollectionResponse {
     link.click();
     HtmlRyvrClient.waitTillLoaded(webDriver, 5);
     return new Ryvr(name, 10, new HtmlRyvrSource(webDriver));
+  }
+
+  @Override
+  public URL getContextUrl() {
+    try {
+      return new URL(webDriver.getCurrentUrl());
+    } catch (MalformedURLException e) {
+      throw new NotImplementedException(e);
+    }
   }
 
 }

@@ -36,7 +36,6 @@ Feature: DB Ryvr
     And the event retrieval throughput should be at least 900MB/s
     And the event retrieval rate should be at least 20MTPS
 
-  @current
   Scenario: Get Ryvr Multiple Consumers
     When the "transactions" ryvr is retrieved
     And all the events are retrieved

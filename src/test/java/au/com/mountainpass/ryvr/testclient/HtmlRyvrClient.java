@@ -5,7 +5,9 @@ import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -24,6 +26,7 @@ import au.com.mountainpass.SauceLabsTunnel;
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.testclient.model.HtmlRootResponse;
+import au.com.mountainpass.ryvr.testclient.model.HtmlRyvrSource;
 import au.com.mountainpass.ryvr.testclient.model.HtmlSwaggerResponse;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
@@ -142,6 +145,21 @@ public class HtmlRyvrClient implements RyvrTestClient {
     HtmlRyvrClient.waitTillLoaded(webDriver, timeoutInSeconds,
         ExpectedConditions.visibilityOfElementLocated(By.id(id)));
     LOGGER.info("...loaded", id);
+  }
+
+  @Override
+  public Ryvr getRyvrDirect(String name) throws Throwable {
+    // instead of following the links, we are going to just construct the
+    // URL and hit it directly, to ensure the correct 404 is returned
+    URL contextUrl = getRyvrsCollection().getContextUrl();
+    URI ryvrUri = contextUrl.toURI().resolve(name);
+    webDriver.get(ryvrUri.toString());
+    HtmlRyvrClient.waitTillLoaded(webDriver, 5);
+    WebElement title = webDriver.findElement(By.cssSelector("body > div > section > div > h1"));
+    if ("Tumbleweed blows past".equals(title.getText())) {
+      throw new NoSuchElementException("No value present");
+    }
+    return new Ryvr(name, 10, new HtmlRyvrSource(webDriver));
   }
 
 }

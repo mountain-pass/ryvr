@@ -3,6 +3,7 @@ package au.com.mountainpass.ryvr.testclient.model;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
@@ -38,6 +39,11 @@ public class JavaRyvrsCollectionResponse implements RyvrsCollectionResponse {
   public Ryvr followRyvrLink(String name) {
     Ryvr ryvr = ryvrsCollection.getRyvr(name);
     return ryvr;
+  }
+
+  @Override
+  public URL getContextUrl() {
+    throw new UnsupportedOperationException();
   }
 
 }
