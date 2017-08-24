@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -93,6 +94,22 @@ public class StepDefs {
 
   private long recordCount;
 
+  private String scenarioId;
+
+  @Before
+  public void _before(final Scenario scenario) {
+    client.before(scenario);
+    configClient._before(scenario);
+    clearMetrics();
+    scenarioId = scenario.getId();
+  }
+
+  @After
+  public void _after(final Scenario scenario) {
+    client.after(scenario);
+    configClient._after(scenario);
+  }
+
   @Given("^a database \"([^\"]*)\"$")
   public void aDatabase(final String dbName) throws Throwable {
 
@@ -116,6 +133,7 @@ public class StepDefs {
   public void a_database_ryvr_with_the_following_configuration(Map<String, String> config)
       throws Throwable {
     Map<String, String> newConfig = dbClient.adjustConfig(config);
+    newConfig.put("name", uniquifyRyvrName(newConfig.get("name")));
     configClient.createDataSourceRyvr(newConfig);
 
     // assertThat(ryvrsCollection.getRyvrs().keySet(),
@@ -133,6 +151,10 @@ public class StepDefs {
     //
     // ryvrsCollection.getRyvrs().clear();
     // ryvrsCollection.getRyvrs().put(config.get("name"), ryvr);
+  }
+
+  private String uniquifyRyvrName(String string) {
+    return string + "-" + scenarioId.replace(";", "-");
   }
 
   @Given("^the \"([^\"]*)\" table has the following events$")
@@ -161,19 +183,6 @@ public class StepDefs {
     }
     assertThat("Neither iterator should haveNext()", actualIterator.hasNext(),
         equalTo(expectedIterator.hasNext()));
-  }
-
-  @Before
-  public void _before(final Scenario scenario) {
-    client.before(scenario);
-    configClient._before(scenario);
-    clearMetrics();
-  }
-
-  @After
-  public void _after(final Scenario scenario) {
-    client.after(scenario);
-    configClient._after(scenario);
   }
 
   @Then("^the API Docs will contain an operation for getting the API Docs$")
@@ -205,7 +214,7 @@ public class StepDefs {
   @When("^the \"([^\"]*)\" ryvr is retrieved$")
   public void theRyvrIsRetrieved(final String name) throws Throwable {
     configClient.ensureStarted();
-    ryvr = client.getRyvr(name);
+    ryvr = client.getRyvr(uniquifyRyvrName(name));
     assertThat(ryvr, notNullValue());
   }
 
@@ -223,7 +232,8 @@ public class StepDefs {
   @Then("^the ryvrs list will contain the following entries$")
   public void theRyvrsListWillContainTheFollowingEntries(final List<String> names)
       throws Throwable {
-    ryvrsCollectionResponse.assertHasItem(names);
+    ryvrsCollectionResponse.assertHasItem(
+        names.stream().map(name -> uniquifyRyvrName(name)).collect(Collectors.toList()));
   }
 
   @Given("^there are no ryvrs configured$")

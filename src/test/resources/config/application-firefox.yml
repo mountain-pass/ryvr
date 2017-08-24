@@ -1,9 +1,2 @@
 webdriver:
   browserType: firefox
-
-au.com.mountainpass.ryvr:
-  cache:
-    archive-page-max-age: 0
-    archive-page-max-age-unit: DAYS
-    current-page-max-age: 0
-    current-page-max-age-unit: SECONDS

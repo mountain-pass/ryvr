@@ -16,7 +16,6 @@ import javax.sql.DataSource;
 
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponseInterceptor;
-import org.apache.http.client.cache.HttpCacheStorage;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -57,7 +56,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import au.com.mountainpass.ClearableBasicHttpCacheStorage;
 import au.com.mountainpass.TrustStoreManager;
 import au.com.mountainpass.WebDriverFactory;
 import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
@@ -160,7 +158,6 @@ public class TestConfiguration
         .addInterceptorLast((HttpResponseInterceptor) httpDelayConcurrent)
         .addInterceptorLast((HttpResponseInterceptor) httpThroughputCounter)
         .addInterceptorLast(httpCacheStatusHeaderAdder);
-    clientBuilder.setHttpCacheStorage(httpCacheStorage());
     return clientBuilder;
   }
 
@@ -177,12 +174,6 @@ public class TestConfiguration
   @Profile(value = { "restApi" })
   public CacheConfig cacheConfig() {
     return CacheConfig.custom().setMaxCacheEntries(10000000).setMaxObjectSize(8192 * 1024).build();
-  }
-
-  @Bean
-  @Profile(value = { "restApi" })
-  public HttpCacheStorage httpCacheStorage() {
-    return new ClearableBasicHttpCacheStorage(cacheConfig());
   }
 
   @Bean
