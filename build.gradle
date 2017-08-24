@@ -9,7 +9,7 @@ buildscript {
     classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     classpath('gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:1.4.17')
     classpath 'co.riiid:gradle-github-plugin:0.4.2'
-    
+
     // for later https://github.com/stempler/gradle-versioneye-plugin
   }
 }
@@ -100,7 +100,8 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 applicationDistribution.from("LICENSE") { into "." }
 
 
-bootRun.doFirst() { applicationDefaultJvmArgs = [
+bootRun.doFirst() {
+  applicationDefaultJvmArgs = [
     "-Dserver.ssl.key-store=${buildDir}/keystore.jks",
     "-Dlogging.path=${buildDir}/logs",
     "-Dserver.undertow.accesslog.dir=${buildDir}/logs"
@@ -167,12 +168,12 @@ dependencies {
   compile group: 'org.keycloak', name: 'keycloak-common', version: '3.2.1.Final'
 
   compile group: 'com.jayway.jsonpath', name: 'json-path', version: '2.4.0'
-  
+
   compile 'commons-collections:commons-collections:3.2.2'
-  
+
   // For when we want to automatically refresh when there is new data
   //compile group: 'com.github.shyiko', name: 'mysql-binlog-connector-java', version: '0.13.0'
-  
+
 
   // for escaping json values
   // performance testing showed:
@@ -185,31 +186,31 @@ dependencies {
   // results with other test data may vary
   //compile group: 'org.apache.commons', name: 'commons-text', version: '1.1'
   compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
-  
 
-  
+
+
   // we use the MockHttpServletRequest for the HttpController.
   // Change this back to a testCompile dependency when we have
   // removed the use of the Mock.
   compile('org.springframework.boot:spring-boot-starter-test')
 
-  
+
 
 
   testCompile group: 'info.cukes', name: 'cucumber-junit', version:'1.2.5'
   testCompile group: 'info.cukes', name: 'cucumber-spring', version:'1.2.5'
 
-  testCompile ('org.seleniumhq.selenium:selenium-java:3.5.1') { exclude(module: 'commons-logging') } 
-  testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.5.1' 
-  
-  
-  testCompile 'com.saucelabs:sauce_junit:2.1.23' 
+  testCompile ('org.seleniumhq.selenium:selenium-java:3.5.1') { exclude(module: 'commons-logging') }
+  testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:3.5.1'
+
+
+  testCompile 'com.saucelabs:sauce_junit:2.1.23'
   testCompile 'com.saucelabs:ci-sauce:1.128'
 
 
-  testCompile('io.swagger:swagger-parser:1.0.32') 
+  testCompile('io.swagger:swagger-parser:1.0.32')
 
-  testCompile group: 'io.prometheus', name: 'simpleclient', version: '0.0.26' 
+  testCompile group: 'io.prometheus', name: 'simpleclient', version: '0.0.26'
 
 
 
@@ -225,10 +226,10 @@ dependencies {
 
 configurations.all {
   resolutionStrategy.eachDependency { DependencyResolveDetails details ->
-      if (details.requested.group == 'com.google.guava' && details.requested.name == 'guava' && details.requested.version == '23.0') {
-          // had compatibility issues with selenium 3.5.1 which uses guava 23.0
-          details.useVersion '22.0'
-      }
+    if (details.requested.group == 'com.google.guava' && details.requested.name == 'guava' && details.requested.version == '23.0') {
+      // had compatibility issues with selenium 3.5.1 which uses guava 23.0
+      details.useVersion '22.0'
+    }
   }
 }
 
@@ -455,34 +456,26 @@ jar {
   }
 }
 
-github {
-  owner = 'mountain-pass'
-  repo = 'ryvr'
-  token = project.hasProperty('githubToken') ? project.getProperty('githubToken') : 'NOTSET'
-  tagName = "${project.version}"
-  targetCommitish = 'master'
-  name = "v${project.version}"
+if( project.releaseNotes.exists() ) {
+  github {
+    owner = 'mountain-pass'
+    repo = 'ryvr'
+    token = project.hasProperty('githubToken') ? project.getProperty('githubToken') : 'NOTSET'
+    tagName = "${project.version}"
+    targetCommitish = 'master'
+    name = "v${project.version}"
 
-  body = project.releaseNotes.exists() ? file(releaseNotes.path).text : "TBC"
-  assets = [
-    "build/distributions/ryvr-${project.version}.zip",
-    "build/distributions/ryvr-${project.version}.tar.gz"
-  ]
-  prerelease = true
-  draft = true
-}
-
-task checkReleaseNotes(group: 'Verification') {
-  doLast {
-    if( !project.releaseNotes.exists() ) {
-      throw new GradleException("Please document the changes for ${project.name} v${project.version}, in ./RELEASE_NOTES-v${project.version}.md")
-    }
+    body = file(releaseNotes.path).text
+    assets = [
+      "build/distributions/ryvr-${project.version}.zip",
+      "build/distributions/ryvr-${project.version}.tar.gz"
+    ]
+    prerelease = false
+    draft = true
   }
+  githubRelease.dependsOn bootRepackage
 }
 
-githubRelease.dependsOn checkReleaseNotes
-
-githubRelease.dependsOn bootRepackage
 
 task printOutputs(group: 'build') {
   doLast {
