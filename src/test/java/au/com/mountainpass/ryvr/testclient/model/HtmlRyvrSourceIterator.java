@@ -3,6 +3,7 @@ package au.com.mountainpass.ryvr.testclient.model;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import au.com.mountainpass.ryvr.model.Record;
 
@@ -22,6 +23,9 @@ class HtmlRyvrSourceIterator implements Iterator<Record> {
   }
 
   public HtmlRyvrSourceIterator(HtmlRyvrSource htmlRyvrSource, long position) {
+    if (position < 0) {
+      throw new NoSuchElementException("No value present");
+    }
     this.htmlRyvrSource = htmlRyvrSource;
     this.pageSize = htmlRyvrSource.getUnderlyingPageSize();
     long page = (position / pageSize) + 1;

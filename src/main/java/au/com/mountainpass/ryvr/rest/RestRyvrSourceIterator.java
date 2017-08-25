@@ -2,6 +2,7 @@ package au.com.mountainpass.ryvr.rest;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,9 @@ class RestRyvrSourceIterator implements Iterator<Record> {
   private long currentPageSize;
 
   public RestRyvrSourceIterator(RestRyvrSource restRyvrSource, long position) {
+    if (position < 0) {
+      throw new NoSuchElementException("No value present");
+    }
     long normalizedPostion = position - 1;
     this.restRyvrSource = restRyvrSource;
     this.pageSize = restRyvrSource.getUnderlyingPageSize();

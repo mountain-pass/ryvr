@@ -99,6 +99,8 @@ public class StepDefs {
 
   private Throwable error;
 
+  private Record record;
+
   @Before
   public void _before(final Scenario scenario) {
     client.before(scenario);
@@ -229,6 +231,17 @@ public class StepDefs {
     }
   }
 
+  @When("^(-?\\d+)th record of the \"([^\"]*)\" ryvr is retrieved$")
+  public void th_record_of_the_ryvr_is_retrieved(int postion, String name) throws Throwable {
+    theRyvrIsRetrieved(name);
+    try {
+      record = null;
+      record = ryvr.getSource().iterator(postion).next();
+    } catch (NoSuchElementException e) {
+      error = e;
+    }
+  }
+
   @When("^the \"([^\"]*)\" rvyr is deleted$")
   public void the_rvyr_is_deleted(String name) throws Throwable {
     configClient.deleteRvyr(uniquifyRyvrName(name));
@@ -253,6 +266,13 @@ public class StepDefs {
     assertThat(error, notNullValue());
     assertThat(error, instanceOf(NoSuchElementException.class));
 
+  }
+
+  @Then("^the record will not be found$")
+  public void the_record_will_not_be_found() throws Throwable {
+    assertThat(record, nullValue());
+    assertThat(error, notNullValue());
+    assertThat(error, instanceOf(NoSuchElementException.class));
   }
 
   @When("^the ryvrs list is retrieved$")
