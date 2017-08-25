@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
@@ -96,7 +97,13 @@ public class JsonController {
     // be very slow, so the only way we know if we are on an archive page is if
     // the iterator we use for outputting hasNext(), or if we get another iterator and
     // advance end and then check if it hasNext(). Going with that latter option.
-    Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
+    Ryvr ryvr = null;
+    try {
+      ryvr = ryvrsCollection.getRyvr(ryvrName);
+    } catch (NoSuchElementException e) {
+      res.setStatus(HttpStatus.NOT_FOUND.value());
+      return;
+    }
     if (ryvr == null) {
       res.setStatus(HttpStatus.NOT_FOUND.value());
       return;

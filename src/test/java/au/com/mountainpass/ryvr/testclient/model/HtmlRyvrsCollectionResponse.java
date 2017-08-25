@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -52,6 +53,10 @@ public class HtmlRyvrsCollectionResponse implements RyvrsCollectionResponse {
     WebElement link = items.stream().filter(item -> name.equals(item.getText())).findAny().get();
     link.click();
     HtmlRyvrClient.waitTillLoaded(webDriver, 5);
+    WebElement title = webDriver.findElement(By.cssSelector("body > div > section > div > h1"));
+    if ("Tumbleweed blows past".equals(title.getText())) {
+      throw new NoSuchElementException("No value present");
+    }
     return new Ryvr(name, 10, new HtmlRyvrSource(webDriver));
   }
 

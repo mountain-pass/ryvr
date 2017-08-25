@@ -216,13 +216,24 @@ public class StepDefs {
 
   @When("^the \"([^\"]*)\" ryvr is retrieved$")
   public void theRyvrIsRetrieved(final String name) throws Throwable {
-    configClient.ensureStarted();
+    if (ryvrsCollectionResponse == null) {
+      theRyvrsListIsRetrieved();
+    } else {
+      configClient.ensureStarted();
+    }
     ryvr = null;
     try {
-      ryvr = client.getRyvr(uniquifyRyvrName(name));
+      ryvr = ryvrsCollectionResponse.followRyvrLink(uniquifyRyvrName(name));
     } catch (NoSuchElementException e) {
       error = e;
     }
+  }
+
+  @When("^the \"([^\"]*)\" rvyr is deleted$")
+  public void the_rvyr_is_deleted(String name) throws Throwable {
+    configClient.deleteRvyr(uniquifyRyvrName(name));
+    // this results in a stale ryvrsCollectionResponse, which is what we want, because
+    // we want to test what happens when we follow the link that doesn't exist anymore.
   }
 
   @When("^the \"([^\"]*)\" ryvr is retrieved directly$")

@@ -9,10 +9,12 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,12 +124,20 @@ public class HtmlController {
     }
   }
 
-  public ResponseEntity<?> getRyvr(HttpServletRequest req, String ryvrName, long page)
-      throws URISyntaxException, IOException {
+  public ResponseEntity<?> getRyvr(HttpServletResponse res, HttpServletRequest req, String ryvrName,
+      long page) throws URISyntaxException, IOException {
 
-    Ryvr ryvr = ryvrsCollection.getRyvr(ryvrName);
+    Ryvr ryvr = null;
+    try {
+      ryvr = ryvrsCollection.getRyvr(ryvrName);
+    } catch (NoSuchElementException e) {
+      // res.setStatus(org.apache.http.HttpStatus.SC_NOT_FOUND);
+      // return null;
+      throw new ResourceNotFoundException(req);
+    }
+
     if (ryvr == null) {
-      return ResponseEntity.notFound().build();
+      throw new ResourceNotFoundException(req);
     }
 
     Root root = (Root) jsonController.getRoot(req).getBody();

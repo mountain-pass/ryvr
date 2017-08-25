@@ -91,7 +91,7 @@ public class RestRyvrClient implements RyvrTestClient {
     // URL and hit it directly, to ensure the correct 404 is returned
     URL contextUrl = getRyvrsCollection().getContextUrl();
     try {
-      URI ryvrUri = contextUrl.toURI().resolve(name);
+      URI ryvrUri = contextUrl.toURI().resolve("/ryvrs/" + name + "?page=1");
       final HttpGet httpget = new HttpGet(ryvrUri);
       httpget.reset();
       httpget.addHeader("Accept", "application/json");

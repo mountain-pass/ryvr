@@ -156,6 +156,9 @@ define(['angular'], function(angular) {
             return false;
         };
 
+        controller.errorCallback = function(response) {
+            window.location.href = response.config.url;
+        }
         
 
         controller.doLoad = function(href) {

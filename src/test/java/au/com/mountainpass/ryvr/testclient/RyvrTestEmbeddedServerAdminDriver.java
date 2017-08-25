@@ -58,4 +58,9 @@ public class RyvrTestEmbeddedServerAdminDriver implements RyvrTestServerAdminDri
     // nothing
   }
 
+  @Override
+  public void deleteRvyr(String name) {
+    ryvrsCollection.deleteRyvr(name);
+  }
+
 }

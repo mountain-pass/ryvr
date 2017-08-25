@@ -85,4 +85,9 @@ public class RyvrsCollection {
     links = genLinks();
   }
 
+  public void deleteRyvr(String name) {
+    ryvrs.remove(name);
+    links = genLinks();
+  }
+
 }

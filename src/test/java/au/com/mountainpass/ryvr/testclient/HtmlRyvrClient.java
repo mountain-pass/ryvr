@@ -152,7 +152,7 @@ public class HtmlRyvrClient implements RyvrTestClient {
     // instead of following the links, we are going to just construct the
     // URL and hit it directly, to ensure the correct 404 is returned
     URL contextUrl = getRyvrsCollection().getContextUrl();
-    URI ryvrUri = contextUrl.toURI().resolve(name);
+    URI ryvrUri = contextUrl.toURI().resolve("/ryvrs/" + name + "?page=1");
     webDriver.get(ryvrUri.toString());
     HtmlRyvrClient.waitTillLoaded(webDriver, 5);
     WebElement title = webDriver.findElement(By.cssSelector("body > div > section > div > h1"));

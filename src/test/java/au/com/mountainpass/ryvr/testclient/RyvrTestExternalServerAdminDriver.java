@@ -213,4 +213,12 @@ public class RyvrTestExternalServerAdminDriver implements RyvrTestServerAdminDri
     }
   }
 
+  @Override
+  public void deleteRvyr(String name) {
+    stop();
+    dataSourcesRyvrConfigs.removeIf(config -> {
+      return name.equals(config.get("name"));
+    });
+  }
+
 }

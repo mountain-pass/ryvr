@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -56,22 +55,24 @@ public class RyvrController {
   }
 
   @RequestMapping(method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE })
-  public ResponseEntity<?> getHtml(final HttpServletRequest req, @PathVariable String name,
-      @RequestParam(required = false) Long page) throws URISyntaxException, IOException {
+  public ResponseEntity<?> getHtml(HttpServletResponse res, final HttpServletRequest req,
+      @PathVariable String name, @RequestParam(required = false) Long page)
+      throws URISyntaxException, IOException {
     if (page == null) {
-      return htmlController.getRyvr(req, name, -1L);
+      return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
+          .location(config.getBaseUri().resolve("/ryvrs/" + name + "?page=1")).build();
     } else {
       if (page <= 0L) {
-        return ResponseEntity.notFound().build();
+        throw new ResourceNotFoundException(req);
       } else {
-        return htmlController.getRyvr(req, name, page);
+        return htmlController.getRyvr(res, req, name, page);
       }
     }
   }
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<?> handleException(Exception exception, HttpServletRequest request) {
-    LOGGER.error("Naaggghhh!", exception);
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-  }
+  // @ExceptionHandler(Exception.class)
+  // public ResponseEntity<?> handleException(Exception exception, HttpServletRequest request) {
+  // LOGGER.error("Naaggghhh!", exception);
+  // return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+  // }
 }

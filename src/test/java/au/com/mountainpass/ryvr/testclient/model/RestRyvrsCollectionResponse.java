@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -18,7 +19,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
@@ -68,11 +68,19 @@ public class RestRyvrsCollectionResponse implements RyvrsCollectionResponse {
       httpget.reset();
       httpget.addHeader("Accept", "application/json");
       CloseableHttpResponse response = httpClient.execute(httpget);
-
-      if (response.getStatusLine().getStatusCode() == HttpStatus.SEE_OTHER.value()) {
+      switch (response.getStatusLine().getStatusCode()) {
+      case org.apache.http.HttpStatus.SC_NOT_FOUND:
+        throw new NoSuchElementException("No value present");
+      case org.apache.http.HttpStatus.SC_SEE_OTHER:
         httpget.reset();
         httpget.setURI(URI.create(response.getFirstHeader(HttpHeaders.LOCATION).getValue()));
         response = httpClient.execute(httpget);
+        break;
+      case org.apache.http.HttpStatus.SC_OK:
+        break;
+      default:
+        throw new NotImplementedException(
+            "Unexpected status code: " + response.getStatusLine().getStatusCode());
       }
 
       return new Ryvr(name, 10,

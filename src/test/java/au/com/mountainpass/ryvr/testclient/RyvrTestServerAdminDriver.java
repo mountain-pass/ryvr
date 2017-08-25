@@ -6,14 +6,16 @@ import cucumber.api.Scenario;
 
 public interface RyvrTestServerAdminDriver {
 
-    void createDataSourceRyvr(Map<String, String> config) throws Throwable;
+  void createDataSourceRyvr(Map<String, String> config) throws Throwable;
 
-    void _before(Scenario scenario);
+  void _before(Scenario scenario);
 
-    void clearRyvrs();
+  void clearRyvrs();
 
-    void ensureStarted() throws Throwable;
+  void ensureStarted() throws Throwable;
 
-    void _after(Scenario scenario);
+  void _after(Scenario scenario);
+
+  void deleteRvyr(String name);
 
 }
