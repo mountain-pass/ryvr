@@ -10,6 +10,7 @@ import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.testclient.model.JavaRootResponse;
+import au.com.mountainpass.ryvr.testclient.model.JavaRyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.JavaSwaggerResponse;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
@@ -63,5 +64,11 @@ public class JavaRyvrClient implements RyvrTestClient {
   @Override
   public Ryvr getRyvrDirect(String name) throws Throwable {
     return ryvrsCollection.getRyvr(name);
+  }
+
+  @Override
+  public RyvrsCollectionResponse getRyvrsCollectionDirect() throws Throwable {
+    return new JavaRyvrsCollectionResponse(
+        (RyvrsCollection) router.getRyvrsCollection(request).getBody());
   }
 }

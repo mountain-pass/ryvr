@@ -27,6 +27,7 @@ import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.testclient.model.HtmlRootResponse;
 import au.com.mountainpass.ryvr.testclient.model.HtmlRyvrSource;
+import au.com.mountainpass.ryvr.testclient.model.HtmlRyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.HtmlSwaggerResponse;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
@@ -67,6 +68,9 @@ public class HtmlRyvrClient implements RyvrTestClient {
   public static void waitTillLoaded(WebDriver webDriver, long timeoutInSeconds) {
     waitTillLoaded(webDriver, timeoutInSeconds,
         ExpectedConditions.invisibilityOfElementLocated(By.id("loader")));
+    waitTillLoaded(webDriver, timeoutInSeconds, ExpectedConditions
+        .visibilityOfElementLocated(By.cssSelector("body > div.container.main-content")));
+
   }
 
   public static void waitTillLoaded(WebDriver webDriver, long timeoutInSeconds,
@@ -156,10 +160,17 @@ public class HtmlRyvrClient implements RyvrTestClient {
     webDriver.get(ryvrUri.toString());
     HtmlRyvrClient.waitTillLoaded(webDriver, 5);
     WebElement title = webDriver.findElement(By.cssSelector("body > div > section > div > h1"));
-    if ("Tumbleweed blows past".equals(title.getText())) {
+    if ("Tumbleweeds blow past".equals(title.getText())) {
       throw new NoSuchElementException("No value present");
     }
     return new Ryvr(name, 10, new HtmlRyvrSource(webDriver));
+  }
+
+  @Override
+  public RyvrsCollectionResponse getRyvrsCollectionDirect() throws Throwable {
+    webDriver.get(config.getBaseUri().resolve("/ryvrs").toString());
+    HtmlRyvrClient.waitTillLoaded(webDriver, 5);
+    return new HtmlRyvrsCollectionResponse(webDriver);
   }
 
 }

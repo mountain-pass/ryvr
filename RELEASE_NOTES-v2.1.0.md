@@ -1,0 +1,1 @@
+* Added better handling or requests for ryvrs that don't exist

@@ -8,7 +8,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.springframework.web.client.RestTemplate;
@@ -59,9 +59,7 @@ public class RestRootResponse implements RootResponse {
       return new RestRyvrsCollectionResponse(httpClient, httpAsyncClient, ryvrsUri.toURL(),
           ryvrsCollection);
     } catch (MalformedURLException | URISyntaxException ex) {
-      // TODO Auto-generated catch block
-      ex.printStackTrace();
-      throw new NotImplementedException();
+      throw new NotImplementedException(ex);
     }
   }
 

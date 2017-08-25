@@ -261,6 +261,12 @@ public class StepDefs {
     ryvrsCollectionResponse = client.getRyvrsCollection();
   }
 
+  @When("^the ryvrs list is retrieved directly$")
+  public void the_ryvrs_list_is_retrieved_directly() throws Throwable {
+    configClient.ensureStarted();
+    ryvrsCollectionResponse = client.getRyvrsCollectionDirect();
+  }
+
   @Then("^the ryvrs list will be empty$")
   public void theRyvrsListWillBeEmpty() throws Throwable {
     ryvrsCollectionResponse.assertIsEmpty();

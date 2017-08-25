@@ -24,6 +24,19 @@ Feature: DB Ryvr
     Then the ryvrs list will contain the following entries
       | transactions |
 
+  Scenario: Find Ryvr in Collection - Direct
+    Given the "transactions" table has the following events
+      | id | account | description    | amount  |
+      |  0 | 7786543 | ATM Withdrawal | -200.00 |
+    And a database ryvr with the following configuration
+      | name      | transactions                                                                          |
+      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | page size |                                                                                    10 |
+    When the ryvrs list is retrieved directly
+    Then the count of ryvrs will be 1
+    Then the ryvrs list will contain the following entries
+      | transactions |
+
   Scenario: Get Ryvr That Doesnt Exist - Links
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -46,7 +59,6 @@ Feature: DB Ryvr
     When the "doesNotExist" ryvr is retrieved directly
     Then the ryvr will not be found
 
-  @current
   Scenario: Get Ryvr That Has Been Deleted
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -60,6 +72,7 @@ Feature: DB Ryvr
     And the "transactions" ryvr is retrieved
     Then the ryvr will not be found
 
+  @current
   Scenario: Get Ryvr - Single Record
     Given the "transactions" table has the following events
       | id | account | description    | amount  |

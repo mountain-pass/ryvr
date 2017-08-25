@@ -22,4 +22,6 @@ public interface RyvrTestClient {
 
   public Ryvr getRyvrDirect(String name) throws Throwable;
 
+  public RyvrsCollectionResponse getRyvrsCollectionDirect() throws Throwable;
+
 }

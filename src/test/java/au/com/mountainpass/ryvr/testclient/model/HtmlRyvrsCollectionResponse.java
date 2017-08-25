@@ -13,11 +13,15 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
 
 public class HtmlRyvrsCollectionResponse implements RyvrsCollectionResponse {
+
+  private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
   private WebDriver webDriver;
 
@@ -32,16 +36,19 @@ public class HtmlRyvrsCollectionResponse implements RyvrsCollectionResponse {
 
   @Override
   public void assertCount(int count) {
-    assertThat(webDriver.findElements(By.cssSelector("#linkedItems > ul > li")).size(),
+    assertThat(webDriver.findElements(By.cssSelector("#linkedItems > ul > li > a")).size(),
         equalTo(count));
   }
 
   @Override
   public void assertHasItem(List<String> names) {
-    List<WebElement> items = webDriver.findElement(By.id("linkedItems"))
-        .findElements(By.className("linkedItem"));
-    List<String> itemNames = items.stream().map(item -> item.getText())
-        .collect(Collectors.toList());
+    List<WebElement> items = webDriver.findElements(By.cssSelector("#linkedItems > ul > li > a"));
+    List<String> itemNames = items.stream().map(item -> {
+      String text = item.getText();
+      LOGGER.info("element: {}", item);
+      LOGGER.info("element text: {}", text);
+      return text;
+    }).collect(Collectors.toList());
     assertThat(itemNames, containsInAnyOrder(names.toArray()));
   }
 
@@ -54,7 +61,7 @@ public class HtmlRyvrsCollectionResponse implements RyvrsCollectionResponse {
     link.click();
     HtmlRyvrClient.waitTillLoaded(webDriver, 5);
     WebElement title = webDriver.findElement(By.cssSelector("body > div > section > div > h1"));
-    if ("Tumbleweed blows past".equals(title.getText())) {
+    if ("Tumbleweeds blow past".equals(title.getText())) {
       throw new NoSuchElementException("No value present");
     }
     return new Ryvr(name, 10, new HtmlRyvrSource(webDriver));

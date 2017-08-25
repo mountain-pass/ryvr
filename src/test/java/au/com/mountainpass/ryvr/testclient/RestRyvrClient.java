@@ -22,9 +22,11 @@ import org.springframework.web.client.RestTemplate;
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.Ryvr;
+import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.rest.RestRyvrSource;
 import au.com.mountainpass.ryvr.testclient.model.JavaSwaggerResponse;
 import au.com.mountainpass.ryvr.testclient.model.RestRootResponse;
+import au.com.mountainpass.ryvr.testclient.model.RestRyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
@@ -114,6 +116,19 @@ public class RestRyvrClient implements RyvrTestClient {
       return new Ryvr(name, 10,
           new RestRyvrSource(httpClient, ryvrUri, response.getEntity(), response));
     } catch (URISyntaxException | IOException e) {
+      throw new NotImplementedException(e);
+    }
+  }
+
+  @Override
+  public RyvrsCollectionResponse getRyvrsCollectionDirect() throws Throwable {
+    try {
+      URI ryvrsUri = config.getBaseUri().resolve("/ryvrs");
+      RyvrsCollection ryvrsCollection = restTemplate.getForEntity(ryvrsUri, RyvrsCollection.class)
+          .getBody();
+      return new RestRyvrsCollectionResponse(httpClient, httpAsyncClient, ryvrsUri.toURL(),
+          ryvrsCollection);
+    } catch (MalformedURLException e) {
       throw new NotImplementedException(e);
     }
   }
