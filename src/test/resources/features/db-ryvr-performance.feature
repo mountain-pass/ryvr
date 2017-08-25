@@ -46,7 +46,7 @@ Feature: DB Ryvr
     And 100% of the pages should be loaded within 1050ms
     And the minmium event retrieval throughput should be at least 3.5MB/s
     And the average event retrieval throughput should be at least 160MB/s
-    And the peak event retrieval throughput should be at least 2.1GB/s
+    And the peak event retrieval throughput should be at least 1.9GB/s
     And the minimum event retrieval rate should be at least 90000TPS
     And the average event retrieval rate should be at least 4MTPS
     And the peak event retrieval rate should be at least 55MTPS
