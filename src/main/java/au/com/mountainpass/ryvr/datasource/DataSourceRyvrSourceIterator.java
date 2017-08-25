@@ -16,6 +16,9 @@ class DataSourceRyvrSourceIterator implements Iterator<Record> {
   private final Record record;
 
   public DataSourceRyvrSourceIterator(DataSourceRyvrSource dataSourceRyvrSource, long position) {
+    if (position < 0) {
+      throw new NoSuchElementException("No value present");
+    }
     // this.dataSourceRyvrSource = dataSourceRyvrSource;
     record = new DataSourceRecord(dataSourceRyvrSource);
     try {

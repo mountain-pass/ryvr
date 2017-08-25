@@ -242,6 +242,17 @@ public class StepDefs {
     }
   }
 
+  @When("^(-?\\d+)th page of the \"([^\"]*)\" ryvr is retrieved$")
+  public void th_page_of_the_ryvr_is_retrieved(int page, String name) throws Throwable {
+    configClient.ensureStarted();
+    ryvr = null;
+    try {
+      ryvr = client.getRyvrDirect(uniquifyRyvrName(name), page);
+    } catch (NoSuchElementException e) {
+      error = e;
+    }
+  }
+
   @When("^the \"([^\"]*)\" rvyr is deleted$")
   public void the_rvyr_is_deleted(String name) throws Throwable {
     configClient.deleteRvyr(uniquifyRyvrName(name));
@@ -265,7 +276,13 @@ public class StepDefs {
     assertThat(ryvr, nullValue());
     assertThat(error, notNullValue());
     assertThat(error, instanceOf(NoSuchElementException.class));
+  }
 
+  @Then("^the page will not be found$")
+  public void the_page_will_not_be_found() throws Throwable {
+    assertThat(ryvr, nullValue());
+    assertThat(error, notNullValue());
+    assertThat(error, instanceOf(NoSuchElementException.class));
   }
 
   @Then("^the record will not be found$")

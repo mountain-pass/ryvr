@@ -20,7 +20,11 @@ public interface RyvrTestClient {
 
   public void before(Scenario scenario);
 
-  public Ryvr getRyvrDirect(String name) throws Throwable;
+  public default Ryvr getRyvrDirect(String name) throws Throwable {
+    return getRyvrDirect(name, 1);
+  }
+
+  public Ryvr getRyvrDirect(String name, int page) throws Throwable;
 
   public RyvrsCollectionResponse getRyvrsCollectionDirect() throws Throwable;
 

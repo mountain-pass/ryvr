@@ -88,12 +88,12 @@ public class RestRyvrClient implements RyvrTestClient {
   }
 
   @Override
-  public Ryvr getRyvrDirect(String name) throws Throwable {
+  public Ryvr getRyvrDirect(String name, int page) throws Throwable {
     // instead of following the links, we are going to just construct the
     // URL and hit it directly, to ensure the correct 404 is returned
     URL contextUrl = getRyvrsCollection().getContextUrl();
     try {
-      URI ryvrUri = contextUrl.toURI().resolve("/ryvrs/" + name + "?page=1");
+      URI ryvrUri = contextUrl.toURI().resolve("/ryvrs/" + name + "?page=" + page);
       final HttpGet httpget = new HttpGet(ryvrUri);
       httpget.reset();
       httpget.addHeader("Accept", "application/json");

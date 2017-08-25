@@ -72,7 +72,6 @@ Feature: DB Ryvr
     And the "transactions" ryvr is retrieved
     Then the ryvr will not be found
 
-  @current
   Scenario: Get Ryvr Record That Doesnt Exist - minus 1
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -83,6 +82,29 @@ Feature: DB Ryvr
       | page size |                                                                                    10 |
     When -1th record of the "transactions" ryvr is retrieved
     Then the record will not be found
+
+  Scenario: Get Ryvr Page That Doesnt Exist - 0th page
+    Given the "transactions" table has the following events
+      | id | account | description    | amount  |
+      |  0 | 7786543 | ATM Withdrawal | -200.00 |
+    And a database ryvr with the following configuration
+      | name      | transactions                                                                          |
+      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | page size |                                                                                    10 |
+    When 0th page of the "transactions" ryvr is retrieved
+    Then the page will not be found
+
+  @current
+  Scenario: Get Ryvr Page That Doesnt Exist - minus 1th page
+    Given the "transactions" table has the following events
+      | id | account | description    | amount  |
+      |  0 | 7786543 | ATM Withdrawal | -200.00 |
+    And a database ryvr with the following configuration
+      | name      | transactions                                                                          |
+      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | page size |                                                                                    10 |
+    When -1th page of the "transactions" ryvr is retrieved
+    Then the page will not be found
 
   Scenario: Get Ryvr - Single Record
     Given the "transactions" table has the following events

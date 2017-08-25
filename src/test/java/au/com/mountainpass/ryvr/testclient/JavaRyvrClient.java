@@ -62,8 +62,11 @@ public class JavaRyvrClient implements RyvrTestClient {
   }
 
   @Override
-  public Ryvr getRyvrDirect(String name) throws Throwable {
-    return ryvrsCollection.getRyvr(name);
+  public Ryvr getRyvrDirect(String name, int page) throws Throwable {
+    Ryvr ryvr = ryvrsCollection.getRyvr(name);
+    int pageSize = ryvr.getPageSize();
+    ryvr.getSource().iterator((page - 1) * pageSize);
+    return ryvr;
   }
 
   @Override
