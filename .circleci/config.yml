@@ -33,13 +33,18 @@ jobs:
           paths:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
-      - run: ./gradlew assemble
+      - run: ./gradlew assemble compileTestJava
       - run: pwd
       - run: ls
       - persist_to_workspace:
           root: ~/repo
           paths:
-            - build
+            - build/classes/main
+            - build/classes/test
+            - build/distributions
+            - build/resources/main
+            - build/resources/test
+            
 
   testRyvrTests_Integration_Java_H2Local:
     <<: *defaults
@@ -66,7 +71,9 @@ jobs:
           root: ~/repo
           # Must be relative path from root
           paths:
-            - build
+            - build/coverage-results-RyvrTests_Integration_Java_H2Local
+            - build/test-results/testRyvrTests_Integration_Java_H2Local
+            - build/test-results-testRyvrTests_Integration_Java_H2Local
 
   testRyvrTests_Integration_Rest_H2Local:
     <<: *defaults
@@ -93,7 +100,10 @@ jobs:
           root: ~/repo
           # Must be relative path from root
           paths:
-            - build
+            - build/coverage-results-RyvrTests_Integration_Rest_H2Local
+            - build/test-results/testRyvrTests_Integration_Rest_H2Local
+            - build/test-results-testRyvrTests_Integration_Rest_H2Local
+
   jacocoTestReport:
     <<: *defaults
     steps:
@@ -117,7 +127,7 @@ jobs:
           root: ~/repo
           # Must be relative path from root
           paths:
-            - build
+            - build/coverage-results
     
 workflows:
   version: 2
