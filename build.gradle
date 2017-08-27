@@ -215,8 +215,6 @@ dependencies {
 
   testCompile group: 'io.prometheus', name: 'simpleclient', version: '0.0.26'
 
-
-
   runtime('com.h2database:h2')
   runtime group: 'mysql', name: 'mysql-connector-java', version: '6.0.6'
   runtime group: 'org.postgresql', name: 'postgresql', version: '42.1.4'
@@ -227,7 +225,7 @@ dependencies {
   codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '2.0.0' // 2.0.0
 }
 
-configurations.all {
+configurations.all { 
   resolutionStrategy.eachDependency { DependencyResolveDetails details ->
     if (details.requested.group == 'com.google.guava' && details.requested.name == 'guava' && details.requested.version == '23.0') {
       // had compatibility issues with selenium 3.5.1 which uses guava 23.0
@@ -236,6 +234,25 @@ configurations.all {
   }
 }
 
+configurations.findAll().each { config ->
+  task "downloadDependencies${config.name}"(type: Exec, group: 'build', description: "download deps for ${config.name}") {
+//    println "${config}:"
+//    config.allArtifacts.getFiles().each { file -> println " " + file}
+//    config.files().each { file -> println " " + file}
+//    println ' '
+    config.files
+    commandLine 'echo', "Downloaded all dependencies for ${config.name}"
+  }
+}
+
+task "downloadDependencies"(type: Exec, group: 'build', description: "download all deps") {
+  commandLine 'echo', "Downloaded all dependencies"
+}
+
+downloadDependencies.dependsOn {
+  tasks.findAll { task ->
+    task.name.startsWith('downloadDependencies') && task.name != "downloadDependencies" }
+}
 
 bootRun {
   String activeProfile =  System.properties['spring.profiles.active']

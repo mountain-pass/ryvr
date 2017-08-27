@@ -28,7 +28,7 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew dependencies
+      - run: ./gradlew downloadDependencies
       - save_cache:
           paths:
             - ~/.gradle
