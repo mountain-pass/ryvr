@@ -25,14 +25,14 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "build.gradle" }}
+          - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-      - run: gradle dependencies
+          - gradle-dependencies-
+      - run: ./gradlew dependencies
       - save_cache:
           paths:
             - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle" }}
+          key: gradle-dependencies-{{ checksum "build.gradle" }}
       - run: ./gradlew assemble compileTestJava
       - run: pwd
       - run: ls
@@ -52,14 +52,14 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "build.gradle" }}
+          - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+          - gradle-dependencies-
       - run: ./gradlew dependencies
       - save_cache:
           paths:
             - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle" }}
+          key: gradle-dependencies-{{ checksum "build.gradle" }}
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo/build
@@ -81,14 +81,14 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "build.gradle" }}
+          - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+          - gradle-dependencies-
       - run: ./gradlew dependencies
       - save_cache:
           paths:
             - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle" }}
+          key: gradle-dependencies-{{ checksum "build.gradle" }}
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo/build
@@ -110,14 +110,14 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "build.gradle" }}
+          - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+          - gradle-dependencies-
       - run: ./gradlew dependencies
       - save_cache:
           paths:
             - ~/.gradle
-          key: v1-dependencies-{{ checksum "build.gradle" }}
+          key: gradle-dependencies-{{ checksum "build.gradle" }}
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo/build
