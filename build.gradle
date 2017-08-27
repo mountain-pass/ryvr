@@ -14,7 +14,10 @@ buildscript {
   }
 }
 
-plugins { id "com.srcclr.gradle" version "2.2.7" }
+plugins { 
+  id "com.srcclr.gradle" version "2.2.7" 
+  id "com.dorongold.task-tree" version "1.3"
+}
 
 
 apply plugin: 'java'
@@ -232,6 +235,7 @@ configurations.all {
     }
   }
 }
+
 
 bootRun {
   String activeProfile =  System.properties['spring.profiles.active']
