@@ -110,7 +110,7 @@ bootRun.doFirst() {
 
 applicationDefaultJvmArgs = [
   "-Dspring.config.location=file:../etc/application.yml",
-  "-Dlogging.config=file:../etc/logback-spring.xml"
+  "-Dlogging.config=file:../etc/logback.xml"
 ]
 
 distTar {
