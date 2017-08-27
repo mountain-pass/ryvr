@@ -1,20 +1,27 @@
 server:
   port: 8443
+  compression.enabled: true
+  use-forward-headers: true
   ssl:
     key-store: ../etc/keystore.jks
     key-store-password: secret
     key-password: secret
     key-alias: selfSigned
+  servlet-path: /
   undertow:
     buffer-size: 8388608
     direct-buffers: true
     io-threads: 1
     worker-threads: 1
     accesslog:
-      dir: ../var/logs
       enabled: true
+      dir: ../var/logs
 
-
+spring:
+  application:
+    name: ryvr
+  resources:
+    cache-period: 2592000
 
 logging:
   file: ryvr.log
@@ -24,20 +31,16 @@ au.com.mountainpass.ryvr:
   ssl:
     hostname: localhost
     genCert: selfSigned
-  cache:
-    archive-page-max-age: 30
-    archive-page-max-age-unit: DAYS
-    current-page-max-age: 100
-    current-page-max-age-unit: MILLISECONDS
 #  data-sources:
-#    - url: jdbc:mysql://localhost
+#    - url: jdbc:mysql://localhost?serverTimezone=UTC
 #      username: dbuser
 #      password: dbpass
 #      ryvrs:
 #        transactions:
 #          page-size: 128
-#          catalog: test_db
-#          table: TRANSACTIONS
-#          ordered-by: ID
-    
-    
+#          query: select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC
+  cache:
+    archive-page-max-age: 30
+    archive-page-max-age-unit: DAYS
+    current-page-max-age: 1
+    current-page-max-age-unit: SECONDS

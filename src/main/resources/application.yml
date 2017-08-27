@@ -13,15 +13,14 @@ server:
     direct-buffers: true
     io-threads: 1
     worker-threads: 1
-    accesslog.enabled: true
+    accesslog:
+      enabled: true
 
 spring:
   application:
     name: ryvr
   resources:
     cache-period: 2592000
-
-server.undertow.accesslog.enabled: true
 
 au.com.mountainpass.ryvr:
   ssl:
