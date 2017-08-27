@@ -80,7 +80,7 @@ jobs:
       # run tests!
       - run: ./gradlew testRyvrTests_Integration_Java_H2Local
 
-  testRyvrTests_Integration_Java_H2Local:
+  testRyvrTests_Integration_Rest_H2Local:
     docker:
       # specify the version you desire here
       - image: circleci/openjdk:8-jdk
