@@ -209,7 +209,8 @@ jobs:
       - run: ls ~/repo/build
       - run: ls ~/repo/build/test-results/
       - run: ls ~/repo/build/coverage-results-*
-      - run: ./gradlew jacocoTestReport
+      - run: ./gradlew jacocoTestReport --info
+      - run: ls -l build/coverage-results/jacoco
       - run: ./gradlew testRyvrTests_Coverage --info
       - store_test_results:
           path: build/test-results/testRyvrTests_Coverage
