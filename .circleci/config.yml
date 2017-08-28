@@ -164,6 +164,7 @@ jobs:
           # Must be absolute path or relative path from working_directory
           at: ~/repo/build
       - run: ./gradlew testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY --info
+          no_output_timeout: 1200
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
       - store_artifacts:
@@ -230,4 +231,4 @@ workflows:
             - testRyvrTests_Integration_Java_H2Local
             - testRyvrTests_Integration_Rest_H2Local
             - testRyvrTests_Integration_Rest_MySqlLocal
-            - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
+#            - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
