@@ -383,7 +383,7 @@ jacocoTestReport {
   }
   reports {
     xml.enabled true
-    xml.destination "${coverageOutputDir}/coverage-results/jacoco/${archivesBaseName}.xml"
+    xml.destination "${coverageOutputDir}/coverage-results/jacoco/ryvr.xml"
     csv.enabled false
     html.enabled true
     html.destination "${coverageOutputDir}/coverage-results/jacoco/html"
@@ -402,7 +402,7 @@ task uploadCoverageToCodacy(type: JavaExec, dependsOn : jacocoTestReport) {
     "-l",
     "Java",
     "-r",
-    "${coverageOutputDir}/coverage-results/jacoco/${archivesBaseName}.xml",
+    "${coverageOutputDir}/coverage-results/jacoco/ryvr.xml",
     "--projectToken",
     "${token}"
   ]

@@ -216,6 +216,7 @@ jobs:
           path: build/test-results/testRyvrTests_Coverage
       - store_artifacts:
           path: build/test-results/testRyvrTests_Coverage
+          path: build/coverage-results/jacoco/html
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory
           root: ~/repo
