@@ -6,4 +6,3 @@ Feature: Api Docs
 Scenario: Get Api Docs
     When a request is made for the API Docs
     Then the API Docs will contain an operation for getting the API Docs
-

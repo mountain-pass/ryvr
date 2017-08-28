@@ -9,7 +9,7 @@ import cucumber.api.CucumberOptions;
 @RunWith(SpringProfileCucumber.class)
 @CucumberOptions(plugin = { "pretty" }, features = {
     "src/test/resources/features/" }, strict = false, glue = {
-        "au.com.mountainpass.ryvr" }, tags = { "@current", "~@performance" })
+        "au.com.mountainpass.ryvr.steps.main" }, tags = { "@current", "~@performance", "~@coverage" })
 @ActiveProfiles({ "systemTest", "bootRun", "ui", "mysql", "chrome" })
 public class RyvrTests_System_BootRun_Ui_MySqlLocal_ChromeLocal_Current {
 
