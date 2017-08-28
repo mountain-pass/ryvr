@@ -34,8 +34,6 @@ jobs:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
       - run: ./gradlew assemble compileTestJava
-      - run: pwd
-      - run: ls
       - persist_to_workspace:
           root: ~/repo
           paths:
@@ -63,8 +61,6 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo/build
-      - run: ls
-      - run: ls ~/repo/build
       - run: ./gradlew testRyvrTests_Integration_Java_H2Local
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Java_H2Local
@@ -93,8 +89,6 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo/build
-      - run: ls
-      - run: ls ~/repo/build
       - run: ./gradlew testRyvrTests_Integration_Rest_H2Local
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Rest_H2Local
@@ -105,6 +99,34 @@ jobs:
           paths:
             - build/coverage-results-RyvrTests_Integration_Rest_H2Local
             - build/test-results/testRyvrTests_Integration_Rest_H2Local
+
+  testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - gradle-dependencies-{{ checksum "build.gradle" }}
+          # fallback to using the latest cache if no exact match is found
+          - gradle-dependencies-
+      - run: ./gradlew dependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-dependencies-{{ checksum "build.gradle" }}
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: ~/repo/build
+      - run: ./gradlew testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY
+      - store_test_results:
+          path: build/test-results/testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
+      - persist_to_workspace:
+          # Must be an absolute path, or relative path from working_directory
+          root: ~/repo
+          # Must be relative path from root
+          paths:
+            - build/coverage-results-RyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
+            - build/test-results/testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
 
   jacocoTestReport:
     <<: *defaults
@@ -142,7 +164,12 @@ workflows:
       - testRyvrTests_Integration_Rest_H2Local:
           requires:
             - assemble
+      - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs:
+          requires:
+            - assemble
+          context: org-global
       - jacocoTestReport:
           requires:
             - testRyvrTests_Integration_Java_H2Local
             - testRyvrTests_Integration_Rest_H2Local
+            - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
