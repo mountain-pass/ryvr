@@ -366,8 +366,8 @@ testClasses.each { File testClass ->
       jsonFiles.add((String)(outputDir + "/cucumber.json"));
 
       Configuration configuration = new Configuration(reportOutputDirectory, 'ryvr');
-      configuration.setRunWithJenkins(${System.env.CI});
-      configuration.setBuildNumber(${System.env.CIRCLE_BUILD_NUM});
+      configuration.setRunWithJenkins("${System.env.CI}");
+      configuration.setBuildNumber("${System.env.CIRCLE_BUILD_NUM}");
       // addidtional metadata presented on main page
       //        configuration.addClassifications("Platform", "Windows");
       //        configuration.addClassifications("Browser", "Firefox");

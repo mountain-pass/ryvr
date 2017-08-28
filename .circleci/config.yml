@@ -112,9 +112,10 @@ jobs:
       - image: circleci/openjdk:8-jdk
       - image: mysql:8.0.2
         environment:
+          MYSQL_RANDOM_ROOT_PASSWORD: true
           MYSQL_DATABASE: test_db
-          MYSQL_ROOT_PASSWORD: dbpass
           MYSQL_USER: dbuser
+          MYSQL_PASSWORD: dbpass
           MYSQL_HOST: 127.0.0.1
           MYSQL_ROOT_HOST: "%"
     environment:
