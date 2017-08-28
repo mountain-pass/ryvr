@@ -1,7 +1,5 @@
-spring.datasource.url: jdbc:mysql://localhost/test_db?serverTimezone=Australia/Sydney
+spring.datasource.url: jdbc:mysql://localhost:3306/test_db?serverTimezone=Australia/Sydney
 spring.datasource.username: dbuser
 spring.datasource.password: dbpass
 au.com.mountainpass.ryvr.datasource.hostname: localhost
 au.com.mountainpass.ryvr.datasource.port: 3306
-
-
