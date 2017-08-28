@@ -67,7 +67,7 @@ jobs:
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Java_H2Local
       - store_artifacts:
-          path: /code/test-results/testRyvrTests_Integration_Java_H2Local
+          path: build/test-results/testRyvrTests_Integration_Java_H2Local
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory
           root: ~/repo
@@ -97,7 +97,7 @@ jobs:
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Rest_H2Local
       - store_artifacts:
-          path: /code/test-results/testRyvrTests_Integration_Rest_H2Local
+          path: build/test-results/testRyvrTests_Integration_Rest_H2Local
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory
           root: ~/repo
@@ -148,7 +148,7 @@ jobs:
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Rest_MySqlLocal
       - store_artifacts:
-          path: /code/test-results/testRyvrTests_Integration_Rest_MySqlLocal
+          path: build/test-results/testRyvrTests_Integration_Rest_MySqlLocal
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory
           root: ~/repo
@@ -180,7 +180,7 @@ jobs:
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
       - store_artifacts:
-          path: /code/test-results/testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
+          path: build/test-results/testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory
           root: ~/repo
@@ -211,7 +211,7 @@ jobs:
       - store_test_results:
           path: build/test-results/testRyvrTests_Coverage
       - store_artifacts:
-          path: /code/test-results/testRyvrTests_Coverage
+          path: build/test-results/testRyvrTests_Coverage
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory
           root: ~/repo
