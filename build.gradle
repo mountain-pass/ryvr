@@ -9,13 +9,13 @@ buildscript {
     classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     classpath('gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:1.4.17')
     classpath 'co.riiid:gradle-github-plugin:0.4.2'
-
+    classpath 'net.masterthought:cucumber-reporting:3.7.0'
     // for later https://github.com/stempler/gradle-versioneye-plugin
   }
 }
 
-plugins { 
-  id "com.srcclr.gradle" version "2.2.7" 
+plugins {
+  id "com.srcclr.gradle" version "2.2.7"
   id "com.dorongold.task-tree" version "1.3"
 }
 
@@ -225,7 +225,7 @@ dependencies {
   codacy group: 'com.codacy', name: 'codacy-coverage-reporter', version: '2.0.0' // 2.0.0
 }
 
-configurations.all { 
+configurations.all {
   resolutionStrategy.eachDependency { DependencyResolveDetails details ->
     if (details.requested.group == 'com.google.guava' && details.requested.name == 'guava' && details.requested.version == '23.0') {
       // had compatibility issues with selenium 3.5.1 which uses guava 23.0
@@ -236,18 +236,16 @@ configurations.all {
 
 configurations.findAll().each { config ->
   task "downloadDependencies${config.name}"(type: Exec, group: 'build', description: "download deps for ${config.name}") {
-//    println "${config}:"
-//    config.allArtifacts.getFiles().each { file -> println " " + file}
-//    config.files().each { file -> println " " + file}
-//    println ' '
+    //    println "${config}:"
+    //    config.allArtifacts.getFiles().each { file -> println " " + file}
+    //    config.files().each { file -> println " " + file}
+    //    println ' '
     config.files
     commandLine 'echo', "Downloaded all dependencies for ${config.name}"
   }
 }
 
-task "downloadDependencies"(type: Exec, group: 'build', description: "download all deps") {
-  commandLine 'echo', "Downloaded all dependencies"
-}
+task "downloadDependencies"(type: Exec, group: 'build', description: "download all deps") { commandLine 'echo', "Downloaded all dependencies" }
 
 downloadDependencies.dependsOn {
   tasks.findAll { task ->
@@ -338,6 +336,11 @@ def testClasses = fileTree("src/test/java") {
   exclude '**/*_Current.java'
 }
 
+import net.masterthought.cucumber.Configuration;
+import net.masterthought.cucumber.ReportBuilder;
+import net.masterthought.cucumber.ReportResult;
+import net.masterthought.cucumber.Reportable;
+
 testClasses.each { File testClass ->
   def baseName = testClass.name.replace('.java', '')
   task "test${baseName}"(type: Test, group: 'verification', description: "run ${baseName}") {
@@ -356,6 +359,25 @@ testClasses.each { File testClass ->
     jacoco {
       append = false
       destinationFile = file("${coverageDir}/jacoco/${baseName}.exec")
+    }
+    doLast {
+      File reportOutputDirectory = new File(outputDir);
+      List<String> jsonFiles = new ArrayList<>();
+      jsonFiles.add((String)(outputDir + "/cucumber.json"));
+
+      Configuration configuration = new Configuration(reportOutputDirectory, 'ryvr');
+      configuration.setRunWithJenkins(${System.env.CI});
+      configuration.setBuildNumber(${System.env.CIRCLE_BUILD_NUM});
+      // addidtional metadata presented on main page
+      //        configuration.addClassifications("Platform", "Windows");
+      //        configuration.addClassifications("Browser", "Firefox");
+      configuration.addClassifications("Branch", "${System.env.CIRCLE_BUILD_NUM}");
+
+
+      ReportBuilder reportBuilder = new ReportBuilder(jsonFiles, configuration);
+      Reportable result = reportBuilder.generateReports();
+      // and here validate 'result' to decide what to do
+      // if report has failed features, undefined steps etc
     }
 
     ignoreFailures = true
@@ -378,7 +400,7 @@ jacocoTestReport {
   additionalSourceDirs.each { File f -> println "additionalSourceDirs: ${f}" }
   afterEvaluate {
     classDirectories = files(classDirectories.files.collect {
-        fileTree(dir: it, exclude: 'au/com/mountainpass/ryvr/steps/coverage/**')
+      fileTree(dir: it, exclude: 'au/com/mountainpass/ryvr/steps/coverage/**')
     })
   }
   reports {
