@@ -118,7 +118,7 @@ jobs:
           # Must be absolute path or relative path from working_directory
           at: ~/repo/build
       - run: env
-      - run: ./gradlew testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY
+      - run: ./gradlew testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY --info
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
       - persist_to_workspace:
@@ -147,7 +147,7 @@ jobs:
           # Must be absolute path or relative path from working_directory
           at: ~/repo/build
       - run: ./gradlew jacocoTestReport
-      - run: ./gradlew testRyvrTests_Coverage
+      - run: ./gradlew testRyvrTests_Coverage --info
       - store_test_results:
           path: build/test-results/testRyvrTests_Coverage
       - persist_to_workspace:
