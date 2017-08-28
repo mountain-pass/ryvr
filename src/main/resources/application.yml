@@ -26,14 +26,14 @@ au.com.mountainpass.ryvr:
   ssl:
     hostname: localhost
     genCert: selfSigned
-#  data-sources:
-#    - url: jdbc:mysql://localhost?serverTimezone=UTC
-#      username: dbuser
-#      password: dbpass
-#      ryvrs:
-#        transactions:
-#          page-size: 128
-#          query: select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC
+  data-sources:
+    - url: jdbc:mysql://localhost/test_db?serverTimezone=UTC
+      username: dbuser
+      password: dbpass
+      ryvrs:
+        transactions:
+          page-size: 128
+          query: select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC
   cache:
     archive-page-max-age: 30
     archive-page-max-age-unit: DAYS
