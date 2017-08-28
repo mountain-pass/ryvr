@@ -34,6 +34,8 @@ jobs:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
       - run: ./gradlew assemble compileTestJava
+      - store_artifacts:
+          path: build/distributions
       - persist_to_workspace:
           root: ~/repo
           paths:
