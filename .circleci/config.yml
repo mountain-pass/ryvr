@@ -213,7 +213,7 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
-      - run: ./gradlew testRyvrTests_System_DistZipRun_Rest_MySqlLocal
+      - run: ./gradlew testRyvrTests_System_DistZipRun_Rest_MySqlLocal --info
       - store_test_results:
           path: build/test-results/testRyvrTests_System_DistZipRun_Rest_MySqlLocal
       - store_artifacts:
@@ -223,7 +223,7 @@ jobs:
           root: ~/repo
           # Must be relative path from root
           paths:
-            - build/coverage-results-RyvrTests_Integration_Rest_MySqlLocal
+            - build/coverage-results-distZipRun
             - build/test-results/testRyvrTests_System_DistZipRun_Rest_MySqlLocal
 
 
@@ -244,11 +244,8 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
-      - run: ls ~/repo/build
-      - run: ls ~/repo/build/test-results/
       - run: ls ~/repo/build/coverage-results-*
       - run: ./gradlew jacocoTestReport --info
-      - run: ls -l build/coverage-results/jacoco
       - run: ./gradlew testRyvrTests_Coverage --info
       - store_test_results:
           path: build/test-results/testRyvrTests_Coverage
