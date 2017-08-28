@@ -344,7 +344,7 @@ testClasses.each { File testClass ->
     testClassesDir = sourceSets.test.output.classesDir
     classpath = sourceSets.test.runtimeClasspath
     include "**/${baseName}.class"
-    ext.outputDir = "${testOutputDir}/test-results-${baseName}"
+    ext.outputDir = "${testOutputDir}/test-results/test${baseName}"
     outputs.dir file(outputDir)
     ext.coverageDir = "${coverageOutputDir}/coverage-results-${baseName}"
     outputs.dir file(coverageDir)
