@@ -56,7 +56,7 @@ public class RyvrTestDistZipRunServerProcessBuilder implements RyvrTestServerPro
     String testClass = System.getProperty("au.com.mountainpass.testclass");
     LOGGER.info("au.com.mountainpass.testclass: {}", testClass);
     return new ProcessBuilder("bash", "./gradlew", "distZipRun", "-x", "unzipDistZip",
-        "-Ptestclass=" + testClass);
+        "-Ptestclass=" + testClass, "--info");
   }
 
   @Override
