@@ -206,8 +206,9 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo/build
-      - run: ls build/test-results/
-      - run: ls build/coverage-results-*
+      - run: ls ~/repo/build
+      - run: ls ~/repo/build/test-results/
+      - run: ls ~/repo/build/coverage-results-*
       - run: ./gradlew jacocoTestReport
       - run: ./gradlew testRyvrTests_Coverage --info
       - store_test_results:
