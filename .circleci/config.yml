@@ -106,6 +106,46 @@ jobs:
             - build/coverage-results-RyvrTests_Integration_Rest_H2Local
             - build/test-results/testRyvrTests_Integration_Rest_H2Local
 
+  testRyvrTests_Integration_Rest_MySqlLocal:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/openjdk:8-jdk
+      - image: circleci/mysql:8.0.1
+  
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - gradle-dependencies-{{ checksum "build.gradle" }}
+          # fallback to using the latest cache if no exact match is found
+          - gradle-dependencies-
+      - run: ./gradlew downloadDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-dependencies-{{ checksum "build.gradle" }}
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: ~/repo/build
+      - run: mysql -e "CREATE USER dbuser@localhost IDENTIFIED BY 'dbpass'; GRANT ALL ON *.* TO dbuser@localhost; FLUSH PRIVILEGES;"
+      - run: mysql -e 'create database test_db;'
+      - run: ./gradlew testRyvrTests_Integration_Rest_MySqlLocal
+      - store_test_results:
+          path: build/test-results/testRyvrTests_Integration_Rest_MySqlLocal
+      - store_artifacts:
+          path: /code/test-results/testRyvrTests_Integration_Rest_MySqlLocal
+      - persist_to_workspace:
+          # Must be an absolute path, or relative path from working_directory
+          root: ~/repo
+          # Must be relative path from root
+          paths:
+            - build/coverage-results-RyvrTests_Integration_Rest_MySqlLocal
+            - build/test-results/testRyvrTests_Integration_Rest_MySqlLocal
+
   testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs:
     <<: *defaults
     steps:
@@ -123,7 +163,6 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo/build
-      - run: env
       - run: ./gradlew testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY --info
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
@@ -179,6 +218,9 @@ workflows:
       - testRyvrTests_Integration_Rest_H2Local:
           requires:
             - assemble
+      - testRyvrTests_Integration_Rest_MySqlLocal:
+          requires:
+            - assemble
       - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs:
           requires:
             - assemble
@@ -187,4 +229,5 @@ workflows:
           requires:
             - testRyvrTests_Integration_Java_H2Local
             - testRyvrTests_Integration_Rest_H2Local
+            - testRyvrTests_Integration_Rest_MySqlLocal
             - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
