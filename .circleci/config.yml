@@ -111,7 +111,10 @@ jobs:
     docker:
       - image: circleci/openjdk:8-jdk
       - image: circleci/mysql:8.0.1
-  
+        environment:
+          MYSQL_ALLOW_EMPTY_PASSWORD: true 
+          MYSQL_DATABASE: test_db 
+          MYSQL_USER: root
     environment:
       # Customize the JVM maximum heap limit
       JVM_OPTS: -Xmx3200m
@@ -131,6 +134,14 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo/build
+      - run:
+          name: install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.3.0
+      - run:
+          name: Wait for db
+          command: dockerize -wait tcp://localhost:3306 -timeout 1m
       - run: mysql -e "CREATE USER dbuser@localhost IDENTIFIED BY 'dbpass'; GRANT ALL ON *.* TO dbuser@localhost; FLUSH PRIVILEGES;"
       - run: mysql -e 'create database test_db;'
       - run: ./gradlew testRyvrTests_Integration_Rest_MySqlLocal
