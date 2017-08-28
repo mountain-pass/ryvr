@@ -1,8 +1,8 @@
 package au.com.mountainpass.ryvr.steps.coverage;
 
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.io.FileMatchers.*;
 import static org.junit.Assert.*;
-import static org.junit.Assume.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,13 +41,13 @@ public class CoverageSteps {
   @Given("^the \"([^\"]*)\" test has been run$")
   public void the_test_has_been_run(String test) throws Throwable {
     File jacocoExec = new File("build/coverage-results-" + test + "/jacoco/" + test + ".exec");
-    assumeTrue(jacocoExec.canRead());
+    assertThat(jacocoExec, aReadableFile());
   }
 
   @Given("^the test coverage report has been generated$")
   public void the_test_coverage_report_has_been_generated() throws Throwable {
     coverageXml = new File("build/coverage-results/jacoco/ryvr.xml");
-    assumeTrue(coverageXml.canRead());
+    assertThat(coverageXml, aReadableFile());
   }
 
   @Then("^the \"([^\"]*)\" coverage should be at least (\\d+.?\\d*)%$")
