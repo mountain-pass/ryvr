@@ -5,7 +5,7 @@
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: frolvlad/alpine-oraclejdk8:latest
+    - image: circleci/openjdk:8-jdk
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
@@ -109,7 +109,7 @@ jobs:
   testRyvrTests_Integration_Rest_MySqlLocal:
     working_directory: ~/repo
     docker:
-      - image: frolvlad/alpine-oraclejdk8:latest
+      - image: circleci/openjdk:8-jdk
       - image: mysql:8.0.2
         environment:
           MYSQL_DATABASE: test_db 
