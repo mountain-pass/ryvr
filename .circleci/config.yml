@@ -231,9 +231,9 @@ workflows:
       - testRyvrTests_Integration_Rest_H2Local:
           requires:
             - assemble
-      - testRyvrTests_Integration_Rest_MySqlLocal:
-          requires:
-            - assemble
+#      - testRyvrTests_Integration_Rest_MySqlLocal:
+#          requires:
+#            - assemble
       - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs:
           requires:
             - assemble
@@ -242,5 +242,5 @@ workflows:
           requires:
             - testRyvrTests_Integration_Java_H2Local
             - testRyvrTests_Integration_Rest_H2Local
-            - testRyvrTests_Integration_Rest_MySqlLocal
+#            - testRyvrTests_Integration_Rest_MySqlLocal
 #            - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
