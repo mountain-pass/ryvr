@@ -10,7 +10,7 @@ Scenario: Coverage
 #    And the "RyvrTests_Integration_Rest_MySqlLocal" test has been run
     And the test coverage report has been generated
     Then the "INSTRUCTION" coverage should be at least 46%
-    And the "BRANCH" coverage should be at least 35%
+    And the "BRANCH" coverage should be at least 34%
     And the "LINE" coverage should be at least 50%
     And the "COMPLEXITY" coverage should be at least 45%
     And the "METHOD" coverage should be at least 55%
