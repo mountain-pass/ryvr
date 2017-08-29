@@ -35,7 +35,8 @@ public class RyvrTestDistZipRunServerProcessBuilder implements RyvrTestServerPro
 
   @Override
   public ProcessBuilder getProcessBuilder() throws IOException {
-    ProcessBuilder setupPb = new ProcessBuilder("bash", "./gradlew", "unzipDistZip").inheritIO();
+    ProcessBuilder setupPb = new ProcessBuilder("bash", "./gradlew", "deversionUnzipDistZip")
+        .inheritIO();
     try {
       Process setupProcess = setupPb.start();
       setupProcess.waitFor(30, TimeUnit.SECONDS);
@@ -55,7 +56,7 @@ public class RyvrTestDistZipRunServerProcessBuilder implements RyvrTestServerPro
     // overwrite our config changes
     String testClass = System.getProperty("au.com.mountainpass.testclass");
     LOGGER.info("au.com.mountainpass.testclass: {}", testClass);
-    return new ProcessBuilder("bash", "./gradlew", "distZipRun", "-x", "unzipDistZip",
+    return new ProcessBuilder("bash", "./gradlew", "distZipRun", "-x", "deversionUnzipDistZip",
         "-Ptestclass=" + testClass, "--info");
   }
 

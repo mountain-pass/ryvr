@@ -265,12 +265,14 @@ task "unzipDistZip" (type: Copy, dependsOn: 'distZip', group: 'distribution') {
   ext.outputDir = outputDir
   from zipTree(zipFile)
   into outputDir
-  doLast {
-    copy {
-      from("${outputDir}/ryvr-${project.version}")
-      into("${outputDir}/ryvr")
-    }
-  }
+}
+
+task "deversionUnzipDistZip"(type: Copy, dependsOn: 'unzipDistZip', group: 'distribution') {
+  def zipFile = distZip.outputs.files.singleFile
+  def outputDir = zipFile.parent
+  ext.outputDir = outputDir
+  from "${outputDir}/ryvr-${project.version}"
+  into "${outputDir}/ryvr"
 }
 
 
