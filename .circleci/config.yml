@@ -214,6 +214,8 @@ jobs:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
       - run: ./gradlew testRyvrTests_System_DistZipRun_Rest_MySqlLocal --info
+      - run: ls -l build/distributions/ryvr/bin/ryvr
+      - run: build/distributions/ryvr/bin/ryvr
       - store_test_results:
           path: build/test-results/testRyvrTests_System_DistZipRun_Rest_MySqlLocal
       - store_artifacts:
