@@ -6,16 +6,16 @@ Feature: Coverage
 
 Scenario: Coverage
     Given the "RyvrTests_Integration_Java_H2Local" test has been run
-    #And the "RyvrTests_Integration_Rest_H2Local" test has been run
-    #And the "RyvrTests_Integration_Rest_MySqlLocal" test has been run
-    #And the "RyvrTests_Integration_Ui_H2Local_ChromeSauceLabs" test has been run
+    And the "RyvrTests_Integration_Rest_H2Local" test has been run
+    And the "RyvrTests_Integration_Rest_MySqlLocal" test has been run
+    And the "RyvrTests_Integration_Ui_H2Local_ChromeSauceLabs" test has been run
     And the "RyvrTests_System_DistZipRun_Rest_MySqlLocal" system test has been run
     And the test coverage report has been generated
-    Then the "INSTRUCTION" coverage should be at least 46%
-    And the "BRANCH" coverage should be at least 34%
-    And the "LINE" coverage should be at least 50%
-    And the "COMPLEXITY" coverage should be at least 45%
-    And the "METHOD" coverage should be at least 55%
-    And the "CLASS" coverage should be at least 48%
+    Then the "INSTRUCTION" coverage should be at least 68%
+    And the "BRANCH" coverage should be at least 55%
+    And the "LINE" coverage should be at least 72%
+    And the "COMPLEXITY" coverage should be at least 62%
+    And the "METHOD" coverage should be at least 74%
+    And the "CLASS" coverage should be at least 63%
     
 
