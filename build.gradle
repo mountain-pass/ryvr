@@ -395,14 +395,14 @@ test.dependsOn {
 
 jacocoTestReport {
   executionData = fileTree(dir: "${coverageOutputDir}", include: '**/jacoco/*.exec')
-  additionalSourceDirs = files(sourceSets.test.allJava.srcDirs)
-  additionalClassDirs = files(sourceSets.test.output)
-  additionalSourceDirs.each { File f -> println "additionalSourceDirs: ${f}" }
-  afterEvaluate {
-    classDirectories = files(classDirectories.files.collect {
-      fileTree(dir: it, exclude: 'au/com/mountainpass/ryvr/steps/coverage/**')
-    })
-  }
+//  additionalSourceDirs = files(sourceSets.test.allJava.srcDirs)
+//  additionalClassDirs = files(sourceSets.test.output)
+//  additionalSourceDirs.each { File f -> println "additionalSourceDirs: ${f}" }
+//  afterEvaluate {
+//    classDirectories = files(classDirectories.files.collect {
+//      fileTree(dir: it, exclude: 'au/com/mountainpass/ryvr/steps/coverage/**')
+//    })
+//  }
   reports {
     xml.enabled true
     xml.destination "${coverageOutputDir}/coverage-results/jacoco/ryvr.xml"

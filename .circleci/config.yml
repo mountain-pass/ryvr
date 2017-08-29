@@ -286,11 +286,9 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
-      - run: ls ~/repo/build/coverage-results-*
-      - run: ls ~/repo/build/coverage-results-*/*
-      - run: ls ~/repo/build/coverage-results-*/*/*
       - run: ./gradlew jacocoTestReport --info
       - run: ./gradlew testRyvrTests_Coverage --info
+      - run: ./gradlew uploadCoverageToCodacy -PCODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN --info 
       - store_test_results:
           path: build/test-results/testRyvrTests_Coverage
       - store_artifacts:
@@ -303,6 +301,23 @@ jobs:
           paths:
             - build/coverage-results
             - build/test-results/testRyvrTests_Coverage
+
+  srcclr:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - gradle-dependencies-{{ checksum "build.gradle" }}
+          # fallback to using the latest cache if no exact match is found
+          - gradle-dependencies-
+      - run: ./gradlew downloadDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-dependencies-{{ checksum "build.gradle" }}
+      - run: ./gradlew srcclr -PsrcClrApiToken=$SRC_CLR_API_TOKEN --info
+ 
     
 workflows:
   version: 2
@@ -328,6 +343,8 @@ workflows:
       - testRyvrTests_System_DistZipRun_Rest_MySqlLocal:
           requires:
             - assemble
+      - srcclr:
+          context: org-global
       - jacocoTestReport:
           requires:
             - testRyvrTests_Integration_Java_H2Local
@@ -336,3 +353,5 @@ workflows:
             - testRyvrTests_Integration_Rest_PostgresLocal
             - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
             - testRyvrTests_System_DistZipRun_Rest_MySqlLocal
+          context: org-global
+            
