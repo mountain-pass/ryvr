@@ -213,6 +213,12 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
+      - run: ./gradlew unzipDistZip --info
+      - run: ls -l build
+      - run: ls -l build/distributions
+      - run: ls -l build/distributions/ryvr
+      - run: ls -l build/distributions/ryvr/bin
+      - run: ls -l build/distributions/ryvr/bin/ryvr
       - run: ./gradlew testRyvrTests_System_DistZipRun_Rest_MySqlLocal --info
       - run: ls -l build/distributions/ryvr/bin/ryvr
       - run: build/distributions/ryvr/bin/ryvr
