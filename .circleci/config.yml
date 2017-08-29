@@ -223,7 +223,7 @@ jobs:
           root: ~/repo
           # Must be relative path from root
           paths:
-            - build/coverage-results-distZipRun
+            - build/coverage-results-RyvrTests_System_DistZipRun_Rest_MySqlLocal
             - build/test-results/testRyvrTests_System_DistZipRun_Rest_MySqlLocal
 
 
@@ -245,6 +245,8 @@ jobs:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
       - run: ls ~/repo/build/coverage-results-*
+      - run: ls ~/repo/build/coverage-results-*/*
+      - run: ls ~/repo/build/coverage-results-*/*/*
       - run: ./gradlew jacocoTestReport --info
       - run: ./gradlew testRyvrTests_Coverage --info
       - store_test_results:

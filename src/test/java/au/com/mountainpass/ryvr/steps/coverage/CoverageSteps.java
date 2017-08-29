@@ -44,6 +44,15 @@ public class CoverageSteps {
     assertThat(jacocoExec, aReadableFile());
   }
 
+  @Given("^the \"([^\"]*)\" system test has been run$")
+  public void the_system_test_has_been_run(String test) throws Throwable {
+    File jacocoExecServer = new File(
+        "build/coverage-results-" + test + "/jacoco/" + test + "-server.exec");
+    assertThat(jacocoExecServer, aReadableFile());
+    File jacocoExec = new File("build/coverage-results-" + test + "/jacoco/" + test + ".exec");
+    assertThat(jacocoExec, aReadableFile());
+  }
+
   @Given("^the test coverage report has been generated$")
   public void the_test_coverage_report_has_been_generated() throws Throwable {
     coverageXml = new File("build/coverage-results/jacoco/ryvr.xml");
