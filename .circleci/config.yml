@@ -106,18 +106,15 @@ jobs:
             - build/coverage-results-RyvrTests_Integration_Rest_H2Local
             - build/test-results/testRyvrTests_Integration_Rest_H2Local
 
-  testRyvrTests_Integration_Rest_MySqlLocal:
+  testRyvrTests_Integration_Rest_PostgresLocal:
     working_directory: ~/repo
     docker:
       - image: circleci/openjdk:8-jdk
-      - image: mysql:8.0.2
+      - image: circleci/postgres:9.6
         environment:
-          MYSQL_RANDOM_ROOT_PASSWORD: true
-          MYSQL_DATABASE: test_db
-          MYSQL_USER: dbuser
-          MYSQL_PASSWORD: dbpass
-          MYSQL_HOST: 127.0.0.1
-          MYSQL_ROOT_HOST: "%"
+          POSTGRES_DB: test_db
+          POSTGRES_USER: dbuser
+          POSTGRES_PASSWORD: dbpass
     environment:
       # Customize the JVM maximum heap limit
       JVM_OPTS: -Xmx3200m
@@ -137,18 +134,18 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
-      - run: ./gradlew testRyvrTests_Integration_Rest_MySqlLocal
+      - run: ./gradlew testRyvrTests_Integration_Rest_PostgresLocal
       - store_test_results:
-          path: build/test-results/testRyvrTests_Integration_Rest_MySqlLocal
+          path: build/test-results/testRyvrTests_Integration_Rest_PostgresLocal
       - store_artifacts:
-          path: build/test-results/testRyvrTests_Integration_Rest_MySqlLocal
+          path: build/test-results/testRyvrTests_Integration_Rest_PostgresLocal
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory
           root: ~/repo
           # Must be relative path from root
           paths:
-            - build/coverage-results-RyvrTests_Integration_Rest_MySqlLocal
-            - build/test-results/testRyvrTests_Integration_Rest_MySqlLocal
+            - build/coverage-results-RyvrTests_Integration_Rest_PostgresLocal
+            - build/test-results/testRyvrTests_Integration_Rest_PostgresLocal
 
   testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs:
     <<: *defaults
@@ -276,6 +273,9 @@ workflows:
       - testRyvrTests_Integration_Rest_MySqlLocal:
           requires:
             - assemble
+      - testRyvrTests_Integration_Rest_PostgresLocal:
+          requires:
+            - assemble
       - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs:
           requires:
             - assemble
@@ -288,5 +288,6 @@ workflows:
             - testRyvrTests_Integration_Java_H2Local
             - testRyvrTests_Integration_Rest_H2Local
             - testRyvrTests_Integration_Rest_MySqlLocal
+            - testRyvrTests_Integration_Rest_PostgresLocal
             - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
             - testRyvrTests_System_DistZipRun_Rest_MySqlLocal
