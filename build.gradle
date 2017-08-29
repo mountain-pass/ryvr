@@ -268,11 +268,8 @@ task "unzipDistZip" (type: Copy, dependsOn: 'distZip', group: 'distribution') {
 }
 
 task "deversionUnzipDistZip"(type: Copy, dependsOn: 'unzipDistZip', group: 'distribution') {
-  def zipFile = distZip.outputs.files.singleFile
-  def outputDir = zipFile.parent
-  ext.outputDir = outputDir
-  from "${outputDir}/ryvr-${project.version}"
-  into "${outputDir}/ryvr"
+  from "${buildDir}/distributions/ryvr-${project.version}"
+  into "${buildDir}/distributions/ryvr"
 }
 
 
