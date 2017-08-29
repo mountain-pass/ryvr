@@ -32,6 +32,7 @@ apply plugin: 'application'
 
 
 group = 'au.com.mountainpass'
+archivesBaseName = 'ryvr'
 
 println "System.env.CI: ${System.env.CI}"
 def ci = System.env.CI == 'true'
