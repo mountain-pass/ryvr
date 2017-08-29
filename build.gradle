@@ -32,7 +32,6 @@ apply plugin: 'application'
 
 
 group = 'au.com.mountainpass'
-baseName = 'ryvr'
 archivesBaseName = 'ryvr'
 
 println "System.env.CI: ${System.env.CI}"
