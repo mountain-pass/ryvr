@@ -138,7 +138,7 @@ public class RyvrTestDbDriverImpl implements RyvrTestDbDriver {
             writer.close();
 
           }
-          String statement = "LOAD DATA INFILE '" + path.toString() + "' INTO TABLE `" + table
+          String statement = "LOAD DATA LOCAL INFILE '" + path.toString() + "' INTO TABLE `" + table
               + "`(`id`, `account`, `description`, `amount`)";
           LOGGER.info("INSERT STATEMENT: {}", statement);
           currentJt.execute(statement);
