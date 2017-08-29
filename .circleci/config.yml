@@ -213,7 +213,7 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
-      - run: ./gradlew unzipDistZip --info
+      - run: ./gradlew unzipDistZip --debug
       - run: ls -l build
       - run: ls -l build/distributions
       - run: ls -l build/distributions/ryvr
