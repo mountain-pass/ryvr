@@ -391,9 +391,6 @@ workflows:
       - testRyvrTests_System_DistZipRun_Rest_MySqlLocal:
           requires:
             - assemble
-      - testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal:
-         requires:
-            - assemble
       - srcclr:
           context: org-global
       - jacocoTestReport:
@@ -404,6 +401,11 @@ workflows:
             - testRyvrTests_Integration_Rest_PostgresLocal
             - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
             - testRyvrTests_System_DistZipRun_Rest_MySqlLocal
-            - testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
           context: org-global
+      - testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal:
+         requires:
+            - assemble
+            ## wait till everything else is done, then run the perf test
+            ## to avoid perf degredation if the jobs are on the same physical node
+            - jacocoTestReport
             
