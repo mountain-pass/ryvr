@@ -222,7 +222,7 @@ public class TestConfiguration
   }
 
   @Bean
-  @Profile(value = { "restApi", "systemTest" })
+  @Profile(value = { "restApi" })
   public RyvrTestClient restClient() {
     return new RestRyvrClient();
   }
