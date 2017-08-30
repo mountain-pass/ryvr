@@ -383,11 +383,11 @@ testClasses.each { File testClass ->
       // if report has failed features, undefined steps etc
     }
 
-    ignoreFailures = true
+    ignoreFailures = false
   }
 }
 
-test { ignoreFailures = true }
+test { ignoreFailures = false }
 test.finalizedBy jacocoTestReport
 
 test.dependsOn {
