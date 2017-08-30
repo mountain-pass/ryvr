@@ -28,12 +28,12 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
           paths:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
-      - run: ./gradlew assemble compileTestJava
+      - run: ./gradlew --no-daemon assemble compileTestJava
       - store_artifacts:
           path: build/distributions
       - persist_to_workspace:
@@ -55,7 +55,7 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
           paths:
             - ~/.gradle
@@ -63,7 +63,7 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
-      - run: ./gradlew testRyvrTests_Integration_Java_H2Local
+      - run: ./gradlew --no-daemon testRyvrTests_Integration_Java_H2Local
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Java_H2Local
       - store_artifacts:
@@ -85,7 +85,7 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
           paths:
             - ~/.gradle
@@ -93,7 +93,7 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
-      - run: ./gradlew testRyvrTests_Integration_Rest_H2Local
+      - run: ./gradlew --no-daemon testRyvrTests_Integration_Rest_H2Local
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Rest_H2Local
       - store_artifacts:
@@ -129,7 +129,7 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
           paths:
             - ~/.gradle
@@ -137,7 +137,7 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
-      - run: ./gradlew testRyvrTests_Integration_Rest_MySqlLocal
+      - run: ./gradlew --no-daemon testRyvrTests_Integration_Rest_MySqlLocal
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Rest_MySqlLocal
       - store_artifacts:
@@ -171,7 +171,7 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
           paths:
             - ~/.gradle
@@ -179,7 +179,7 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
-      - run: ./gradlew testRyvrTests_Integration_Rest_PostgresLocal
+      - run: ./gradlew --no-daemon testRyvrTests_Integration_Rest_PostgresLocal
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Rest_PostgresLocal
       - store_artifacts:
@@ -201,7 +201,7 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
           paths:
             - ~/.gradle
@@ -210,7 +210,7 @@ jobs:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
       - run: 
-          command: ./gradlew testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY --info
+          command: ./gradlew --no-daemon testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY --info
           no_output_timeout: 1200
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
@@ -247,7 +247,7 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
           paths:
             - ~/.gradle
@@ -255,7 +255,7 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
-      - run: ./gradlew testRyvrTests_System_DistZipRun_Rest_MySqlLocal --info
+      - run: ./gradlew --no-daemon testRyvrTests_System_DistZipRun_Rest_MySqlLocal --info
       - store_test_results:
           path: build/test-results/testRyvrTests_System_DistZipRun_Rest_MySqlLocal
       - store_artifacts:
@@ -291,7 +291,7 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
           paths:
             - ~/.gradle
@@ -303,7 +303,7 @@ jobs:
       - run: sudo chmod a+x /var/lib/mysql
       - run: sudo chmod a+w /var/lib/mysql
       - run: java -version
-      - run: ./gradlew testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal --info --stacktrace -PMYSQL_DATA_DIR=/var/lib/mysql/
+      - run: ./gradlew --no-daemon testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal --info --stacktrace -PMYSQL_DATA_DIR=/var/lib/mysql/
       - store_test_results:
           path: build/test-results/testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
       - store_artifacts:
@@ -326,7 +326,7 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
           paths:
             - ~/.gradle
@@ -334,9 +334,9 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
-      - run: ./gradlew jacocoTestReport --info
-      - run: ./gradlew testRyvrTests_Coverage --info
-      - run: ./gradlew uploadCoverageToCodacy -PCODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN --info 
+      - run: ./gradlew --no-daemon jacocoTestReport --info
+      - run: ./gradlew --no-daemon testRyvrTests_Coverage --info
+      - run: ./gradlew --no-daemon uploadCoverageToCodacy -PCODACY_PROJECT_TOKEN=$CODACY_PROJECT_TOKEN --info 
       - store_test_results:
           path: build/test-results/testRyvrTests_Coverage
       - store_artifacts:
@@ -359,12 +359,12 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
           paths:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
-      - run: ./gradlew srcclr -PsrcClrApiToken=$SRC_CLR_API_TOKEN --info --stacktrace
+      - run: ./gradlew --no-daemon srcclr -PsrcClrApiToken=$SRC_CLR_API_TOKEN --info --stacktrace
  
     
 workflows:
