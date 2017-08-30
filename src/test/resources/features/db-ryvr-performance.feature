@@ -43,7 +43,7 @@ Feature: DB Ryvr
     And all the events are retrieved again
     And all the events are retrieved by 1000 consumers
     Then the average page should be loaded within 0.1ms
-    And 95% of the pages should be loaded within 0.2ms
+    And 95% of the pages should be loaded within 0.3ms
     And 100% of the pages should be loaded within 1550ms
     And the minmium event retrieval throughput should be at least 2.7MB/s
     And the average event retrieval throughput should be at least 160MB/s
