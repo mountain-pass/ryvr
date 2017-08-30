@@ -299,6 +299,10 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
+      - run: ls -d /var
+      - run: ls -d /var/lib
+      - run: ls -d /var/lib/mysql-files
+      - run: env
       - run: ./gradlew testRyvrTests_Integration_Performance_Rest_MySqlLocal --info -PMYSQL_DATA_DIR=/var/lib/mysql-files/
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Performance_Rest_MySqlLocal
