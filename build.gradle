@@ -10,6 +10,7 @@ buildscript {
     classpath('gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:1.4.17')
     classpath 'co.riiid:gradle-github-plugin:0.4.2'
     classpath 'net.masterthought:cucumber-reporting:3.7.0'
+    classpath 'com.jcabi:jcabi-github:0.32'
     // for later https://github.com/stempler/gradle-versioneye-plugin
   }
 }
@@ -370,11 +371,11 @@ testClasses.each { File testClass ->
 
       Configuration configuration = new Configuration(reportOutputDirectory, 'ryvr');
       configuration.setRunWithJenkins(System.env.CI == 'true');
-//      configuration.setBuildNumber(System.env.CIRCLE_BUILD_NUM);
+      //      configuration.setBuildNumber(System.env.CIRCLE_BUILD_NUM);
       // addidtional metadata presented on main page
       //        configuration.addClassifications("Platform", "Windows");
       //        configuration.addClassifications("Browser", "Firefox");
-//      configuration.addClassifications("Branch", System.env.CIRCLE_BUILD_NUM);
+      //      configuration.addClassifications("Branch", System.env.CIRCLE_BUILD_NUM);
 
 
       ReportBuilder reportBuilder = new ReportBuilder(jsonFiles, configuration);
@@ -398,14 +399,14 @@ test.dependsOn {
 
 jacocoTestReport {
   executionData = fileTree(dir: "${coverageOutputDir}", include: '**/jacoco/*.exec')
-//  additionalSourceDirs = files(sourceSets.test.allJava.srcDirs)
-//  additionalClassDirs = files(sourceSets.test.output)
-//  additionalSourceDirs.each { File f -> println "additionalSourceDirs: ${f}" }
-//  afterEvaluate {
-//    classDirectories = files(classDirectories.files.collect {
-//      fileTree(dir: it, exclude: 'au/com/mountainpass/ryvr/steps/coverage/**')
-//    })
-//  }
+  //  additionalSourceDirs = files(sourceSets.test.allJava.srcDirs)
+  //  additionalClassDirs = files(sourceSets.test.output)
+  //  additionalSourceDirs.each { File f -> println "additionalSourceDirs: ${f}" }
+  //  afterEvaluate {
+  //    classDirectories = files(classDirectories.files.collect {
+  //      fileTree(dir: it, exclude: 'au/com/mountainpass/ryvr/steps/coverage/**')
+  //    })
+  //  }
   reports {
     xml.enabled true
     xml.destination "${coverageOutputDir}/coverage-results/jacoco/ryvr.xml"
@@ -440,6 +441,35 @@ jar {
   }
 }
 
+import com.jcabi.github.RtGithub;
+import com.jcabi.github.Issue;
+import com.jcabi.github.Github;
+import com.jcabi.github.Repo;
+import com.jcabi.github.Releases;
+import com.jcabi.github.Coordinates;
+import javax.json.JsonValue;
+
+task githubDeleteDrafts('description': 'removes any draft releases with the same version') {
+  doLast {
+    def token = project.hasProperty('githubToken') ? project.getProperty('githubToken') : 'NOTSET'
+    Github github = new RtGithub(token);
+    Repo repo = github.repos().get(new Coordinates.Simple('mountain-pass', 'ryvr'));
+    Releases releases = repo.releases();
+    releases.iterate().each { release ->
+      println release.number();
+      String releaseVersion = release.json().get("tag_name").getString();
+      String currentReleaseVersion =  project.version.toString();
+      println releaseVersion +  " vs " + currentReleaseVersion
+      println release.json().get("draft") == JsonValue.TRUE;
+      if( releaseVersion.equals( currentReleaseVersion ) && release.json().get("draft") == JsonValue.TRUE ) {
+        def number = release.number();
+        println "deleting: ${releaseVersion}:${number}";
+        release.delete();
+      }
+    }
+  }
+}
+
 if( project.releaseNotes.exists() ) {
   github {
     owner = 'mountain-pass'
@@ -457,7 +487,7 @@ if( project.releaseNotes.exists() ) {
     prerelease = false
     draft = true
   }
-  githubRelease.dependsOn assembleDist
+  githubRelease.dependsOn assembleDist githubDeleteDrafts
 }
 
 
