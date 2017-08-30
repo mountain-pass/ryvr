@@ -457,7 +457,7 @@ if( project.releaseNotes.exists() ) {
     prerelease = false
     draft = true
   }
-  githubRelease.dependsOn bootRepackage
+  githubRelease.dependsOn assembleDist
 }
 
 
