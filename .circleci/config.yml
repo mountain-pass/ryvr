@@ -192,7 +192,7 @@ jobs:
             - build/coverage-results-RyvrTests_Integration_Rest_PostgresLocal
             - build/test-results/testRyvrTests_Integration_Rest_PostgresLocal
 
-  testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs:
+  testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs:
     <<: *defaults
     steps:
       - checkout
@@ -210,19 +210,19 @@ jobs:
           # Must be absolute path or relative path from working_directory
           at: ~/repo
       - run: 
-          command: ./gradlew --no-daemon testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY --info
+          command: ./gradlew --no-daemon testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY --info
           no_output_timeout: 1200
       - store_test_results:
-          path: build/test-results/testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
+          path: build/test-results/testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs
       - store_artifacts:
-          path: build/test-results/testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
+          path: build/test-results/testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory
           root: ~/repo
           # Must be relative path from root
           paths:
-            - build/coverage-results-RyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
-            - build/test-results/testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
+            - build/coverage-results-RyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs
+            - build/test-results/testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs
 
   testRyvrTests_System_DistZipRun_Rest_MySqlLocal:
     working_directory: ~/repo
@@ -400,7 +400,7 @@ workflows:
       - testRyvrTests_Integration_Rest_PostgresLocal:
           requires:
             - assemble
-      - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs:
+      - testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs:
           requires:
             - assemble
           context: org-global
@@ -415,7 +415,7 @@ workflows:
             - testRyvrTests_Integration_Rest_H2Local
             - testRyvrTests_Integration_Rest_MySqlLocal
             - testRyvrTests_Integration_Rest_PostgresLocal
-            - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
+            - testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs
             - testRyvrTests_System_DistZipRun_Rest_MySqlLocal
           context: org-global
       - testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal:
