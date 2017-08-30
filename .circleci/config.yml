@@ -12,7 +12,6 @@ defaults: &defaults
       # - image: circleci/postgres:9.4
 
   environment:
-    # Customize the JVM maximum heap limit
     JVM_OPTS: -Xmx3200m
     TERM: dumb
 
@@ -61,7 +60,6 @@ jobs:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
       - attach_workspace:
-          # Must be absolute path or relative path from working_directory
           at: ~/repo
       - run: ./gradlew --no-daemon testRyvrTests_Integration_Java_H2Local
       - store_test_results:
@@ -69,9 +67,7 @@ jobs:
       - store_artifacts:
           path: build/test-results/testRyvrTests_Integration_Java_H2Local
       - persist_to_workspace:
-          # Must be an absolute path, or relative path from working_directory
           root: ~/repo
-          # Must be relative path from root
           paths:
             - build/coverage-results-RyvrTests_Integration_Java_H2Local
             - build/test-results/testRyvrTests_Integration_Java_H2Local
@@ -91,7 +87,6 @@ jobs:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
       - attach_workspace:
-          # Must be absolute path or relative path from working_directory
           at: ~/repo
       - run: ./gradlew --no-daemon testRyvrTests_Integration_Rest_H2Local
       - store_test_results:
@@ -99,9 +94,7 @@ jobs:
       - store_artifacts:
           path: build/test-results/testRyvrTests_Integration_Rest_H2Local
       - persist_to_workspace:
-          # Must be an absolute path, or relative path from working_directory
           root: ~/repo
-          # Must be relative path from root
           paths:
             - build/coverage-results-RyvrTests_Integration_Rest_H2Local
             - build/test-results/testRyvrTests_Integration_Rest_H2Local
@@ -119,7 +112,6 @@ jobs:
           MYSQL_HOST: 127.0.0.1
           MYSQL_ROOT_HOST: "%"
     environment:
-      # Customize the JVM maximum heap limit
       JVM_OPTS: -Xmx3200m
       TERM: dumb
     steps:
@@ -127,7 +119,6 @@ jobs:
       - restore_cache:
           keys:
           - gradle-dependencies-{{ checksum "build.gradle" }}
-          # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
       - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
@@ -135,7 +126,6 @@ jobs:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
       - attach_workspace:
-          # Must be absolute path or relative path from working_directory
           at: ~/repo
       - run: ./gradlew --no-daemon testRyvrTests_Integration_Rest_MySqlLocal
       - store_test_results:
@@ -143,9 +133,7 @@ jobs:
       - store_artifacts:
           path: build/test-results/testRyvrTests_Integration_Rest_MySqlLocal
       - persist_to_workspace:
-          # Must be an absolute path, or relative path from working_directory
           root: ~/repo
-          # Must be relative path from root
           paths:
             - build/coverage-results-RyvrTests_Integration_Rest_MySqlLocal
             - build/test-results/testRyvrTests_Integration_Rest_MySqlLocal
@@ -161,7 +149,6 @@ jobs:
           POSTGRES_USER: dbuser
           POSTGRES_PASSWORD: dbpass
     environment:
-      # Customize the JVM maximum heap limit
       JVM_OPTS: -Xmx3200m
       TERM: dumb
     steps:
@@ -169,7 +156,6 @@ jobs:
       - restore_cache:
           keys:
           - gradle-dependencies-{{ checksum "build.gradle" }}
-          # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
       - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
@@ -177,7 +163,6 @@ jobs:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
       - attach_workspace:
-          # Must be absolute path or relative path from working_directory
           at: ~/repo
       - run: ./gradlew --no-daemon testRyvrTests_Integration_Rest_PostgresLocal
       - store_test_results:
@@ -185,9 +170,7 @@ jobs:
       - store_artifacts:
           path: build/test-results/testRyvrTests_Integration_Rest_PostgresLocal
       - persist_to_workspace:
-          # Must be an absolute path, or relative path from working_directory
           root: ~/repo
-          # Must be relative path from root
           paths:
             - build/coverage-results-RyvrTests_Integration_Rest_PostgresLocal
             - build/test-results/testRyvrTests_Integration_Rest_PostgresLocal
@@ -207,7 +190,6 @@ jobs:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
       - attach_workspace:
-          # Must be absolute path or relative path from working_directory
           at: ~/repo
       - run: 
           command: ./gradlew --no-daemon testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY --info
@@ -217,9 +199,7 @@ jobs:
       - store_artifacts:
           path: build/test-results/testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs
       - persist_to_workspace:
-          # Must be an absolute path, or relative path from working_directory
           root: ~/repo
-          # Must be relative path from root
           paths:
             - build/coverage-results-RyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs
             - build/test-results/testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs
@@ -237,7 +217,45 @@ jobs:
           MYSQL_HOST: 127.0.0.1
           MYSQL_ROOT_HOST: "%"
     environment:
-      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - gradle-dependencies-{{ checksum "build.gradle" }}
+          - gradle-dependencies-
+      - run: ./gradlew --no-daemon downloadDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-dependencies-{{ checksum "build.gradle" }}
+      - attach_workspace:
+          at: ~/repo
+      - run: ./gradlew --no-daemon testRyvrTests_System_DistZipRun_Rest_MySqlLocal --info
+      - store_test_results:
+          path: build/test-results/testRyvrTests_System_DistZipRun_Rest_MySqlLocal
+      - store_artifacts:
+          path: build/test-results/testRyvrTests_System_DistZipRun_Rest_MySqlLocal
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - build/coverage-results-RyvrTests_System_DistZipRun_Rest_MySqlLocal
+            - build/test-results/testRyvrTests_System_DistZipRun_Rest_MySqlLocal
+
+  testRyvrTests_System_DistZipRun_Ui_MySqlLocal_ChromeSauceLabs:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/openjdk:8-jdk
+      - image: mysql:5.7.19
+        environment:
+          MYSQL_RANDOM_ROOT_PASSWORD: true
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: dbuser
+          MYSQL_PASSWORD: dbpass
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_ROOT_HOST: "%"
+    environment:
       JVM_OPTS: -Xmx3200m
       TERM: dumb
     steps:
@@ -253,20 +271,20 @@ jobs:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
       - attach_workspace:
-          # Must be absolute path or relative path from working_directory
           at: ~/repo
-      - run: ./gradlew --no-daemon testRyvrTests_System_DistZipRun_Rest_MySqlLocal --info
+      - run: 
+          command: ./gradlew --no-daemon testRyvrTests_System_DistZipRun_Ui_MySqlLocal_ChromeSauceLabs -PSAUCE_LABS_USERNAME=$SAUCE_LABS_USERNAME -PSAUCE_LABS_KEY=$SAUCE_LABS_KEY --info
+          no_output_timeout: 1200
       - store_test_results:
-          path: build/test-results/testRyvrTests_System_DistZipRun_Rest_MySqlLocal
+          path: build/test-results/testRyvrTests_System_DistZipRun_Ui_MySqlLocal_ChromeSauceLabs
       - store_artifacts:
-          path: build/test-results/testRyvrTests_System_DistZipRun_Rest_MySqlLocal
+          path: build/test-results/testRyvrTests_System_DistZipRun_Ui_MySqlLocal_ChromeSauceLabs
       - persist_to_workspace:
-          # Must be an absolute path, or relative path from working_directory
           root: ~/repo
-          # Must be relative path from root
           paths:
-            - build/coverage-results-RyvrTests_System_DistZipRun_Rest_MySqlLocal
-            - build/test-results/testRyvrTests_System_DistZipRun_Rest_MySqlLocal
+            - build/coverage-results-RyvrTests_System_DistZipRun_Ui_MySqlLocal_ChromeSauceLabs
+            - build/test-results/testRyvrTests_System_DistZipRun_Ui_MySqlLocal_ChromeSauceLabs
+
 
   testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal:
     working_directory: ~/repo
@@ -281,7 +299,6 @@ jobs:
           MYSQL_HOST: 127.0.0.1
           MYSQL_ROOT_HOST: "%"
     environment:
-      # Customize the JVM maximum heap limit
       JVM_OPTS: -Xmx3200m
       TERM: dumb
     steps:
@@ -289,7 +306,6 @@ jobs:
       - restore_cache:
           keys:
           - gradle-dependencies-{{ checksum "build.gradle" }}
-          # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
       - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
@@ -297,7 +313,6 @@ jobs:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
       - attach_workspace:
-          # Must be absolute path or relative path from working_directory
           at: ~/repo
       - run: sudo mkdir /var/lib/mysql
       - run: sudo chmod a+x /var/lib/mysql
@@ -309,9 +324,7 @@ jobs:
       - store_artifacts:
           path: build/test-results/testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
       - persist_to_workspace:
-          # Must be an absolute path, or relative path from working_directory
           root: ~/repo
-          # Must be relative path from root
           paths:
             - build/coverage-results-RyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
             - build/test-results/testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
@@ -324,7 +337,6 @@ jobs:
       - restore_cache:
           keys:
           - gradle-dependencies-{{ checksum "build.gradle" }}
-          # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
       - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
@@ -332,7 +344,6 @@ jobs:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
       - attach_workspace:
-          # Must be absolute path or relative path from working_directory
           at: ~/repo
       - run: ./gradlew --no-daemon jacocoTestReport --info
       - run: ./gradlew --no-daemon testRyvrTests_Coverage --info
@@ -343,9 +354,7 @@ jobs:
           path: build/test-results/testRyvrTests_Coverage
           path: build/coverage-results/jacoco/html
       - persist_to_workspace:
-          # Must be an absolute path, or relative path from working_directory
           root: ~/repo
-          # Must be relative path from root
           paths:
             - build/coverage-results
             - build/test-results/testRyvrTests_Coverage
@@ -357,7 +366,6 @@ jobs:
       - restore_cache:
           keys:
           - gradle-dependencies-{{ checksum "build.gradle" }}
-          # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
       - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
@@ -373,7 +381,6 @@ jobs:
       - restore_cache:
           keys:
           - gradle-dependencies-{{ checksum "build.gradle" }}
-          # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
       - run: ./gradlew --no-daemon downloadDependencies
       - save_cache:
@@ -407,6 +414,10 @@ workflows:
       - testRyvrTests_System_DistZipRun_Rest_MySqlLocal:
           requires:
             - assemble
+      - testRyvrTests_System_DistZipRun_Ui_MySqlLocal_ChromeSauceLabs:
+          requires:
+            - assemble
+          context: org-global
       - srcclr:
           context: org-global
       - jacocoTestReport:
