@@ -268,7 +268,7 @@ jobs:
             - build/coverage-results-RyvrTests_System_DistZipRun_Rest_MySqlLocal
             - build/test-results/testRyvrTests_System_DistZipRun_Rest_MySqlLocal
 
-  testRyvrTests_Integration_Performance_Rest_MySqlLocal:
+  testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal:
     working_directory: ~/repo
     docker:
       - image: circleci/build-image:trusty-692-1323f09-upstart
@@ -304,18 +304,18 @@ jobs:
       - run: sudo chmod a+x /var/lib/mysql
       - run: sudo chmod a+w /var/lib/mysql
       - run: java -version
-      - run: ./gradlew testRyvrTests_Integration_Performance_Rest_MySqlLocal --info --stacktrace -PMYSQL_DATA_DIR=/var/lib/mysql/
+      - run: ./gradlew testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal --info --stacktrace -PMYSQL_DATA_DIR=/var/lib/mysql/
       - store_test_results:
-          path: build/test-results/testRyvrTests_Integration_Performance_Rest_MySqlLocal
+          path: build/test-results/testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
       - store_artifacts:
-          path: build/test-results/testRyvrTests_Integration_Performance_Rest_MySqlLocal
+          path: build/test-results/testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory
           root: ~/repo
           # Must be relative path from root
           paths:
-            - build/coverage-results-RyvrTests_Integration_Performance_Rest_MySqlLocal
-            - build/test-results/testRyvrTests_Integration_Performance_Rest_MySqlLocal
+            - build/coverage-results-RyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
+            - build/test-results/testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
 
 
   jacocoTestReport:
@@ -392,7 +392,7 @@ workflows:
       - testRyvrTests_System_DistZipRun_Rest_MySqlLocal:
           requires:
             - assemble
-      - testRyvrTests_Integration_Performance_Rest_MySqlLocal:
+      - testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal:
          requires:
             - assemble
       - srcclr:
@@ -405,6 +405,6 @@ workflows:
             - testRyvrTests_Integration_Rest_PostgresLocal
             - testRyvrTests_Integration_Ui_H2Local_ChromeSauceLabs
             - testRyvrTests_System_DistZipRun_Rest_MySqlLocal
-            - testRyvrTests_Integration_Performance_Rest_MySqlLocal
+            - testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
           context: org-global
             
