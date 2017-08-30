@@ -365,6 +365,22 @@ jobs:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
       - run: ./gradlew --no-daemon srcclr -PsrcClrApiToken=$SRC_CLR_API_TOKEN --info --stacktrace
+
+  githubRelease:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - gradle-dependencies-{{ checksum "build.gradle" }}
+          # fallback to using the latest cache if no exact match is found
+          - gradle-dependencies-
+      - run: ./gradlew --no-daemon downloadDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-dependencies-{{ checksum "build.gradle" }}
+      - run: ./gradlew --no-daemon githubRelease -PgithubToken=$GITHUB_TOKEN --info
  
     
 workflows:
@@ -408,4 +424,9 @@ workflows:
             ## wait till everything else is done, then run the perf test
             ## to avoid perf degredation if the jobs are on the same physical node
             - jacocoTestReport
+      - githubRelease:
+          context: org-global
+          requires:
+            - testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
+          
             
