@@ -1,7 +1,7 @@
 ## Ryvr 
 _**- Let Your Data Flow**_
 
-[![CircleCI](https://img.shields.io/circleci/project/github/mountain-pass/ryvr.svg)](https://circleci.com/gh/mountain-pass/ryvr)
+[![CircleCI](https://img.shields.io/circleci/project/github/mountain-pass/ryvr.svg)](https://circleci.com/gh/mountain-pass/workflows/ryvr)
 [![Dependency Status](https://www.versioneye.com/user/projects/58ee953c0f9f35004e5c4bf2/badge.svg?style=flat-round)](https://www.versioneye.com/user/projects/58ee953c0f9f35004e5c4bf2)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7785f1049bd045dda89fcfff65bff3da)](https://www.codacy.com/app/mountain-pass/ryvr?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mountain-pass/ryvr&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/7785f1049bd045dda89fcfff65bff3da)](https://www.codacy.com/app/mountain-pass/ryvr?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mountain-pass/ryvr&amp;utm_campaign=Badge_Coverage)
