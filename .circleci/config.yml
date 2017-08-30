@@ -303,6 +303,7 @@ jobs:
       - run: sudo mkdir /var/lib/mysql
       - run: sudo chmod a+x /var/lib/mysql
       - run: sudo chmod a+w /var/lib/mysql
+      - run: java -version
       - run: ./gradlew testRyvrTests_Integration_Performance_Rest_MySqlLocal --info --stacktrace -PMYSQL_DATA_DIR=/var/lib/mysql/
       - store_test_results:
           path: build/test-results/testRyvrTests_Integration_Performance_Rest_MySqlLocal
