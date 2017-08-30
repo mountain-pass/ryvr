@@ -3,3 +3,4 @@ spring.datasource.username: dbuser
 spring.datasource.password: dbpass
 au.com.mountainpass.ryvr.datasource.hostname: localhost
 au.com.mountainpass.ryvr.datasource.port: 3306
+au.com.mountainpass.ryvr.mysql.data.dir: /usr/local/mysql/data/

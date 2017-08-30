@@ -356,6 +356,9 @@ testClasses.each { File testClass ->
     systemProperty 'SAUCE_LABS_KEY',  "${SAUCE_LABS_KEY}"
     systemProperty 'au.com.mountainpass.ryvr.test.jar', jar.outputs.files.singleFile
     systemProperty 'jacoco.destinationFile', "${coverageDir}/jacoco/${baseName}.exec"
+    if( project.hasProperty("MYSQL_DATA_DIR") ) {
+      systemProperty 'au.com.mountainpass.ryvr.mysql.data.dir', "${MYSQL_DATA_DIR}"
+    }
     jacoco {
       append = false
       destinationFile = file("${coverageDir}/jacoco/${baseName}.exec")

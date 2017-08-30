@@ -20,6 +20,7 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -36,6 +37,9 @@ public class RyvrTestDbDriverImpl implements RyvrTestDbDriver {
 
   private Map<String, String> insertSqls = new HashMap<>();
   private Map<String, PreparedStatement> insertStatements = new HashMap<>();
+
+  @Value("${au.com.mountainpass.ryvr.mysql.data.dir:/usr/local/mysql/data/}")
+  private String mySqlDataDir;
 
   @Override
   public String getCatalog(final String dbName) throws Throwable {
@@ -120,7 +124,7 @@ public class RyvrTestDbDriverImpl implements RyvrTestDbDriver {
       switch (dbProductName) {
       case "MySQL":
         if (events.size() > 100) {
-          Path path = Files.createTempFile(Paths.get("/tmp"), null, null,
+          Path path = Files.createTempFile(Paths.get(mySqlDataDir), null, null,
               PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-rw-rw-")));
           path.toFile().deleteOnExit();
           try (Writer writer = new FileWriter(path.toString());) {
