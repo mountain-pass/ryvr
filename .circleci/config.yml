@@ -271,8 +271,7 @@ jobs:
   testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal:
     working_directory: ~/repo
     docker:
-      - image: circleci/build-image:trusty-692-1323f09-upstart
-      - image: airdock/oracle-jdk:1.8
+      - image: circleci/openjdk:8-jdk
       - image: mysql:5.7.19
         environment:
           MYSQL_RANDOM_ROOT_PASSWORD: true
