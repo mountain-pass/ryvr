@@ -419,11 +419,9 @@ public class StepDefs {
     System.gc();
     LOGGER.info("starting clients");
     executionTimes = ryvrs.parallelStream().mapToDouble(r -> {
-      LOGGER.info("reading...");
       long b = System.nanoTime();
       recordCount = r.getSource().stream().count();
       long a = System.nanoTime();
-      LOGGER.info("... read {}", recordCount);
       assertThat(recordCount, equalTo(100000L));
       return (a - b) / 1000.0 / 1000.0 / 1000.0;
     }).summaryStatistics();
