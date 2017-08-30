@@ -487,7 +487,8 @@ if( project.releaseNotes.exists() ) {
     prerelease = false
     draft = true
   }
-  githubRelease.dependsOn assembleDist githubDeleteDrafts
+  githubRelease.dependsOn assembleDist 
+  githubRelease.dependsOn githubDeleteDrafts
 }
 
 
