@@ -102,13 +102,13 @@ public class TestConfiguration
   private WebDriverFactory webDriverFactory;
 
   @Bean
-  @Profile(value = { "restApi" })
+  @Profile(value = { "restApi", "systemTest" })
   public CloseableHttpAsyncClient asyncHttpClient() throws Exception {
     return asyncHttpClientBuilder().build();
   }
 
   @Bean
-  @Profile(value = { "restApi" })
+  @Profile(value = { "restApi", "systemTest" })
   public HttpAsyncClientBuilder asyncHttpClientBuilder() throws Exception {
     final NHttpClientConnectionManager connectionManager = nHttpClientConntectionManager();
     final RequestConfig config = httpClientRequestConfig();
@@ -118,7 +118,7 @@ public class TestConfiguration
   }
 
   @Bean
-  @Profile(value = { "restApi" })
+  @Profile(value = { "restApi", "systemTest" })
   public AsyncClientHttpRequestFactory asyncHttpClientFactory() throws Exception {
     final HttpComponentsAsyncClientHttpRequestFactory factory = new HttpComponentsAsyncClientHttpRequestFactory(
         httpClient(), asyncHttpClient());
@@ -135,7 +135,7 @@ public class TestConfiguration
   // }
 
   @Bean
-  @Profile(value = { "restApi" })
+  @Profile(value = { "restApi", "systemTest" })
   public CloseableHttpClient httpClient() throws Exception {
 
     CloseableHttpClient client = httpClientBuilder().build();
@@ -143,7 +143,7 @@ public class TestConfiguration
   }
 
   @Bean
-  @Profile(value = { "restApi" })
+  @Profile(value = { "restApi", "systemTest" })
   public CachingHttpClientBuilder httpClientBuilder() throws Exception {
     final HttpClientConnectionManager connectionManager = httpClientConnectionManager();
     final RequestConfig config = httpClientRequestConfig();
@@ -171,13 +171,13 @@ public class TestConfiguration
   private HttpDelayConcurrent httpDelayConcurrent;
 
   @Bean
-  @Profile(value = { "restApi" })
+  @Profile(value = { "restApi", "systemTest" })
   public CacheConfig cacheConfig() {
     return CacheConfig.custom().setMaxCacheEntries(10000000).setMaxObjectSize(8192 * 1024).build();
   }
 
   @Bean
-  @Profile(value = { "restApi" })
+  @Profile(value = { "restApi", "systemTest" })
   public HttpClientConnectionManager httpClientConnectionManager() throws Exception {
     final PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
         httpConnectionSocketFactoryRegistry());
@@ -187,7 +187,7 @@ public class TestConfiguration
   }
 
   @Bean
-  @Profile(value = { "restApi" })
+  @Profile(value = { "restApi", "systemTest" })
   public HttpComponentsClientHttpRequestFactory httpClientFactory() throws Exception {
     final HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(
         httpClient());
@@ -196,7 +196,7 @@ public class TestConfiguration
   }
 
   @Bean
-  @Profile(value = { "restApi" })
+  @Profile(value = { "restApi", "systemTest" })
   public Registry<ConnectionSocketFactory> httpConnectionSocketFactoryRegistry() throws Exception {
     return RegistryBuilder.<ConnectionSocketFactory> create()
         .register("http", PlainConnectionSocketFactory.getSocketFactory())
@@ -222,7 +222,7 @@ public class TestConfiguration
   }
 
   @Bean
-  @Profile(value = { "restApi" })
+  @Profile(value = { "restApi", "systemTest" })
   public RyvrTestClient restClient() {
     return new RestRyvrClient();
   }
