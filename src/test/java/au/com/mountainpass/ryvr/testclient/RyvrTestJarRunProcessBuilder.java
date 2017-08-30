@@ -36,7 +36,8 @@ public class RyvrTestJarRunProcessBuilder implements RyvrTestServerProcessBuilde
 
   @Override
   public ProcessBuilder getProcessBuilder() {
-    ProcessBuilder setupPb = new ProcessBuilder("bash", "./gradlew", "bootRepackage").inheritIO();
+    ProcessBuilder setupPb = new ProcessBuilder("bash", "./gradlew", "--no-daemon", "bootRepackage")
+        .inheritIO();
     try {
       Process setupProcess = setupPb.start();
       setupProcess.waitFor(30, TimeUnit.SECONDS);

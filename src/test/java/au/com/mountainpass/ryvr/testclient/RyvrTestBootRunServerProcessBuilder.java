@@ -33,8 +33,8 @@ public class RyvrTestBootRunServerProcessBuilder implements RyvrTestServerProces
 
   @Override
   public ProcessBuilder getProcessBuilder() {
-    return new ProcessBuilder("bash", "./gradlew", "-Dspring.config.location=" + APPLICATION_YML,
-        "bootRun");
+    return new ProcessBuilder("bash", "./gradlew", "--no-daemon",
+        "-Dspring.config.location=" + APPLICATION_YML, "bootRun");
   }
 
   @Override
