@@ -424,6 +424,9 @@ workflows:
           requires:
             - assemble
           context: org-global
+          filters:
+            branches:
+              only: master
       - testRyvrTests_System_DistZipRun_Rest_MySqlLocal:
           requires:
             - assemble
@@ -431,6 +434,9 @@ workflows:
           requires:
             - assemble
           context: org-global
+          filters:
+            branches:
+              only: master
       - jacocoTestReport:
           requires:
             - testRyvrTests_Integration_Java_H2Local
@@ -440,6 +446,9 @@ workflows:
             - testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs
             - testRyvrTests_System_DistZipRun_Rest_MySqlLocal
           context: org-global
+          filters:
+            branches:
+              only: master
       - testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal:
          requires:
             - assemble
@@ -450,5 +459,8 @@ workflows:
           context: org-global
           requires:
             - testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
+          filters:
+            branches:
+              only: master
           
             
