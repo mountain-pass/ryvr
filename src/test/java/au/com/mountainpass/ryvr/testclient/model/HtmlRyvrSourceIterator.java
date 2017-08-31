@@ -64,6 +64,9 @@ class HtmlRyvrSourceIterator implements Iterator<Record> {
         currentPageSize = htmlRyvrSource.getUnderlyingCurrentPageSize();
       }
     }
+    URI currentUrl = URI.create(htmlRyvrSource.webDriver.getCurrentUrl());
+    URI newUrl = currentUrl.resolve("#" + htmlRyvrSource.pagePosition);
+    htmlRyvrSource.webDriver.get(newUrl.toString());
     return this.htmlRyvrSource.record;
   }
 

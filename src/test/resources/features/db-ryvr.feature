@@ -59,7 +59,6 @@ Feature: DB Ryvr
     When the "doesNotExist" ryvr is retrieved directly
     Then the ryvr will not be found
 
-  @current
   Scenario: Get Ryvr That Has Been Deleted
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -73,7 +72,6 @@ Feature: DB Ryvr
     And the "transactions" ryvr is retrieved
     Then the ryvr will not be found
 
-  @current
   Scenario: Get Ryvr Record That Doesnt Exist - minus 1
     Given the "transactions" table has the following events
       | id | account | description    | amount  |

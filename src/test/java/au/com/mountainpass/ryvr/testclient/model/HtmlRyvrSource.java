@@ -12,6 +12,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,7 +91,7 @@ public class HtmlRyvrSource extends RyvrSource {
 
   public String getNextLink() {
     WebElement link = webDriver.findElement(By.tagName("section"))
-        .findElement(By.cssSelector("a[rel~='" + "next" + "']"));
+        .findElement(By.cssSelector("a[rel~='next']"));
     String href = link.getAttribute("href");
     if (href != null && href.isEmpty()) {
       return null;
@@ -100,8 +101,10 @@ public class HtmlRyvrSource extends RyvrSource {
   }
 
   public void followLink(String rel) {
-    WebElement link = webDriver.findElement(By.tagName("section"))
-        .findElement(By.cssSelector("a[rel~='" + rel + "']"));
+    HtmlRyvrClient.waitTillLoaded(webDriver, 5);
+    WebElement link = webDriver.findElement(By.cssSelector("section a[rel~='" + rel + "']"));
+    HtmlRyvrClient.waitTillLoaded(webDriver, 5,
+        ExpectedConditions.elementToBeClickable(By.cssSelector("section a[rel~='" + rel + "']")));
     link.click();
     HtmlRyvrClient.waitTillLoaded(webDriver, 5);
   }

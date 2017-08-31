@@ -67,7 +67,8 @@ public class HtmlRyvrClient implements RyvrTestClient {
 
   public static void waitTillLoaded(WebDriver webDriver, long timeoutInSeconds) {
     waitTillLoaded(webDriver, timeoutInSeconds,
-        ExpectedConditions.invisibilityOfElementLocated(By.id("loader")));
+        ExpectedConditions.and(ExpectedConditions.invisibilityOfElementLocated(By.id("overlay")),
+            ExpectedConditions.invisibilityOfElementLocated(By.id("loader"))));
     waitTillLoaded(webDriver, timeoutInSeconds, ExpectedConditions
         .visibilityOfElementLocated(By.cssSelector("body > div.container.main-content")));
 
