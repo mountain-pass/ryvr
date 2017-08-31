@@ -431,8 +431,6 @@ workflows:
           requires:
             - assemble
           context: org-global
-      - srcclr:
-          context: org-global
       - jacocoTestReport:
           requires:
             - testRyvrTests_Integration_Java_H2Local
