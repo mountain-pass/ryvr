@@ -14,7 +14,7 @@ produces:
 paths:
   /:
     get:
-      description: The current page of the feed
+      description: The first page of the feed
       operationId: getCurrentPage
       parameters:
         - name: page
@@ -52,7 +52,7 @@ paths:
                 Caching directives for the response
               type: string
         '307':
-          description: Redirection to current page
+          description: Redirection to first page
           headers:
             Location:
               type: string
@@ -246,11 +246,7 @@ definitions:
     properties:
       self:
         $ref: "#/definitions/link"
-      current:
-        $ref: "#/definitions/link"
       first:
-        $ref: "#/definitions/link"
-      last:
         $ref: "#/definitions/link"
       prev:
         $ref: "#/definitions/link"

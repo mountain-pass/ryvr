@@ -307,7 +307,7 @@ define(['angular'], function(angular) {
         };
         
         controller.itemNavLinks = function(_links) {
-            var itemRels = [ 'first', 'prev', 'next', 'last', 'current' ];
+            var itemRels = [ 'first', 'prev', 'next' ];
             var rval = {};
             Object.keys(_links).filter(function(key) {
                 return itemRels.includes(key);            

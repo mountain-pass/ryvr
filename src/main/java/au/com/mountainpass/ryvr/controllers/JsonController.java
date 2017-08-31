@@ -170,7 +170,6 @@ public class JsonController {
   public void addLinks(Ryvr ryvr, long page, boolean isLastPage, HttpServletResponse res) {
 
     String base = "/ryvrs/" + ryvr.getTitle();
-    addLink("current", base, res);
     addLink("self", base + "?page=" + page, res);
     addLink("first", base + "?page=1", res);
     if (page > 1L) {
@@ -178,9 +177,6 @@ public class JsonController {
     }
     if (!isLastPage) {
       addLink("next", base + "?page=" + (page + 1L), res);
-      addLink("last", base, res);
-    } else {
-      addLink("last", base + "?page=" + page, res);
     }
     String headerValue = "<" + base + "?page={page}" + ">; rel=\"" + RELS_PAGE
         + "\"; var-base=\"https://mountain-pass.github.io/ryvr/vars/\"";
