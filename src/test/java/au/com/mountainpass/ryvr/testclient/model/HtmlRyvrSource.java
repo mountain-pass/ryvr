@@ -103,7 +103,7 @@ public class HtmlRyvrSource extends RyvrSource {
     WebElement link = webDriver.findElement(By.tagName("section"))
         .findElement(By.cssSelector("a[rel~='" + rel + "']"));
     link.click();
-    HtmlRyvrClient.waitTillLoaded(webDriver, 1000);
+    HtmlRyvrClient.waitTillLoaded(webDriver, 5);
   }
 
   public void followNextLink() {
@@ -122,7 +122,7 @@ public class HtmlRyvrSource extends RyvrSource {
   // }
 
   public int getUnderlyingPageSize() {
-    HtmlRyvrClient.waitTillVisible(webDriver, 1000, "header-page-size");
+    HtmlRyvrClient.waitTillVisible(webDriver, 5, "header-page-size");
     return Integer.parseInt(webDriver.findElement(By.id("header-page-size")).getText());
   }
 
@@ -154,13 +154,13 @@ public class HtmlRyvrSource extends RyvrSource {
   }
 
   public int getPageNo() {
-    HtmlRyvrClient.waitTillVisible(webDriver, 1000, "header-page");
+    HtmlRyvrClient.waitTillVisible(webDriver, 5, "header-page");
     return Integer.parseInt(webDriver.findElement(By.id("header-page")).getText());
   }
 
   public void followUri(URI resolve) throws IOException {
     webDriver.get(resolve.toString());
-    HtmlRyvrClient.waitTillLoaded(webDriver, 1000);
+    HtmlRyvrClient.waitTillLoaded(webDriver, 5);
   }
 
   public boolean isArchivePage() {
@@ -171,7 +171,7 @@ public class HtmlRyvrSource extends RyvrSource {
     // } catch (InterruptedException e) {
     // // meh
     // }
-    HtmlRyvrClient.waitTillVisible(webDriver, 1000, "header-archive-page");
+    HtmlRyvrClient.waitTillVisible(webDriver, 5, "header-archive-page");
     return Boolean.parseBoolean(webDriver.findElement(By.id("header-archive-page")).getText());
   }
 
