@@ -72,6 +72,8 @@ body > .container {
 body.loading #overlay {
 	visibility: visible;
     opacity: 1;
+    height: 0;
+    width: 0;
 }
 
 body {
