@@ -366,6 +366,7 @@ jobs:
       - store_artifacts:
           path: build/test-results/testRyvrTests_Coverage
           path: build/coverage-results/jacoco/html
+          path: build/coverage-results/jacoco/ryvr.xml
       - persist_to_workspace:
           root: ~/repo
           paths:
