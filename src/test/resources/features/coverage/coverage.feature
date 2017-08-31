@@ -9,9 +9,9 @@ Scenario: Coverage
     And the "RyvrTests_Integration_Rest_H2Local" test has been run
     And the "RyvrTests_Integration_Rest_MySqlLocal" test has been run
     And the "RyvrTests_Integration_Rest_PostgresLocal" test has been run
-    And the "RyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs" test has been run
+    #And the "RyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs" test has been run
     And the "RyvrTests_System_DistZipRun_Rest_MySqlLocal" system test has been run
-    And the "RyvrTests_System_DistZipRun_Ui_MySqlLocal_ChromeSauceLabs" system test has been run
+    #And the "RyvrTests_System_DistZipRun_Ui_MySqlLocal_ChromeSauceLabs" system test has been run
     And the test coverage report has been generated
     Then the "INSTRUCTION" coverage should be at least 90%
     And the "BRANCH" coverage should be at least 75%

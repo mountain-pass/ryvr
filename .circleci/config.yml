@@ -420,31 +420,32 @@ workflows:
       - testRyvrTests_Integration_Rest_PostgresLocal:
           requires:
             - assemble
-      - testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs:
-          requires:
-            - assemble
-          context: org-global
-          filters:
-            branches:
-              only: master
+#      - testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs:
+#          requires:
+#            - assemble
+#          context: org-global
+#          filters:
+#            branches:
+#              only: master
       - testRyvrTests_System_DistZipRun_Rest_MySqlLocal:
           requires:
             - assemble
-      - testRyvrTests_System_DistZipRun_Ui_MySqlLocal_ChromeSauceLabs:
-          requires:
-            - assemble
-          context: org-global
-          filters:
-            branches:
-              only: master
+#      - testRyvrTests_System_DistZipRun_Ui_MySqlLocal_ChromeSauceLabs:
+#          requires:
+#            - assemble
+#          context: org-global
+#          filters:
+#            branches:
+#              only: master
       - jacocoTestReport:
           requires:
             - testRyvrTests_Integration_Java_H2Local
             - testRyvrTests_Integration_Rest_H2Local
             - testRyvrTests_Integration_Rest_MySqlLocal
             - testRyvrTests_Integration_Rest_PostgresLocal
-            - testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs
+#            - testRyvrTests_Integration_Ui_MySqlLocal_ChromeSauceLabs
             - testRyvrTests_System_DistZipRun_Rest_MySqlLocal
+#            - testRyvrTests_System_DistZipRun_Ui_MySqlLocal_ChromeSauceLabs
           context: org-global
           filters:
             branches:
