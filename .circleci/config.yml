@@ -451,16 +451,17 @@ workflows:
           filters:
             branches:
               only: master
-      - testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal:
-         requires:
-            - assemble
-            ## wait till everything else is done, then run the perf test
-            ## to avoid perf degredation if the jobs are on the same physical node
-            - jacocoTestReport
+#      - testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal:
+#         requires:
+#            - assemble
+#            ## wait till everything else is done, then run the perf test
+#            ## to avoid perf degredation if the jobs are on the same physical node
+#            - jacocoTestReport
       - githubRelease:
           context: org-global
           requires:
-            - testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
+#            - testRyvrTests_System_DistZipRun_Performance_Rest_MySqlLocal
+            - jacocoTestReport
           filters:
             branches:
               only: master
