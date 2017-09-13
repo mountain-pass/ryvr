@@ -45,7 +45,7 @@ public class RestRyvrRootImpl implements RyvrRootImpl {
    */
   @Override
   public SwaggerImpl getApiDocs() throws ClientProtocolException, IOException {
-    String uri = LinkHeader.extractURIByRel(response.getHeaders(HttpHeaders.LINK), "describedby");
+    String uri = LinkHeader.extractUriByRel(response.getHeaders(HttpHeaders.LINK), "describedby");
     HttpGet request = new HttpGet(rootLocation.resolve(uri));
     request.setHeader("Accept", MediaType.APPLICATION_JSON_VALUE);
     CloseableHttpResponse response = httpClient.execute(request);
@@ -62,8 +62,18 @@ public class RestRyvrRootImpl implements RyvrRootImpl {
    * @see au.com.mountainpass.ryvr.model.RyvrRootImpl#getRyvrsCollection()
    */
   @Override
-  public RyvrsCollection getRyvrsCollection() {
-    throw new NotImplementedException("TODO");
+  public RyvrsCollection getRyvrsCollection() throws ClientProtocolException, IOException {
+    String uri = LinkHeader.extractUriByRel(response.getHeaders(HttpHeaders.LINK),
+        RyvrsCollection.RELS_RYVRS_COLLECTION);
+    HttpGet request = new HttpGet(rootLocation.resolve(uri));
+    request.setHeader("Accept", MediaType.APPLICATION_JSON_VALUE);
+    CloseableHttpResponse response = httpClient.execute(request);
+    if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+      return new RyvrsCollection(
+          new RestRyvrCollectionImpl(httpClient, cookieStore, response, rootLocation));
+    } else {
+      throw new NotImplementedException("TODO: handle " + response.getStatusLine().toString());
+    }
   }
 
   @Override

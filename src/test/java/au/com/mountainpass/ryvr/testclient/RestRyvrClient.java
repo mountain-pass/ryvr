@@ -72,8 +72,8 @@ public class RestRyvrClient implements RyvrTestClient {
   }
 
   @Override
-  public RyvrsCollectionResponse getRyvrsCollection() throws MalformedURLException {
-    return getRoot().followRyvrsLink();
+  public RyvrsCollection getRyvrsCollection() throws ClientProtocolException, IOException {
+    return getRoot().getRyvrsCollection();
   }
 
   @Override

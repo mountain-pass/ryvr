@@ -5,7 +5,6 @@ Feature: Api Docs
     As a user
     I want to be able to get documentation for the services that Ryvr provides
 
-@current
 Scenario: Get Api Docs
     Given the client is authenticated
     When a request is made for the API Docs

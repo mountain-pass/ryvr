@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrRoot;
+import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import io.undertow.servlet.spec.ServletOutputStreamImpl;
 
 @Component
@@ -127,6 +128,20 @@ public class RyvrSerialiser {
     o.flush();
     writer.write(titlePre, 0, 10);
     writer.write(root.getTitle());
+    writer.write(closeStringAndObject, 0, 2);
+    if (o instanceof ServletOutputStreamImpl) {
+      ServletOutputStreamImpl sosi = (ServletOutputStreamImpl) o;
+      sosi.closeAsync();
+    } else {
+      o.flush();
+    }
+  }
+
+  public void toJson(RyvrsCollection ryvrsCollection, ServletOutputStream o) throws IOException {
+    writer.getBuilder().setLength(0);
+    o.flush();
+    writer.write(titlePre, 0, 10);
+    writer.write(ryvrsCollection.getTitle());
     writer.write(closeStringAndObject, 0, 2);
     if (o instanceof ServletOutputStreamImpl) {
       ServletOutputStreamImpl sosi = (ServletOutputStreamImpl) o;

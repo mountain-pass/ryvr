@@ -136,14 +136,14 @@ public class RestRyvrSource extends RyvrSource {
 
   public String getNextLink() {
     if (!nextLinkSet) {
-      nextLink = LinkHeader.extractURIByRel(response.getHeaders(HttpHeaders.LINK), "next");
+      nextLink = LinkHeader.extractUriByRel(response.getHeaders(HttpHeaders.LINK), "next");
       nextLinkSet = true;
     }
     return nextLink;
   }
 
   public String getLink(String rel) {
-    return LinkHeader.extractURIByRel(response.getHeaders(HttpHeaders.LINK), rel);
+    return LinkHeader.extractUriByRel(response.getHeaders(HttpHeaders.LINK), rel);
   }
 
   public int getContentLength() {

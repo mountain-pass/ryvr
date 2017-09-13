@@ -17,7 +17,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.ResponseEntity.BodyBuilder;
 import org.springframework.stereotype.Component;
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
@@ -32,9 +31,6 @@ import au.com.mountainpass.ryvr.model.RyvrsCollection;
 public class JsonController {
 
   private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
-  public static final MediaType APPLICATION_HAL_JSON_TYPE = new MediaType("application",
-      "hal+json");
 
   public static final String RELS_PAGE = "https://mountain-pass.github.io/ryvr/rels/page";
 
@@ -73,11 +69,12 @@ public class JsonController {
         .body(javaSwaggerImpl.getSwagger());
   }
 
-  public ResponseEntity<?> getRyvrsCollection(HttpServletRequest req) {
-    BodyBuilder responseBuilder = ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE);
-    // addLinks(responseBuilder, ryvrsCollection.getLinks());
-
-    return responseBuilder.body(ryvrsCollection);
+  public void getRyvrsCollection(HttpServletResponse res, HttpServletRequest req)
+      throws IOException {
+    res.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    addLinks(ryvrsCollection, res);
+    serialiser.toJson(ryvrsCollection, res.getOutputStream());
+    res.setStatus(HttpStatus.OK.value());
   }
 
   public void getRoot(HttpServletResponse res, HttpServletRequest req) throws IOException {
@@ -175,17 +172,16 @@ public class JsonController {
 
   private void addLinks(RyvrRoot root, HttpServletResponse res) {
     addLink("self", "/", res, "Home");
-    addLink(RELS_RYVRS_COLLECTION, "/ryvrs", res, "Ryvrs");
+    addLink(RyvrsCollection.RELS_RYVRS_COLLECTION, "/ryvrs", res, "Ryvrs");
     addLink("describedby", "/api-docs", res, "API Docs");
   }
 
-  public static final String RELS_RYVRS_COLLECTION = "https://mountain-pass.github.io/ryvr/rels/ryvrs-collection";
-  // public RyvrRoot(String title) {
-  //// super(linkingTo(linkBuilder("self", "/").withTitle("Home").build(),
-  //// linkBuilder("describedby", "/api-docs").withTitle("API Docs").build(),
-  //// linkBuilder(RELS_RYVRS_COLLECTION, "/ryvrs").withTitle("Ryvrs").build()));
-  // this.title = title;
-  // }
+  private void addLinks(RyvrsCollection ryvrsCollection, HttpServletResponse res) {
+    addLink("self", "/ryvrs", res, "Ryvrs");
+    ryvrsCollection.entrySet().forEach(entry -> {
+      addLink("item", "/ryvrs/" + entry.getKey() + "?page=1", res, entry.getKey());
+    });
+  }
 
   private void addLink(String rel, String href, HttpServletResponse res, String title) {
     String headerValue = "<" + href + ">; rel=\"" + rel + "\"";

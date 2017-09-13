@@ -10,7 +10,7 @@ public interface RyvrRootImpl {
 
   SwaggerImpl getApiDocs() throws ClientProtocolException, IOException;
 
-  RyvrsCollection getRyvrsCollection();
+  RyvrsCollection getRyvrsCollection() throws ClientProtocolException, IOException;
 
   void login(String username, String password) throws ClientProtocolException, IOException;
 

@@ -36,7 +36,7 @@ public class RyvrRoot {
     return impl.getApiDocs();
   }
 
-  public RyvrsCollection getRyvrsCollection() {
+  public RyvrsCollection getRyvrsCollection() throws ClientProtocolException, IOException {
     return impl.getRyvrsCollection();
   }
 

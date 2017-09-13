@@ -13,6 +13,8 @@ public class RyvrsCollection implements Map<String, Ryvr> {
 
   private RyvrCollectionImpl impl;
 
+  public static final String RELS_RYVRS_COLLECTION = "https://mountain-pass.github.io/ryvr/rels/ryvrs-collection";
+
   public RyvrsCollection(RyvrCollectionImpl impl) {
     this.impl = impl;
   }
