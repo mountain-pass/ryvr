@@ -5,8 +5,6 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import javax.servlet.ServletOutputStream;
-
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -16,11 +14,10 @@ import org.springframework.stereotype.Component;
 
 import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.Ryvr;
-import au.com.mountainpass.ryvr.model.RyvrRoot;
 import io.undertow.servlet.spec.ServletOutputStreamImpl;
 
 @Component
-public class RyvrSerialiser {
+public class RyvrCollectionSerialiser {
   private static final int outputBufferSize = 8192 * 1024;
   public final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
@@ -40,7 +37,6 @@ public class RyvrSerialiser {
   private static final char[] closeArrays = "]".toCharArray();
   private static final char[] columnsPre = "],\"columns\":[".toCharArray();
   private static final char[] closeObjects = "}".toCharArray();
-  private static final char[] closeStringAndObject = "\"}".toCharArray();
 
   public void toJsonWithWriter(Ryvr ryvr, long page, OutputStream o) throws IOException {
     // baos.reset();
@@ -119,20 +115,6 @@ public class RyvrSerialiser {
       writer.write(e2);
     } else {
       writer.write(e);
-    }
-  }
-
-  public void toJson(RyvrRoot root, ServletOutputStream o) throws IOException {
-    writer.getBuilder().setLength(0);
-    o.flush();
-    writer.write(titlePre, 0, 10);
-    writer.write(root.getTitle());
-    writer.write(closeStringAndObject, 0, 2);
-    if (o instanceof ServletOutputStreamImpl) {
-      ServletOutputStreamImpl sosi = (ServletOutputStreamImpl) o;
-      sosi.closeAsync();
-    } else {
-      o.flush();
     }
   }
 

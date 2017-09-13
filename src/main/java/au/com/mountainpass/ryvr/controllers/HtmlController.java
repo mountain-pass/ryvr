@@ -7,9 +7,7 @@ import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
@@ -24,7 +22,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.webjars.WebJarAssetLocator;
 
@@ -33,8 +30,7 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 
 import au.com.mountainpass.ryvr.io.RyvrSerialiser;
-import au.com.mountainpass.ryvr.model.Root;
-import au.com.mountainpass.ryvr.model.Ryvr;
+import au.com.mountainpass.ryvr.model.RyvrRoot;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 
 @Component()
@@ -85,18 +81,23 @@ public class HtmlController {
         .build();
   }
 
-  public ResponseEntity<?> getRyvrsCollection(HttpServletRequest req) {
-    Root root = (Root) jsonController.getRoot(req).getBody();
-    RyvrsCollection collection = (RyvrsCollection) jsonController.getRyvrsCollection(req).getBody();
-    return getIndex(root, collection, null);
+  public ResponseEntity<?> getRyvrsCollection(final HttpServletResponse res,
+      HttpServletRequest req) {
+    // RyvrRoot root = (RyvrRoot) jsonController.getRoot(res, req).getBody();
+    // RyvrsCollection collection = (RyvrsCollection)
+    // jsonController.getRyvrsCollection(req).getBody();
+    // return getIndex(root, collection, null);
+    throw new NotImplementedException("TODO");
+
   }
 
-  public ResponseEntity<?> getRoot(HttpServletRequest req) {
-    Root root = (Root) jsonController.getRoot(req).getBody();
-    return getIndex(root, root, null);
+  public ResponseEntity<?> getRoot(final HttpServletResponse res, HttpServletRequest req) {
+    // RyvrRoot root = (RyvrRoot) jsonController.getRoot(res, req).getBody();
+    // return getIndex(root, root, null);
+    throw new NotImplementedException("TODO");
   }
 
-  private ResponseEntity<?> getIndex(Root root, Object resource, HttpHeaders headers) {
+  private ResponseEntity<?> getIndex(RyvrRoot root, Object resource, HttpHeaders headers) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     ClassPathResource index = new ClassPathResource("static/index.html");
     try {
@@ -127,29 +128,30 @@ public class HtmlController {
   public ResponseEntity<?> getRyvr(HttpServletResponse res, HttpServletRequest req, String ryvrName,
       long page) throws URISyntaxException, IOException {
 
-    Ryvr ryvr = null;
-    try {
-      ryvr = ryvrsCollection.getRyvr(ryvrName);
-    } catch (NoSuchElementException e) {
-      // res.setStatus(org.apache.http.HttpStatus.SC_NOT_FOUND);
-      // return null;
-      throw new ResourceNotFoundException(req);
-    }
-
-    if (ryvr == null) {
-      throw new ResourceNotFoundException(req);
-    }
-
-    Root root = (Root) jsonController.getRoot(req).getBody();
-
-    MockHttpServletResponse rvyrRes = new MockHttpServletResponse();
-    jsonController.getRyvr(rvyrRes, req, ryvrName, page);
-    HttpHeaders headers = new HttpHeaders();
-    for (Iterator<String> i = rvyrRes.getHeaderNames().iterator(); i.hasNext();) {
-      String headerName = i.next();
-      headers.put(headerName.toLowerCase(), rvyrRes.getHeaders(headerName));
-    }
-    return getIndex(root, rvyrRes.getContentAsString(), headers);
+    // Ryvr ryvr = null;
+    // try {
+    // ryvr = ryvrsCollection.get(ryvrName);
+    // } catch (NoSuchElementException e) {
+    // // res.setStatus(org.apache.http.HttpStatus.SC_NOT_FOUND);
+    // // return null;
+    // throw new ResourceNotFoundException(req);
+    // }
+    //
+    // if (ryvr == null) {
+    // throw new ResourceNotFoundException(req);
+    // }
+    //
+    // RyvrRoot root = (RyvrRoot) jsonController.getRoot(req).getBody();
+    //
+    // MockHttpServletResponse rvyrRes = new MockHttpServletResponse();
+    // jsonController.getRyvr(rvyrRes, req, ryvrName, page);
+    // HttpHeaders headers = new HttpHeaders();
+    // for (Iterator<String> i = rvyrRes.getHeaderNames().iterator(); i.hasNext();) {
+    // String headerName = i.next();
+    // headers.put(headerName.toLowerCase(), rvyrRes.getHeaders(headerName));
+    // }
+    // return getIndex(root, rvyrRes.getContentAsString(), headers);
+    throw new NotImplementedException("TODO");
   }
 
 }

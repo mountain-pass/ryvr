@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.web.filter.ShallowEtagHeaderFilter;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -31,7 +32,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
   @Override
   public void configureContentNegotiation(final ContentNegotiationConfigurer configurer) {
     configurer.defaultContentType(MediaType.TEXT_HTML);
-    configurer.ignoreAcceptHeader(false).favorPathExtension(false).mediaType("json",
+    configurer.ignoreAcceptHeader(false).favorPathExtension(true).mediaType("json",
         MediaType.APPLICATION_JSON);
     configurer.mediaType("html", MediaType.TEXT_HTML);
     configurer.mediaType("js", MediaType.valueOf("application/javascript"));
@@ -67,6 +68,11 @@ public class WebConfig extends WebMvcConfigurerAdapter {
   public void postContruct() {
     om.configure(SerializationFeature.FLUSH_AFTER_WRITE_VALUE, false);
     om.configure(SerializationFeature.INDENT_OUTPUT, false);
+  }
+
+  @Bean
+  public ShallowEtagHeaderFilter shallowEtagHeaderFilter() {
+    return new ShallowEtagHeaderFilter();
   }
 
 }

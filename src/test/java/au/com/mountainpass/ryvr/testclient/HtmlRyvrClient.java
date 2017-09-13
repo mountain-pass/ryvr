@@ -31,7 +31,7 @@ import au.com.mountainpass.ryvr.testclient.model.HtmlRyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.HtmlSwaggerResponse;
 import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
-import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
+import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
 import cucumber.api.Scenario;
 
 public class HtmlRyvrClient implements RyvrTestClient {
@@ -49,7 +49,7 @@ public class HtmlRyvrClient implements RyvrTestClient {
   private boolean failed = false;
 
   @Override
-  public SwaggerResponse getApiDocs() {
+  public SwaggerImpl getApiDocs() {
     URI url = config.getBaseUri().resolve("/api-docs");
     webDriver.get(url.toString());
     waitTillLoaded(webDriver, 5,

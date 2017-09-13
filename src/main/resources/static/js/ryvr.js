@@ -11,6 +11,8 @@ define(['angular'], function(angular) {
     
     app.config(function($locationProvider, $httpProvider) {
         $locationProvider.html5Mode(true);
+        $httpProvider.defaults.headers.common["X-Requested-With"] = 'XMLHttpRequest';
+
         $httpProvider.interceptors.push(function($q) {
             return {
                 'request'(config) {
@@ -31,8 +33,11 @@ define(['angular'], function(angular) {
 
                 'response'(response) {
                     angular.element(document.getElementById('controller')).scope().controller.loading = false;
-                    if (response.headers('Content-Type') !== 'application/hal+json' &&
-                            response.headers('Content-Type') !== 'application/json' ) {
+                    console.log(response);
+                     if ( response.status != 204 &&
+                            response.headers('Content-Type') !== 'application/hal+json' &&
+                            response.headers('Content-Type') !== 'application/json' &&
+                                response.headers('Content-Type') !== 'application/json;charset=UTF-8') {
                         window.location.href = response.config.url;
                     }
                     return response;
@@ -85,8 +90,9 @@ define(['angular'], function(angular) {
     // from https://gist.github.com/justinmc/d72f38339e0c654437a2
     function scrollTo(eID) {
 
-        // This scrolling function 
-        // is from http://www.itnewb.com/tutorial/Creating-the-Smooth-Scroll-Effect-with-JavaScript
+        // This scrolling function
+        // is from
+        // http://www.itnewb.com/tutorial/Creating-the-Smooth-Scroll-Effect-with-JavaScript
         
         var i;
         var startY = currentYPosition();
@@ -112,8 +118,10 @@ define(['angular'], function(angular) {
         }
     }
     
-    /* currentYPosition -
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+    /*
+     * currentYPosition -
+     * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
     function currentYPosition() {
         // Firefox, Chrome, Opera, Safari
         if (window.pageYOffset) {
@@ -130,8 +138,9 @@ define(['angular'], function(angular) {
         return 0;
     }
 
-    /* scrollTo -
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+    /*
+     * scrollTo - ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     */
     function elmYPosition(eID) {
         var elm = document.getElementById(eID);
         var y = elm.offsetTop;
@@ -142,7 +151,7 @@ define(['angular'], function(angular) {
         } return y;
     }
     
-    app.controller('ResourceController', function($scope, $http, $location, $window, $document) {
+    app.controller('ResourceController', function($rootScope, $scope, $http, $location, $window, $document) {
         var controller = this;
         controller.loaded = false;
         controller.loading = false;
@@ -152,12 +161,19 @@ define(['angular'], function(angular) {
         controller.href = $window.location.href;
         controller.debug = false;
 
+        
         controller.processNavClick = function(event) {
             return false;
         };
 
         controller.errorCallback = function(response) {
-            window.location.href = response.config.url;
+            if( response.status == 401 ) {
+                console.log("Unauthentiated. Redirecting to: /", );
+                $location.url("/");
+            }
+            else {
+                window.location.href = response.config.url;
+            }
         }
         
 
@@ -165,26 +181,18 @@ define(['angular'], function(angular) {
             controller.href = href;
             var links = controller.resourceLinks;
             $http.get(href, {
-                cache : false//,
-//                eventHandlers: {
-//                    readystatechange: function(event) {
-////                      console.log("change");
-////                      console.log(event);
-//                      if (event.target.readyState == 4 && event.target.status == 200) {
-////                          console.log('event.target.getAllResponseHeaders()', event.target.getAllResponseHeaders().split('\u000d\u000a'));          
-////                          console.log('parseResponseHeaders(event.target.getAllResponseHeaders())', parseResponseHeaders(event.target.getAllResponseHeaders()));          
-//                          controller.resourceHeaders = parseResponseHeaders(event.target.getAllResponseHeaders());
-//                          if( controller.resourceHeaders["link"] != null ) {
-//                              controller.resourceLinks = linkHeaderParse(controller.resourceHeaders["link"].split(","));
-//                          }
-//                      }
-//                    }
-//                  },
+                cache : false// ,
             }).then(function successCallback(response) {
-                controller.resource = response.data;
-                controller.resourceHeaders = response.headers();
-                if( controller.resourceHeaders["link"] != null ) {
-                    controller.resourceLinks = linkHeaderParse(controller.resourceHeaders["link"].split(","));
+                if( response.status == 302 ) {
+                    console.log("redirecting to: ", response.headers('Location'));
+                    $location.url(response.headers('Location'));
+                }
+                else {
+                    controller.resource = response.data;
+                    controller.resourceHeaders = response.headers();
+                    if( controller.resourceHeaders["link"] != null ) {
+                        controller.resourceLinks = linkHeaderParse(controller.resourceHeaders["link"].split(","));
+                    }
                 }
             }, controller.errorCallback);
 
@@ -326,5 +334,53 @@ define(['angular'], function(angular) {
             return JSON.stringify(json, null, 2);
         };
 
+        var authenticate = function(credentials, callback) {
+
+            var headers = credentials ? {authorization : "Basic "
+                + btoa(credentials.username + ":" + credentials.password)
+            } : {};
+
+            $http.get('user', {headers : headers}).then(function(response) {
+                console.log(response.data);
+                $rootScope.user = response.data;
+                if (response.data.name) {
+                    $rootScope.authenticated = true;
+                    
+                  } else {
+                    $rootScope.authenticated = false;
+                  }
+                  callback && callback();
+                }, function() {
+              $rootScope.authenticated = false;
+              callback && callback();
+            });
+
+          };
+
+          authenticate();
+          $scope.credentials = {};
+          $scope.login = function() {
+              authenticate($scope.credentials, function() {
+                if ($rootScope.authenticated) {
+                  $scope.error = false;
+                } else {
+                  $scope.error = true;
+                }
+              });
+          };
+
+        
+        $scope.logout = function() {
+            $scope.credentials = {};
+            $rootScope.user = {};
+            $http.post('logout', {}).then(function() {
+              $rootScope.authenticated = false;
+              $location.url("/");
+            },function(data) {
+              $rootScope.authenticated = false;
+              $location.url("/");
+            });
+          }
     });
+    
 });

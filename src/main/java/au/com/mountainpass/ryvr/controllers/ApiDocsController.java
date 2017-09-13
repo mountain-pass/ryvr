@@ -14,23 +14,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api-docs")
 public class ApiDocsController {
 
-    @Autowired
-    private HtmlController htmlController;
+  @Autowired
+  private HtmlController htmlController;
 
-    @Autowired
-    private JsonController jsonController;
+  @Autowired
+  private JsonController jsonController;
 
-    @RequestMapping(method = RequestMethod.GET, produces = {
-            MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<?> getJson(final HttpServletRequest req,
-            @RequestParam(required = false) String group) {
-        return jsonController.getApiDocs(req, group);
-    }
+  @RequestMapping(method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
+  public ResponseEntity<?> getJson(final HttpServletRequest req,
+      @RequestParam(required = false) String group) {
+    return jsonController.getApiDocs(req, group);
+  }
 
-    @RequestMapping(method = RequestMethod.GET, produces = {
-            MediaType.TEXT_HTML_VALUE })
-    public ResponseEntity<?> getHtml(final HttpServletRequest req,
-            @RequestParam(required = false) String group) {
-        return htmlController.getApiDocs(req, group);
-    }
+  @RequestMapping(method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE })
+  public ResponseEntity<?> getHtml(final HttpServletRequest req,
+      @RequestParam(required = false) String group) {
+    return htmlController.getApiDocs(req, group);
+  }
 }

@@ -1,93 +1,95 @@
 package au.com.mountainpass.ryvr.model;
 
-import java.net.URI;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
+import java.util.Set;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 @Component
-public class RyvrsCollection {
+public class RyvrsCollection implements Map<String, Ryvr> {
 
   private static final String TITLE = "Ryvrs";
 
-  @Autowired
-  private Map<String, Ryvr> ryvrs = new HashMap<>();
+  private RyvrCollectionImpl impl;
 
-  private Map<String, Link[]> links;
-
-  public RyvrsCollection() {
-    links = genLinks();
+  public RyvrsCollection(RyvrCollectionImpl impl) {
+    this.impl = impl;
   }
 
-  @PostConstruct
-  private void _postConstruct() {
-    links = genLinks();
-  }
+  // public void addRyvr(Ryvr ryvr) {
+  // String name = ryvr.getTitle();
+  // ryvrs.put(name, ryvr);
+  // links = genLinks();
+  // }
 
-  public void addRyvr(Ryvr ryvr) {
-    String name = ryvr.getTitle();
-    ryvrs.put(name, ryvr);
-    links = genLinks();
-  }
-
-  public int getCount() {
-    return links.get("item") == null ? 0 : links.get("item").length;
-    // return ryvrs.size();
-  }
+  // public int getCount() {
+  // return links.get("item") == null ? 0 : links.get("item").length;
+  // // return ryvrs.size();
+  // }
 
   public String getTitle() {
     return TITLE;
   }
 
-  public Ryvr getRyvr(String ryvrName) {
-    Ryvr ryvr = ryvrs.get(ryvrName);
-    if (ryvr == null) {
-      throw new NoSuchElementException("No value present");
-    }
-    return ryvr;
+  @Override
+  public int size() {
+    return impl.size();
   }
 
-  @JsonIgnore
-  public Map<String, Ryvr> getRyvrs() {
-    return ryvrs;
+  @Override
+  public boolean isEmpty() {
+    return impl.isEmpty();
   }
 
-  @JsonProperty("_links")
-  public Map<String, Link[]> getLinks() {
-
-    return links;
-
+  @Override
+  public boolean containsKey(Object key) {
+    return impl.containsKey(key);
   }
 
-  private Map<String, Link[]> genLinks() {
-    Map<String, Link[]> rval = new HashMap<>();
-    rval.put("self", new Link[] { Link.fromUri(URI.create("/ryvrs")).title(getTitle()).build() });
-    if (!ryvrs.isEmpty()) {
-      Link[] items = ryvrs.keySet().stream()
-          .map(key -> Link.fromUri(URI.create("/ryvrs/" + key + "?page=1")).title(key).build())
-          .collect(Collectors.toList()).toArray(new Link[] {});
-      rval.put("item", items);
-    }
-    return rval;
+  @Override
+  public boolean containsValue(Object value) {
+    return impl.containsValue(value);
   }
 
+  @Override
+  public Ryvr get(Object key) {
+    return impl.get(key);
+  }
+
+  @Override
+  public Ryvr put(String key, Ryvr value) {
+    return impl.put(key, value);
+  }
+
+  @Override
+  public Ryvr remove(Object key) {
+    return impl.remove(key);
+  }
+
+  @Override
+  public void putAll(Map<? extends String, ? extends Ryvr> m) {
+    impl.putAll(m);
+  }
+
+  @Override
   public void clear() {
-    ryvrs.clear();
-    links = genLinks();
+    impl.clear();
   }
 
-  public void deleteRyvr(String name) {
-    ryvrs.remove(name);
-    links = genLinks();
+  @Override
+  public Set<String> keySet() {
+    return impl.keySet();
+  }
+
+  @Override
+  public Collection<Ryvr> values() {
+    return impl.values();
+  }
+
+  @Override
+  public Set<java.util.Map.Entry<String, Ryvr>> entrySet() {
+    return impl.entrySet();
   }
 
 }

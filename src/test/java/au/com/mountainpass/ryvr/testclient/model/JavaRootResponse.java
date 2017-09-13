@@ -10,17 +10,17 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import au.com.mountainpass.ryvr.controllers.JsonController;
-import au.com.mountainpass.ryvr.model.Root;
+import au.com.mountainpass.ryvr.model.RyvrRoot;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 
 public class JavaRootResponse implements RootResponse {
 
-  private Root root;
+  private RyvrRoot root;
   private JsonController router;
 
   private HttpServletRequest request = new MockHttpServletRequest();
 
-  public JavaRootResponse(Root root, JsonController router) {
+  public JavaRootResponse(RyvrRoot root, JsonController router) {
     this.root = root;
     this.router = router;
   }
@@ -41,7 +41,7 @@ public class JavaRootResponse implements RootResponse {
   }
 
   @Override
-  public RyvrsCollectionResponse followRyvrsLink() {
+  public RyvrsCollection followRyvrsLink() {
     return new JavaRyvrsCollectionResponse(
         (RyvrsCollection) router.getRyvrsCollection(request).getBody());
   }

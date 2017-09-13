@@ -9,6 +9,9 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -17,32 +20,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.http.MediaType;
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
-import au.com.mountainpass.ryvr.model.Root;
+import au.com.mountainpass.ryvr.model.RestRyvrRootImpl;
 import au.com.mountainpass.ryvr.model.Ryvr;
+import au.com.mountainpass.ryvr.model.RyvrRoot;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.rest.RestRyvrSource;
-import au.com.mountainpass.ryvr.testclient.model.JavaSwaggerResponse;
-import au.com.mountainpass.ryvr.testclient.model.RestRootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RestRyvrsCollectionResponse;
-import au.com.mountainpass.ryvr.testclient.model.RootResponse;
 import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
-import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
+import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
 import cucumber.api.Scenario;
-import io.swagger.parser.SwaggerParser;
 
 public class RestRyvrClient implements RyvrTestClient {
-  private Logger logger = LoggerFactory.getLogger(RestRyvrClient.class);
-
-  @Autowired
-  private RestTemplate restTemplate;
+  private static Logger LOGGER = LoggerFactory.getLogger(RestRyvrClient.class);
 
   @Autowired
   private RyvrConfiguration config;
-
-  private SwaggerParser swaggerParser = new SwaggerParser();
 
   @Autowired
   private CloseableHttpAsyncClient httpAsyncClient;
@@ -50,23 +45,30 @@ public class RestRyvrClient implements RyvrTestClient {
   @Autowired
   private CloseableHttpClient httpClient;
 
-  @Override
-  public SwaggerResponse getApiDocs()
-      throws InterruptedException, ExecutionException, URISyntaxException, MalformedURLException {
-    RootResponse root = getRoot();
-    URI baseUri = config.getBaseUri();
-    String swagger = restTemplate.getForEntity(baseUri.resolve(root.getApiDocsLink()), String.class)
-        .getBody();
+  @Autowired
+  private CookieStore cookies;
 
-    return new JavaSwaggerResponse(swaggerParser.parse(swagger));
+  @Override
+  public SwaggerImpl getApiDocs() throws InterruptedException, ExecutionException,
+      URISyntaxException, ClientProtocolException, IOException {
+    RyvrRoot root = getRoot();
+    return root.getApiDocs();
   }
 
   @Override
-  public RootResponse getRoot() throws MalformedURLException {
+  public RyvrRoot getRoot() throws ClientProtocolException, IOException {
     URI baseUri = config.getBaseUri();
-    Root root = restTemplate.getForEntity(baseUri, Root.class).getBody();
-
-    return new RestRootResponse(httpClient, httpAsyncClient, baseUri.toURL(), root, restTemplate);
+    final HttpGet httpget = new HttpGet();
+    httpget.setHeader("Accept", MediaType.APPLICATION_JSON_VALUE);
+    httpget.reset();
+    httpget.setURI(baseUri);
+    try (CloseableHttpResponse response = httpClient.execute(httpget)) {
+      if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+        return new RyvrRoot("ryvr", new RestRyvrRootImpl(httpClient, cookies, response, baseUri));
+      } else {
+        throw new NotImplementedException("TODO: handle " + response.getStatusLine().toString());
+      }
+    }
   }
 
   @Override
@@ -132,4 +134,5 @@ public class RestRyvrClient implements RyvrTestClient {
       throw new NotImplementedException(e);
     }
   }
+
 }

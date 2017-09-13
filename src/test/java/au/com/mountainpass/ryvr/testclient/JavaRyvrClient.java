@@ -1,49 +1,37 @@
 package au.com.mountainpass.ryvr.testclient;
 
-import javax.servlet.http.HttpServletRequest;
-
+import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockHttpServletRequest;
 
-import au.com.mountainpass.ryvr.controllers.JsonController;
-import au.com.mountainpass.ryvr.model.Root;
+import au.com.mountainpass.ryvr.model.InMemoryRyvrRootImpl;
 import au.com.mountainpass.ryvr.model.Ryvr;
+import au.com.mountainpass.ryvr.model.RyvrRoot;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
-import au.com.mountainpass.ryvr.testclient.model.JavaRootResponse;
-import au.com.mountainpass.ryvr.testclient.model.JavaRyvrsCollectionResponse;
-import au.com.mountainpass.ryvr.testclient.model.JavaSwaggerResponse;
-import au.com.mountainpass.ryvr.testclient.model.RootResponse;
-import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
-import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
+import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
 import cucumber.api.Scenario;
-import io.swagger.parser.SwaggerParser;
 
 public class JavaRyvrClient implements RyvrTestClient {
 
   @Autowired
-  private JsonController router;
-
-  private HttpServletRequest request = new MockHttpServletRequest();
-
-  private SwaggerParser swaggerParser = new SwaggerParser();
-
-  @Autowired
   private RyvrsCollection ryvrsCollection;
 
+  @Autowired
+  InMemoryRyvrRootImpl rootImpl;
+
+  // @Override
+  // public SwaggerImpl getApiDocs() {
+  // return new JavaSwaggerResponse(
+  // swaggerParser.parse((String) router.getApiDocs(request, "").getBody()));
+  // }
+
   @Override
-  public SwaggerResponse getApiDocs() {
-    return new JavaSwaggerResponse(
-        swaggerParser.parse((String) router.getApiDocs(request, "").getBody()));
+  public RyvrRoot getRoot() {
+    return new RyvrRoot("ryvr", rootImpl);
   }
 
   @Override
-  public RootResponse getRoot() {
-    return new JavaRootResponse((Root) router.getRoot(request).getBody(), router);
-  }
-
-  @Override
-  public RyvrsCollectionResponse getRyvrsCollection() {
-    return getRoot().followRyvrsLink();
+  public RyvrsCollection getRyvrsCollection() {
+    return getRoot().getRyvrsCollection();
   }
 
   @Override
@@ -63,15 +51,26 @@ public class JavaRyvrClient implements RyvrTestClient {
 
   @Override
   public Ryvr getRyvrDirect(String name, int page) throws Throwable {
-    Ryvr ryvr = ryvrsCollection.getRyvr(name);
-    int pageSize = ryvr.getPageSize();
-    ryvr.getSource().iterator((page - 1) * pageSize);
+    Ryvr ryvr = ryvrsCollection.get(name);
+    if (ryvr != null) {
+      int pageSize = ryvr.getPageSize();
+      ryvr.getSource().iterator((page - 1) * pageSize);
+    }
     return ryvr;
   }
 
   @Override
-  public RyvrsCollectionResponse getRyvrsCollectionDirect() throws Throwable {
-    return new JavaRyvrsCollectionResponse(
-        (RyvrsCollection) router.getRyvrsCollection(request).getBody());
+  public void login(String username, String password) {
+    throw new NotImplementedException("TODO");
+  }
+
+  @Override
+  public SwaggerImpl getApiDocs() throws Throwable {
+    throw new NotImplementedException("TODO");
+  }
+
+  @Override
+  public RyvrsCollection getRyvrsCollectionDirect() throws Throwable {
+    return ryvrsCollection;
   }
 }

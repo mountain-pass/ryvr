@@ -62,13 +62,16 @@
               <span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/"><img src="/wide_color_logo_transparent_background_164_x_25.png"
+            <a class="navbar-brand" href="/"><img src="/images/wide_color_logo_transparent_background_164_x_25.png"
               alt="{{controller.root.title}}"></a>
           </div>
           <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav" id="links">
               <li ng-repeat="(rel, link) in controller.root._links" ng-class="{active: isActive(link.href)}"><a
                 href="{{link.href}}" rel="{{rel}}">{{link.title ? link.title : rel }}</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li ng-show="authenticated" class="active"><a href="" ng-click="logout()">Logout</a></li>
             </ul>
           </div>
           <!--/.nav-collapse -->
@@ -80,6 +83,22 @@
     <section>
       <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
+        <div ng-show="!authenticated">
+          <div class="alert alert-danger" ng-show="error">There was a problem logging in. Please try again.</div>
+          <form role="form" ng-submit="login()">
+            <div class="form-group">
+              <label for="username">Username:</label> <input type="text" class="form-control" id="username"
+                name="username" ng-model="credentials.username" />
+            </div>
+            <div class="form-group">
+              <label for="password">Password:</label> <input type="password" class="form-control" id="password"
+                name="password" ng-model="credentials.password" />
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+
+
         <h1 ng-if="controller.resource._links.hasOwnProperty('self')" class="title">
           <a href="{{controller.resource._links['self'].href}}" rel="self">{{controller.resource.title}}</a>
         </h1>
@@ -130,7 +149,7 @@
             ng-class="{disabled: !controller.resourceLinks.hasOwnProperty(rel)}"
             href="{{controller.resourceLinks[rel][0]}}" rel="{{rel}}">{{rel}}</a>
         </div>
-        
+
         <table class="table records table-striped table-hover">
           <thead>
             <tr>
@@ -138,7 +157,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr ng-repeat="record in controller.resource.rows track by $index" class="itemRow" id="{{$index}}" ng-click="target($index)" >
+            <tr ng-repeat="record in controller.resource.rows track by $index" class="itemRow" id="{{$index}}"
+              ng-click="target($index)">
               <td ng-repeat="field in record track by $index" data-heading="{{controller.resource.columns[$index]}}"
                 data-type="{{typeOf(field)}}">{{field}}</td>
             </tr>
@@ -153,6 +173,10 @@
 
       <div id="rawjson" ng-if="controller.debug">
         <h2>Debug Json</h2>
+        <h3>User</h3>
+        <pre>
+        <code class="json">{{controller.pretty(user)}}</code>
+      </pre>
         <h3>Resource</h3>
         <pre>
         <code class="json">{{controller.pretty(controller.resource)}}</code>
@@ -182,8 +206,8 @@
   </div>
   <!-- /container -->
 
-  <script src="/webjars.js"></script>
-  <script data-main="/js/main" src="/webjars/requirejs/require.min.js"></script>
+  <script src="/webjars.js" type="text/javascript"></script>
+  <script data-main="/js/main" src="/webjars/requirejs/require.min.js" type="text/javascript"></script>
   <!--   
   <script src="/webjars/jquery/jquery.min.js" type="text/javascript"></script>
   <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>

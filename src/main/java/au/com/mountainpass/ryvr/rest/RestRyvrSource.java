@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -49,28 +48,6 @@ public class RestRyvrSource extends RyvrSource {
     this.contextUri = ryvrUri;
     this.response = response;
     this.currentUri = contextUri;
-  }
-
-  // credit: https://gist.github.com/eugenp/8269915
-  private static String extractURIByRel(final Header[] headers, final String rel) {
-    String uriWithSpecifiedRel = null;
-    String linkRelation = null;
-    for (final Header header : headers) {
-      String headerValue = header.getValue();
-      final int positionOfSeparator = headerValue.indexOf(';');
-      linkRelation = headerValue.substring(positionOfSeparator + 1, headerValue.length()).trim();
-      if (extractTypeOfRelation(linkRelation).equals(rel)) {
-        uriWithSpecifiedRel = headerValue.substring(1, positionOfSeparator - 1);
-        break;
-      }
-    }
-
-    return uriWithSpecifiedRel;
-  }
-
-  private static String extractTypeOfRelation(final String linkRelation) {
-    final int positionOfEquals = linkRelation.indexOf('=');
-    return linkRelation.substring(positionOfEquals + 2, linkRelation.length() - 1).trim();
   }
 
   private void followLink(String rel) {
@@ -159,14 +136,14 @@ public class RestRyvrSource extends RyvrSource {
 
   public String getNextLink() {
     if (!nextLinkSet) {
-      nextLink = extractURIByRel(response.getHeaders(HttpHeaders.LINK), "next");
+      nextLink = LinkHeader.extractURIByRel(response.getHeaders(HttpHeaders.LINK), "next");
       nextLinkSet = true;
     }
     return nextLink;
   }
 
   public String getLink(String rel) {
-    return extractURIByRel(response.getHeaders(HttpHeaders.LINK), rel);
+    return LinkHeader.extractURIByRel(response.getHeaders(HttpHeaders.LINK), rel);
   }
 
   public int getContentLength() {

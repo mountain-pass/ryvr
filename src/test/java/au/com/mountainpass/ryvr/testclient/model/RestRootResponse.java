@@ -13,19 +13,19 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.springframework.web.client.RestTemplate;
 
-import au.com.mountainpass.ryvr.model.Root;
+import au.com.mountainpass.ryvr.model.RyvrRoot;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 
 public class RestRootResponse implements RootResponse {
 
-  private Root root;
+  private RyvrRoot root;
   private URL contextUrl;
   private RestTemplate restTemplate;
   private CloseableHttpAsyncClient httpAsyncClient;
   private CloseableHttpClient httpClient;
 
   public RestRootResponse(CloseableHttpClient httpClient, CloseableHttpAsyncClient httpAsyncClient,
-      URL contextUrl, Root root, RestTemplate restTemplate) {
+      URL contextUrl, RyvrRoot root, RestTemplate restTemplate) {
     this.httpClient = httpClient;
     this.httpAsyncClient = httpAsyncClient;
     this.contextUrl = contextUrl;

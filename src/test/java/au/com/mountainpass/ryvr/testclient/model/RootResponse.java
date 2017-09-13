@@ -2,6 +2,8 @@ package au.com.mountainpass.ryvr.testclient.model;
 
 import java.net.URI;
 
+import au.com.mountainpass.ryvr.model.RyvrsCollection;
+
 public interface RootResponse {
 
   void assertHasApiDocsLink();
@@ -10,7 +12,7 @@ public interface RootResponse {
 
   void assertHasTitle(String title);
 
-  RyvrsCollectionResponse followRyvrsLink();
+  RyvrsCollection followRyvrsLink();
 
   URI getApiDocsLink();
 

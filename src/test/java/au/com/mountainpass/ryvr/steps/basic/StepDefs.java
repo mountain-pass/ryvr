@@ -1,3 +1,4 @@
+
 package au.com.mountainpass.ryvr.steps.basic;
 
 import static org.hamcrest.Matchers.*;
@@ -10,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,12 +33,12 @@ import au.com.mountainpass.ryvr.config.TestConfiguration;
 import au.com.mountainpass.ryvr.model.Field;
 import au.com.mountainpass.ryvr.model.Record;
 import au.com.mountainpass.ryvr.model.Ryvr;
+import au.com.mountainpass.ryvr.model.RyvrRoot;
+import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 import au.com.mountainpass.ryvr.testclient.RyvrTestDbDriver;
 import au.com.mountainpass.ryvr.testclient.RyvrTestServerAdminDriver;
-import au.com.mountainpass.ryvr.testclient.model.RootResponse;
-import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
-import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
+import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
 import au.com.mountainpass.ryvr.testclient.model.Util;
 import cucumber.api.PendingException;
 import cucumber.api.Scenario;
@@ -65,13 +67,13 @@ public class StepDefs {
   @Autowired
   private RyvrTestDbDriver dbClient;
 
-  private RootResponse rootResponseFuture;
+  private RyvrRoot root;
 
   private Ryvr ryvr;
 
-  private RyvrsCollectionResponse ryvrsCollectionResponse;
+  private RyvrsCollection ryvrsCollection;
 
-  private SwaggerResponse swaggerResponseFuture;
+  private SwaggerImpl swaggerResponse;
   private String currentTable;
 
   private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
@@ -125,13 +127,13 @@ public class StepDefs {
   @When("^a request is made for the API Docs$")
   public void aRequestIsMadeForTheAPIDocs() throws Throwable {
     configClient.ensureStarted();
-    swaggerResponseFuture = client.getApiDocs();
+    swaggerResponse = client.getRoot().getApiDocs();
   }
 
   @When("^a request is made to the server's base URL$")
   public void aRequestIsMadeToTheServersBaseURL() throws Throwable {
     configClient.ensureStarted();
-    rootResponseFuture = client.getRoot();
+    root = client.getRoot();
   }
 
   @Given("^a database ryvr with the following configuration$")
@@ -169,6 +171,11 @@ public class StepDefs {
     dbClient.insertRows(catalog, table, events);
   }
 
+  @Given("^the client is authenticated$")
+  public void the_client_is_authenticated() throws Throwable {
+    client.getRoot().login("user", "password");
+  }
+
   @Then("^it will contain$")
   public void itWillContain(final List<Map<String, String>> events) throws Throwable {
     Iterator<Record> actualIterator = ryvr.getSource().iterator();
@@ -192,43 +199,38 @@ public class StepDefs {
 
   @Then("^the API Docs will contain an operation for getting the API Docs$")
   public void theAPIDocsWillContainAnPperationForGettingTheAPIDocs() throws Throwable {
-    swaggerResponseFuture.assertHasGetApiDocsOperation();
+    assertThat(swaggerResponse.containsOperation("getApiDocs"), notNullValue());
   }
 
   @Then("^the count of ryvrs will be (\\d+)$")
   public void theCountOfRyvrsWillBe(final int count) throws Throwable {
-    ryvrsCollectionResponse.assertCount(count);
+    assertThat(ryvrsCollection.size(), equalTo(count));
   }
 
   @Then("^the root entity will contain a link to the api-docs$")
   public void theRootEntityWillContainALinkToTheApiDocs() throws Throwable {
-    rootResponseFuture.assertHasApiDocsLink();
+    assertThat(root.getApiDocs(), notNullValue());
   }
 
   @Then("^the root entity will contain a link to the ryvrs$")
   public void theRootEntityWillContainALinkToTheRyvrs() throws Throwable {
-    rootResponseFuture.assertHasRyvrsLink();
+    assertThat(root.getRyvrsCollection(), notNullValue());
   }
 
   @Then("^the root entity will have an application name of \"([^\"]*)\"$")
   public void theRootEntityWillHaveAnApplicationNameOf(final String applicationName)
       throws Throwable {
-    rootResponseFuture.assertHasTitle(applicationName);
+    assertThat(root.getTitle(), equalTo(applicationName));
   }
 
   @When("^the \"([^\"]*)\" ryvr is retrieved$")
   public void theRyvrIsRetrieved(final String name) throws Throwable {
-    if (ryvrsCollectionResponse == null) {
+    if (ryvrsCollection == null) {
       theRyvrsListIsRetrieved();
     } else {
       configClient.ensureStarted();
     }
-    ryvr = null;
-    try {
-      ryvr = ryvrsCollectionResponse.followRyvrLink(uniquifyRyvrName(name));
-    } catch (NoSuchElementException e) {
-      error = e;
-    }
+    ryvr = ryvrsCollection.get(uniquifyRyvrName(name));
   }
 
   @When("^(-?\\d+)th record of the \"([^\"]*)\" ryvr is retrieved$")
@@ -245,7 +247,6 @@ public class StepDefs {
   @When("^(-?\\d+)th page of the \"([^\"]*)\" ryvr is retrieved$")
   public void th_page_of_the_ryvr_is_retrieved(int page, String name) throws Throwable {
     configClient.ensureStarted();
-    ryvr = null;
     try {
       ryvr = client.getRyvrDirect(uniquifyRyvrName(name), page);
     } catch (NoSuchElementException e) {
@@ -256,33 +257,24 @@ public class StepDefs {
   @When("^the \"([^\"]*)\" rvyr is deleted$")
   public void the_rvyr_is_deleted(String name) throws Throwable {
     configClient.deleteRvyr(uniquifyRyvrName(name));
-    // this results in a stale ryvrsCollectionResponse, which is what we want, because
+    // this results in a stale ryvrsCollection, which is what we want, because
     // we want to test what happens when we follow the link that doesn't exist anymore.
   }
 
   @When("^the \"([^\"]*)\" ryvr is retrieved directly$")
   public void the_ryvr_is_retrieved_directly(String name) throws Throwable {
     configClient.ensureStarted();
-    ryvr = null;
-    try {
-      ryvr = client.getRyvrDirect(uniquifyRyvrName(name));
-    } catch (NoSuchElementException e) {
-      error = e;
-    }
+    ryvr = client.getRyvrDirect(uniquifyRyvrName(name));
   }
 
   @Then("^the ryvr will not be found$")
   public void the_ryvr_will_not_be_found() throws Throwable {
     assertThat(ryvr, nullValue());
-    assertThat(error, notNullValue());
-    assertThat(error, instanceOf(NoSuchElementException.class));
   }
 
   @Then("^the page will not be found$")
   public void the_page_will_not_be_found() throws Throwable {
     assertThat(ryvr, nullValue());
-    assertThat(error, notNullValue());
-    assertThat(error, instanceOf(NoSuchElementException.class));
   }
 
   @Then("^the record will not be found$")
@@ -295,25 +287,34 @@ public class StepDefs {
   @When("^the ryvrs list is retrieved$")
   public void theRyvrsListIsRetrieved() throws Throwable {
     configClient.ensureStarted();
-    ryvrsCollectionResponse = client.getRyvrsCollection();
+    ryvrsCollection = client.getRyvrsCollection();
   }
 
   @When("^the ryvrs list is retrieved directly$")
   public void the_ryvrs_list_is_retrieved_directly() throws Throwable {
     configClient.ensureStarted();
-    ryvrsCollectionResponse = client.getRyvrsCollectionDirect();
+    ryvrsCollection = client.getRyvrsCollectionDirect();
   }
 
   @Then("^the ryvrs list will be empty$")
   public void theRyvrsListWillBeEmpty() throws Throwable {
-    ryvrsCollectionResponse.assertIsEmpty();
+    assertThat(ryvrsCollection.entrySet(), empty());
   }
 
   @Then("^the ryvrs list will contain the following entries$")
   public void theRyvrsListWillContainTheFollowingEntries(final List<String> names)
       throws Throwable {
-    ryvrsCollectionResponse.assertHasItem(
-        names.stream().map(name -> uniquifyRyvrName(name)).collect(Collectors.toList()));
+    Set<String> actualNames = ryvrsCollection.keySet();
+    Set<String> expectedNames = uniquifyRyvrNames(names);
+    assertTrue(actualNames.stream().allMatch(actualName -> {
+      return expectedNames.contains(actualName);
+    }));
+    assertThat(actualNames.size(), equalTo(names.size()));
+
+  }
+
+  private Set<String> uniquifyRyvrNames(List<String> names) {
+    return names.stream().map(name -> uniquifyRyvrName(name)).collect(Collectors.toSet());
   }
 
   @Given("^there are no ryvrs configured$")

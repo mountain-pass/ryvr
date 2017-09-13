@@ -1,18 +1,18 @@
 package au.com.mountainpass.ryvr.testclient;
 
 import au.com.mountainpass.ryvr.model.Ryvr;
-import au.com.mountainpass.ryvr.testclient.model.RootResponse;
-import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
-import au.com.mountainpass.ryvr.testclient.model.SwaggerResponse;
+import au.com.mountainpass.ryvr.model.RyvrRoot;
+import au.com.mountainpass.ryvr.model.RyvrsCollection;
+import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
 import cucumber.api.Scenario;
 
 public interface RyvrTestClient {
 
-  public SwaggerResponse getApiDocs() throws Throwable;
+  public SwaggerImpl getApiDocs() throws Throwable;
 
-  public RootResponse getRoot() throws Throwable;
+  public RyvrRoot getRoot() throws Throwable;
 
-  public RyvrsCollectionResponse getRyvrsCollection() throws Throwable;
+  public RyvrsCollection getRyvrsCollection() throws Throwable;
 
   public Ryvr getRyvr(String name) throws Throwable;
 
@@ -26,6 +26,6 @@ public interface RyvrTestClient {
 
   public Ryvr getRyvrDirect(String name, int page) throws Throwable;
 
-  public RyvrsCollectionResponse getRyvrsCollectionDirect() throws Throwable;
+  public RyvrsCollection getRyvrsCollectionDirect() throws Throwable;
 
 }

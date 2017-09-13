@@ -21,7 +21,15 @@ spring:
     name: ryvr
   resources:
     cache-period: 2592000
+    chain.strategy.content.enabled: true
 
+
+security:
+  user:
+    name: user
+    password: password
+    role: USER
+  
 au.com.mountainpass.ryvr:
   ssl:
     hostname: localhost

@@ -48,8 +48,8 @@ public class RyvrTestEmbeddedServerAdminDriver implements RyvrTestServerAdminDri
   @Override
   public void createDataSourceRyvr(final Map<String, String> config) throws Throwable {
     final DataSourceRyvrSource ryvr = new DataSourceRyvrSource(dataSource, config.get("query"));
-    ryvrsCollection
-        .addRyvr(new Ryvr(config.get("name"), Integer.parseInt(config.get("page size")), ryvr));
+    ryvrsCollection.put(config.get("name"),
+        new Ryvr(config.get("name"), Integer.parseInt(config.get("page size")), ryvr));
 
   }
 
@@ -60,7 +60,7 @@ public class RyvrTestEmbeddedServerAdminDriver implements RyvrTestServerAdminDri
 
   @Override
   public void deleteRvyr(String name) {
-    ryvrsCollection.deleteRyvr(name);
+    ryvrsCollection.remove(name);
   }
 
 }

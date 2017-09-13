@@ -1,21 +1,17 @@
 package au.com.mountainpass.ryvr.controllers;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -26,9 +22,10 @@ import org.springframework.stereotype.Component;
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.io.RyvrSerialiser;
+import au.com.mountainpass.ryvr.model.JavaSwaggerImpl;
 import au.com.mountainpass.ryvr.model.Record;
-import au.com.mountainpass.ryvr.model.Root;
 import au.com.mountainpass.ryvr.model.Ryvr;
+import au.com.mountainpass.ryvr.model.RyvrRoot;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 
 @Component()
@@ -63,20 +60,17 @@ public class JsonController {
   private RyvrConfiguration config;
 
   @Autowired
+  private RyvrRoot root;
+
+  @Autowired
   private RyvrSerialiser serialiser;
 
+  @Autowired
+  private JavaSwaggerImpl javaSwaggerImpl;
+
   public ResponseEntity<?> getApiDocs(HttpServletRequest req, String group) {
-    ClassPathResource index = new ClassPathResource("static/swagger.json");
-
-    StringWriter writer = new StringWriter();
-    try {
-      IOUtils.copy(index.getInputStream(), writer, "UTF-8");
-      return ResponseEntity.ok().contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-          .body(writer.toString());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-
+    return ResponseEntity.ok().contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+        .body(javaSwaggerImpl.getSwagger());
   }
 
   public ResponseEntity<?> getRyvrsCollection(HttpServletRequest req) {
@@ -86,9 +80,11 @@ public class JsonController {
     return responseBuilder.body(ryvrsCollection);
   }
 
-  public ResponseEntity<?> getRoot(HttpServletRequest req) {
-    Root root = new Root(applicationName);
-    return ResponseEntity.ok().contentType(APPLICATION_HAL_JSON_TYPE).body(root);
+  public void getRoot(HttpServletResponse res, HttpServletRequest req) throws IOException {
+    res.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    addLinks(root, res);
+    serialiser.toJson(root, res.getOutputStream());
+    res.setStatus(HttpStatus.OK.value());
   }
 
   public void getRyvr(HttpServletResponse res, HttpServletRequest req, String ryvrName, long page)
@@ -97,13 +93,7 @@ public class JsonController {
     // be very slow, so the only way we know if we are on an archive page is if
     // the iterator we use for outputting hasNext(), or if we get another iterator and
     // advance end and then check if it hasNext(). Going with that latter option.
-    Ryvr ryvr = null;
-    try {
-      ryvr = ryvrsCollection.getRyvr(ryvrName);
-    } catch (NoSuchElementException e) {
-      res.setStatus(HttpStatus.NOT_FOUND.value());
-      return;
-    }
+    Ryvr ryvr = ryvrsCollection.get(ryvrName);
     if (ryvr == null) {
       res.setStatus(HttpStatus.NOT_FOUND.value());
       return;
@@ -130,7 +120,7 @@ public class JsonController {
     }
     // }
     res.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-    res.addHeader(HttpHeaders.VARY, String.join(",", HttpHeaders.ACCEPT,
+    res.addHeader(HttpHeaders.VARY, String.join(",", HttpHeaders.AUTHORIZATION, HttpHeaders.ACCEPT,
         HttpHeaders.ACCEPT_ENCODING, HttpHeaders.ACCEPT_LANGUAGE, HttpHeaders.ACCEPT_CHARSET));
 
     if (isLastPage) {
@@ -170,21 +160,38 @@ public class JsonController {
   public void addLinks(Ryvr ryvr, long page, boolean isLastPage, HttpServletResponse res) {
 
     String base = "/ryvrs/" + ryvr.getTitle();
-    addLink("self", base + "?page=" + page, res);
-    addLink("first", base + "?page=1", res);
+    addLink("self", base + "?page=" + page, res, ryvr.getTitle());
+    addLink("first", base + "?page=1", res, "First");
     if (page > 1L) {
-      addLink("prev", base + "?page=" + (page - 1L), res);
+      addLink("prev", base + "?page=" + (page - 1L), res, "Prev");
     }
     if (!isLastPage) {
-      addLink("next", base + "?page=" + (page + 1L), res);
+      addLink("next", base + "?page=" + (page + 1L), res, "Next");
     }
     String headerValue = "<" + base + "?page={page}" + ">; rel=\"" + RELS_PAGE
         + "\"; var-base=\"https://mountain-pass.github.io/ryvr/vars/\"";
     res.addHeader("Link-Template", headerValue);
   }
 
-  private void addLink(String rel, String href, HttpServletResponse res) {
+  private void addLinks(RyvrRoot root, HttpServletResponse res) {
+    addLink("self", "/", res, "Home");
+    addLink(RELS_RYVRS_COLLECTION, "/ryvrs", res, "Ryvrs");
+    addLink("describedby", "/api-docs", res, "API Docs");
+  }
+
+  public static final String RELS_RYVRS_COLLECTION = "https://mountain-pass.github.io/ryvr/rels/ryvrs-collection";
+  // public RyvrRoot(String title) {
+  //// super(linkingTo(linkBuilder("self", "/").withTitle("Home").build(),
+  //// linkBuilder("describedby", "/api-docs").withTitle("API Docs").build(),
+  //// linkBuilder(RELS_RYVRS_COLLECTION, "/ryvrs").withTitle("Ryvrs").build()));
+  // this.title = title;
+  // }
+
+  private void addLink(String rel, String href, HttpServletResponse res, String title) {
     String headerValue = "<" + href + ">; rel=\"" + rel + "\"";
+    if (title != null) {
+      headerValue += "; title=\"" + title + "\"";
+    }
     res.addHeader(HttpHeaders.LINK, headerValue);
   }
 }

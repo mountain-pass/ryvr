@@ -16,6 +16,7 @@ import javax.sql.DataSource;
 
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponseInterceptor;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -23,6 +24,7 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.cache.CacheConfig;
 import org.apache.http.impl.client.cache.CachingHttpClientBuilder;
@@ -62,6 +64,7 @@ import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
 import au.com.mountainpass.ryvr.testclient.JavaRyvrClient;
 import au.com.mountainpass.ryvr.testclient.RestRyvrClient;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
+import au.com.mountainpass.ryvr.testclient.SessionAwareRestTemplate;
 
 @Configuration
 public class TestConfiguration
@@ -139,6 +142,7 @@ public class TestConfiguration
   public CloseableHttpClient httpClient() throws Exception {
 
     CloseableHttpClient client = httpClientBuilder().build();
+
     return client;
   }
 
@@ -158,7 +162,15 @@ public class TestConfiguration
         .addInterceptorLast((HttpResponseInterceptor) httpDelayConcurrent)
         .addInterceptorLast((HttpResponseInterceptor) httpThroughputCounter)
         .addInterceptorLast(httpCacheStatusHeaderAdder);
+    clientBuilder.setDefaultCookieStore(cookieStore());
     return clientBuilder;
+  }
+
+  @Bean
+  @Profile(value = { "restApi", "systemTest" })
+  public CookieStore cookieStore() {
+    CookieStore httpCookieStore = new BasicCookieStore();
+    return httpCookieStore;
   }
 
   @Autowired(required = false)
@@ -230,7 +242,7 @@ public class TestConfiguration
   @Bean
   @Profile(value = { "restApi", "systemTest" })
   public RestTemplate restTemplate() throws Exception {
-    RestTemplate restTemplate = new RestTemplate(httpClientFactory());
+    RestTemplate restTemplate = new SessionAwareRestTemplate(httpClientFactory());
     return restTemplate;
   }
 
