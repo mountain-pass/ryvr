@@ -20,6 +20,7 @@ Feature: DB Ryvr
       | name      | transactions                                                                          |
       | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
       | page size |                                                                                    10 |
+    And the client is authenticated
     When the ryvrs list is retrieved
     Then the count of ryvrs will be 1
     Then the ryvrs list will contain the following entries

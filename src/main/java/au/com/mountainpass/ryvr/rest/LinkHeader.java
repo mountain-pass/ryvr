@@ -1,6 +1,5 @@
 package au.com.mountainpass.ryvr.rest;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.Header;
 
 public class LinkHeader {
@@ -39,11 +38,21 @@ public class LinkHeader {
   }
 
   public static String extractTitle(Header header) {
-    throw new NotImplementedException("TODO");
+    String headerValue = header.getValue();
+    final int positionOfSeparator = headerValue.indexOf(';');
+    String properties;
+    properties = headerValue.substring(positionOfSeparator + 1, headerValue.length()).trim();
+    final int positionOfSeparator2 = properties.indexOf(';');
+    String titleProperties = properties.substring(positionOfSeparator2 + 1, properties.length())
+        .trim();
+    return titleProperties.substring(titleProperties.indexOf('=') + 2, titleProperties.length() - 1)
+        .trim();
   }
 
   public static String extractUri(Header header) {
-    throw new NotImplementedException("TODO");
+    String headerValue = header.getValue();
+    final int positionOfSeparator = headerValue.indexOf(';');
+    return headerValue.substring(1, positionOfSeparator - 1);
   }
 
 }
