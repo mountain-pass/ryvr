@@ -263,7 +263,7 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [ ] remove dead code
  - [ ] Stablise API
  - [ ] Fix API Docs
- - [ ] Performance test with real world dataset 
+ - [ ] Performance test with real world dataset (e.g., https://support.spatialkey.com/spatialkey-sample-csv-data/ and/or http://lisp.vse.cz/pkdd99/berka.htm, http://sorry.vse.cz/~berka/challenge/pkdd1999/data_berka.zip) 
  - [ ] release as zip/tarball with example properties
  - [ ] Add authentication
  - [ ] Modify Perf test to use latency per event rather than latency per page
