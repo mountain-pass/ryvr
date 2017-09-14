@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.client.ClientProtocolException;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 import au.com.mountainpass.ryvr.model.RyvrRootImpl;
@@ -26,12 +27,18 @@ public class HtmlRyvrRootImpl implements RyvrRootImpl {
 
   @Override
   public RyvrsCollection getRyvrsCollection() throws ClientProtocolException, IOException {
-    throw new NotImplementedException("TODO");
+    return new RyvrsCollection(new HtmlRyvrCollectionImpl(webDriver));
   }
 
   @Override
   public void login(String username, String password) throws ClientProtocolException, IOException {
-    throw new NotImplementedException("TODO");
+    webDriver.findElement(By.id("username")).sendKeys(username);
+    webDriver.findElement(By.id("password")).sendKeys(password);
+    webDriver
+        .findElement(By.cssSelector(
+            "body > div.container.main-content > section > div.jumbotron > div > form > button"))
+        .click();
+    HtmlRyvrClient.waitTillLoaded(webDriver, 5);
   }
 
   @Override

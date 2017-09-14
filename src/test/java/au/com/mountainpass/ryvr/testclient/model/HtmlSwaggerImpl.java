@@ -20,7 +20,7 @@ public class HtmlSwaggerImpl implements SwaggerImpl {
 
   public HtmlSwaggerImpl(WebDriver webDriver) {
     this.webDriver = webDriver;
-    List<WebElement> items = webDriver.findElements(By.cssSelector("a[rel~='item']"));
+    List<WebElement> items = webDriver.findElements(By.cssSelector("#links > li > a"));
     assertThat(items, not(empty()));
     this.link = items.stream().filter(item -> "API Docs".equals(item.getText())).findAny().get();
     this.loaded = false;

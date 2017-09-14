@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -114,7 +115,12 @@ public class HtmlController {
           "static/index.html", "<%", "%>");
       Map<String, String> scope = new HashMap<>();
       scope.put("root", root);
-      // scope.put("root-links", TODO);
+      Collection<String> rootLinkHeaders = res.getHeaders(HttpHeaders.LINK);
+      HttpHeaders rootLinkHttpHeaders = new HttpHeaders();
+      for (String header : rootLinkHeaders) {
+        rootLinkHttpHeaders.add(HttpHeaders.LINK, header);
+      }
+      scope.put("root-headers", om.writeValueAsString(rootLinkHttpHeaders));
 
       scope.put("resource", resource);
       scope.put("resource-headers", om.writeValueAsString(headers));

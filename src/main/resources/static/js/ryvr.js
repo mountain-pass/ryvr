@@ -76,11 +76,14 @@ define(['angular'], function(angular) {
                 href = href.substring(1, href.length -1);
                 var rel = split[1].trim();
                 rel = rel.substring(5, rel.length -1);
+                var title = split[2].trim();
+                title = title.substring(7, title.length -1);
+                var linkObj = { "href": href, "title": title };
                 if( rval[rel] === undefined ) {
-                    rval[rel] = [ href ];
+                    rval[rel] = [ linkObj ];
                 }
                 else {
-                    rval[rel] = rval[rel].concat(href);
+                    rval[rel] = rval[rel].concat(linkObj);
                 }
             };
         }
@@ -231,8 +234,15 @@ define(['angular'], function(angular) {
 
         controller.initRoot = function() {
             controller.root = JSON.parse(document.getElementById('init-root').textContent);
-            // controller.rootLinks =
-            // JSON.parse(document.getElementById('init-root-links').textContent);
+            controller.rootHeaders = JSON.parse(document.getElementById('init-root-headers').textContent);
+            console.log("root headers", controller.rootHeaders);
+            if( "Link" in controller.rootHeaders ) {
+                controller.rootLinks = linkHeaderParse(controller.rootHeaders["Link"]);
+            }
+            else {
+                controller.rootLinks = {};
+            }
+            console.log("root links", controller.rootLinks);
         };
 
         $scope.target = function(index) {
@@ -243,8 +253,8 @@ define(['angular'], function(angular) {
         controller.initResource = function() {
             controller.resource = JSON.parse(document.getElementById('init-resource').textContent);
             controller.resourceHeaders = JSON.parse(document.getElementById('init-resource-headers').textContent);
-            if( "link" in controller.resourceHeaders ) {
-                controller.resourceLinks = linkHeaderParse(controller.resourceHeaders["link"]);
+            if( "Link" in controller.resourceHeaders ) {
+                controller.resourceLinks = linkHeaderParse(controller.resourceHeaders["Link"]);
             }
             else {
                 controller.resourceLinks = {};

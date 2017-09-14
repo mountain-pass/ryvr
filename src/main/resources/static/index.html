@@ -67,8 +67,8 @@
           </div>
           <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav" id="links">
-              <li ng-repeat="(rel, link) in controller.root._links" ng-class="{active: isActive(link.href)}"><a
-                href="{{link.href}}" rel="{{rel}}">{{link.title ? link.title : rel }}</a></li>
+              <li ng-repeat="(rel, link) in controller.rootLinks" ng-class="{active: isActive(link[0].href)}"><a
+                href="{{link[0].href}}" rel="{{rel}}">{{link[0].title ? link[0].title : rel }}</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
               <li ng-show="authenticated" class="active"><a href="" ng-click="logout()">Logout</a></li>
@@ -176,15 +176,19 @@
         <h3>User</h3>
         <pre>
         <code class="json">{{controller.pretty(user)}}</code>
-      </pre>
+        </pre>
         <h3>Resource</h3>
         <pre>
         <code class="json">{{controller.pretty(controller.resource)}}</code>
+        </pre>
+        <pre>
         <code class="json">{{controller.pretty(controller.resourceHeaders)}}</code>
       </pre>
         <h3>Root</h3>
         <pre>
         <code class="json">{{controller.pretty(controller.root)}}</code>
+        </pre>
+        <pre>
         <code class="json">{{controller.pretty(controller.rootLinks)}}</code>
       </pre>
       </div>
@@ -193,14 +197,17 @@
         <h3>Resource</h3>
         <pre>
         <code class="json" id="init-resource"><%resource%></code>
+        </pre>
+        <pre>
         <code class="json" id="init-resource-headers"><%resource-headers%></code>
         </pre>
         <h3>Root</h3>
         <pre>
         <code class="json" id="init-root"><%root%></code>
-<!--         <code class="json" id="init-root-headers"><%root-headers%></code>
-        <code class="json" id="init-root-links"><%root-links%></code>
- -->      </pre>
+        </pre>
+        <pre>
+        <code class="json" id="init-root-headers"><%root-headers%></code>
+       </pre>
       </div>
     </section>
   </div>
