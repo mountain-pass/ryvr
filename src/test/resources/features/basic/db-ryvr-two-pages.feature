@@ -84,7 +84,6 @@ Feature: DB Ryvr
       | 11 | 7786543 | ATM Withdrawal | -120.00 |
       | 12 | 7786543 | ATM Withdrawal | -130.00 |
 
-  @current
   Scenario: Get Ryvr - Multiple Pages - Full Page
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
