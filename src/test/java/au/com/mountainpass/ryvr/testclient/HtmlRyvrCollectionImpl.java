@@ -4,10 +4,10 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.AbstractMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -33,7 +33,15 @@ public class HtmlRyvrCollectionImpl extends AbstractMap<String, Ryvr>
 
   @Override
   public Set<java.util.Map.Entry<String, Ryvr>> entrySet() {
-    throw new NotImplementedException("TODO");
+    ensureLoaded();
+    return new HashSet<>();
   }
 
+  private void ensureLoaded() {
+    if (!loaded) {
+      link.click();
+      HtmlRyvrClient.waitTillLoaded(webDriver, 5);
+      loaded = true;
+    }
+  }
 }

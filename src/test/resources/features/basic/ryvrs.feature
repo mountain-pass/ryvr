@@ -4,6 +4,7 @@ Feature: Ryvrs
     As a user
     I want to get a list of ryvrs provided by the server
 
+@current
 Scenario: Get Ryvrs
     Given there are no ryvrs configured
     And the client is authenticated

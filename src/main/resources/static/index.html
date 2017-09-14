@@ -99,10 +99,10 @@
         </div>
 
 
-        <h1 ng-if="controller.resource._links.hasOwnProperty('self')" class="title">
-          <a href="{{controller.resource._links['self'].href}}" rel="self">{{controller.resource.title}}</a>
+        <h1 ng-if="controller.resourceLinks.hasOwnProperty('self')" class="title">
+          <a href="{{controller.resourceLinks['self'][0].href}}" rel="self">{{controller.resource.title}}</a>
         </h1>
-        <h1 ng-if="!controller.resource._links.hasOwnProperty('self')" class="title">{{controller.resource.title}}</h1>
+        <h1 ng-if="!controller.resourceLinks.hasOwnProperty('self')" class="title">{{controller.resource.title}}</h1>
         <!-- p>This example is a quick exercise to illustrate how the default, static navbar and fixed to top navbar work.
         It includes the responsive CSS and HTML, so it also adapts to your viewport and device.</p>
       <p>
@@ -133,11 +133,11 @@
       <!-- /properties -->
 
       <div id="linkedItems"
-        ng-if="controller.resource.hasOwnProperty('_links') && controller.resource._links.hasOwnProperty('item') && 
-        controller.resource._links.item !== null && (!Array.isArray(controller.resource._links.item) || controller.resource._links.item.length > 0)">
+        ng-if="controller.resourceLinks.hasOwnProperty('item') && 
+        controller.resourceLinks.item !== null && controller.resourceLinks.item.length > 0)">
         <h2>Links</h2>
         <ul>
-          <li ng-repeat="item in [].concat(controller.resource._links.item)" id="item:row:{{item.href}}"><a
+          <li ng-repeat="item in [].concat(controller.resourceLinks.item)" id="item:row:{{item.href}}"><a
             href="{{item.href}}" rel="item" class="linkedItem" id="item:link:{{item.href}}">{{item.title}}</a></li>
         </ul>
       </div>
@@ -183,7 +183,10 @@
         </pre>
         <pre>
         <code class="json">{{controller.pretty(controller.resourceHeaders)}}</code>
-      </pre>
+        </pre>
+        <pre>
+        <code class="json">{{controller.pretty(controller.resourceLinks)}}</code>
+        </pre>
         <h3>Root</h3>
         <pre>
         <code class="json">{{controller.pretty(controller.root)}}</code>
@@ -215,13 +218,6 @@
 
   <script src="/webjars.js" type="text/javascript"></script>
   <script data-main="/js/main" src="/webjars/requirejs/require.min.js" type="text/javascript"></script>
-  <!--   
-  <script src="/webjars/jquery/jquery.min.js" type="text/javascript"></script>
-  <script type="text/javascript" src="/webjars/bootstrap/js/bootstrap.min.js"></script>
-  <script src="/webjars/angularjs/angular.min.js" type="text/javascript"></script>
-  <script src="/webjars/querystring/0.2.0/index.js" type="text/javascript"></script>
-  <script src="/webjars/parse-link-header/index.js" type="text/javascript"></script>
-  <script src="/js/main.js" type="text/javascript"></script>
- -->
+  
 </body>
 </html>
