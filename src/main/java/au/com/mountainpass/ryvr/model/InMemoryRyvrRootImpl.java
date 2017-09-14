@@ -1,5 +1,8 @@
 package au.com.mountainpass.ryvr.model;
 
+import java.io.IOException;
+
+import org.apache.http.client.ClientProtocolException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +25,11 @@ public class InMemoryRyvrRootImpl implements RyvrRootImpl {
   @Override
   public RyvrsCollection getRyvrsCollection() {
     return new RyvrsCollection(ryvrsCollectionImpl);
+  }
+
+  @Override
+  public void login(String username, String password) throws ClientProtocolException, IOException {
+    // do nothing
   }
 
 }

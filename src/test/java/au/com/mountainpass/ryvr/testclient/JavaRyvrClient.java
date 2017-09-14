@@ -1,6 +1,9 @@
 package au.com.mountainpass.ryvr.testclient;
 
+import java.io.IOException;
+
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.http.client.ClientProtocolException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import au.com.mountainpass.ryvr.model.InMemoryRyvrRootImpl;
@@ -30,7 +33,7 @@ public class JavaRyvrClient implements RyvrTestClient {
   }
 
   @Override
-  public RyvrsCollection getRyvrsCollection() {
+  public RyvrsCollection getRyvrsCollection() throws ClientProtocolException, IOException {
     return getRoot().getRyvrsCollection();
   }
 
@@ -57,11 +60,6 @@ public class JavaRyvrClient implements RyvrTestClient {
       ryvr.getSource().iterator((page - 1) * pageSize);
     }
     return ryvr;
-  }
-
-  @Override
-  public void login(String username, String password) {
-    throw new NotImplementedException("TODO");
   }
 
   @Override
