@@ -16,6 +16,7 @@ Feature: DB Ryvr
       | name      | transactions                                                                          |
       | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
       | page size |                                                                                   512 |
+    And the client is authenticated
 
   # the write-read latency isn't that good at the moment.
   # This is because we set the TTL on the current/last page to 1 second, so that when there is a large
@@ -64,6 +65,7 @@ Feature: DB Ryvr
   #
   #   For data sources that don't have a change notifaction mechansim, the polling can be moved to Ryvr, which would
   #   still allow us to provide a change notifications to ryvr clients (albeit less efficently).
+  @current
   Scenario: Get Ryvr New Records
     When the "transactions" ryvr is retrieved
     And 4000 records are added at a rate of 200 records/s
