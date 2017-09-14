@@ -64,7 +64,6 @@ Feature: DB Ryvr
     When the "doesNotExist" ryvr is retrieved directly
     Then the ryvr will not be found
 
-    @current
   Scenario: Get Ryvr That Has Been Deleted
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -87,9 +86,11 @@ Feature: DB Ryvr
       | name      | transactions                                                                          |
       | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
       | page size |                                                                                    10 |
+    And the client is authenticated
     When -1th record of the "transactions" ryvr is retrieved
     Then the record will not be found
 
+    @current
   Scenario: Get Ryvr Page That Doesnt Exist - 0th page
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -98,6 +99,7 @@ Feature: DB Ryvr
       | name      | transactions                                                                          |
       | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
       | page size |                                                                                    10 |
+    And the client is authenticated
     When 0th page of the "transactions" ryvr is retrieved
     Then the page will not be found
 
