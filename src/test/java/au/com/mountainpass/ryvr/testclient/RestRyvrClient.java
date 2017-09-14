@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -89,36 +87,32 @@ public class RestRyvrClient implements RyvrTestClient {
   }
 
   @Override
-  public Ryvr getRyvrDirect(String name, int page) throws Throwable {
+  public Ryvr getRyvrDirect(String name, int page) throws ClientProtocolException, IOException {
     // instead of following the links, we are going to just construct the
     // URL and hit it directly, to ensure the correct 404 is returned
-    URL contextUrl = getRyvrsCollection().getContextUrl();
-    try {
-      URI ryvrUri = contextUrl.toURI().resolve("/ryvrs/" + name + "?page=" + page);
-      final HttpGet httpget = new HttpGet(ryvrUri);
+    URI ryvrUri = config.getBaseUri().resolve("/ryvrs/" + name + "?page=" + page);
+    final HttpGet httpget = new HttpGet(ryvrUri);
+    httpget.reset();
+    httpget.addHeader("Accept", MediaType.APPLICATION_JSON_VALUE);
+    CloseableHttpResponse response = httpClient.execute(httpget);
+    switch (response.getStatusLine().getStatusCode()) {
+    case org.apache.http.HttpStatus.SC_NOT_FOUND:
+      return null;
+    case org.apache.http.HttpStatus.SC_SEE_OTHER:
       httpget.reset();
-      httpget.addHeader("Accept", "application/json");
-      CloseableHttpResponse response = httpClient.execute(httpget);
-      switch (response.getStatusLine().getStatusCode()) {
-      case org.apache.http.HttpStatus.SC_NOT_FOUND:
-        throw new NoSuchElementException("No value present");
-      case org.apache.http.HttpStatus.SC_SEE_OTHER:
-        httpget.reset();
-        httpget.setURI(URI.create(response.getFirstHeader(HttpHeaders.LOCATION).getValue()));
-        response = httpClient.execute(httpget);
-        break;
-      case org.apache.http.HttpStatus.SC_OK:
-        break;
-      default:
-        throw new NotImplementedException(
-            "Unexpected status code: " + response.getStatusLine().getStatusCode());
-      }
-
-      return new Ryvr(name, 10,
-          new RestRyvrSource(httpClient, ryvrUri, response.getEntity(), response));
-    } catch (URISyntaxException | IOException e) {
-      throw new NotImplementedException(e);
+      httpget.setURI(URI.create(response.getFirstHeader(HttpHeaders.LOCATION).getValue()));
+      response = httpClient.execute(httpget);
+      break;
+    case org.apache.http.HttpStatus.SC_OK:
+      break;
+    default:
+      throw new NotImplementedException(
+          "TODO - handle: " + response.getStatusLine().getStatusCode());
     }
+
+    return new Ryvr(name, 10,
+        new RestRyvrSource(httpClient, ryvrUri, response.getEntity(), response));
+
   }
 
   @Override

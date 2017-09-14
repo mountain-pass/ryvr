@@ -255,6 +255,7 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [X] Add test for deleted Ryvr (404)
  - [X] Add test for getting a RyvrsCollection as HTML
  - [X] Add test with negative page number (404)
+ - [X] Add authentication
  - [ ] Swtich to using a proper load generation framework for perf testing
  - [ ] Add test with different SQL types
  - [ ] Add test with different characters that require JSON escaping
@@ -265,7 +266,6 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [ ] Fix API Docs
  - [ ] Performance test with real world dataset 
  - [ ] release as zip/tarball with example properties
- - [ ] Add authentication
  - [ ] Modify Perf test to use latency per event rather than latency per page
  - [ ] Compare performance to [Kafka](https://engineering.linkedin.com/kafka/benchmarking-apache-kafka-2-million-writes-second-three-cheap-machines)
  - [ ] Add Circuit Breaker
@@ -277,3 +277,4 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [ ] Add client library
  - [ ] decouple rest ryvr page size and UI page size
  - [ ] Add change notification service
+ - [ ] Add tests for unauthenticated
