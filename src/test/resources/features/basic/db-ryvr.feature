@@ -102,7 +102,6 @@ Feature: DB Ryvr
     When 0th page of the "transactions" ryvr is retrieved
     Then the page will not be found
 
-    @current
   Scenario: Get Ryvr Page That Doesnt Exist - minus 1th page
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -123,6 +122,7 @@ Feature: DB Ryvr
       | name      | transactions                                                                          |
       | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
       | page size |                                                                                    10 |
+    And the client is authenticated
     When the "transactions" ryvr is retrieved
     Then it will contain
       | id | account | description    | amount  |
@@ -135,10 +135,12 @@ Feature: DB Ryvr
       | name      | transactions                                                                          |
       | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
       | page size |                                                                                    10 |
+    And the client is authenticated
     When the "transactions" ryvr is retrieved
     Then it will contain
       | id | account | description | amount |
 
+  @current
   Scenario: Get Ryvr - Multiple Transactions
     Given the "transactions" table has the following events
       | id | account | description    | amount |
@@ -153,6 +155,7 @@ Feature: DB Ryvr
       | name      | transactions                                                                          |
       | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
       | page size |                                                                                    10 |
+    And the client is authenticated
     When the "transactions" ryvr is retrieved
     Then it will contain
       | id | account | description    | amount |
