@@ -278,3 +278,4 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
  - [ ] decouple rest ryvr page size and UI page size
  - [ ] Add change notification service
  - [ ] Add tests for unauthenticated
+ - [ ] Add tests for logout
