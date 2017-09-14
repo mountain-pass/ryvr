@@ -78,7 +78,8 @@ public class RestRyvrClient implements RyvrTestClient {
   }
 
   @Override
-  public void after(Scenario scenario) {
+  public void after(Scenario scenario) throws ClientProtocolException, IOException {
+    getRoot().logout();
   }
 
   @Override

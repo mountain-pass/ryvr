@@ -98,50 +98,52 @@ public class RyvrTestExternalServerAdminDriver implements RyvrTestServerAdminDri
 
   @Override
   public void ensureStarted() throws Throwable {
-    processBuilder.createApplicationProperties(dataSourcesRyvrConfigs);
-    this.shutdowner = new Shutdowner(this);
-    final ProcessBuilder pb = getProcessBuilder().inheritIO();
-    server = pb.start();
-    testConfig.setPort(8443);
-    ryvrConfig.setPort(8443);
+    if (server == null || !server.isAlive()) {
+      processBuilder.createApplicationProperties(dataSourcesRyvrConfigs);
+      this.shutdowner = new Shutdowner(this);
+      final ProcessBuilder pb = getProcessBuilder().inheritIO();
+      server = pb.start();
+      testConfig.setPort(8443);
+      ryvrConfig.setPort(8443);
 
-    final URI baseUri = ryvrConfig.getBaseUri();
-    final String host = baseUri.getHost();
-    final int port = baseUri.getPort();
+      final URI baseUri = ryvrConfig.getBaseUri();
+      final String host = baseUri.getHost();
+      final int port = baseUri.getPort();
 
-    LOGGER.info("Waiting for server to start: {}:{}", host, port);
-    for (int i = 0; i < 30 && server.isAlive(); ++i) {
-      try {
-        if (hostAvailable(host, port)) {
-          break;
+      LOGGER.info("Waiting for server to start: {}:{}", host, port);
+      for (int i = 0; i < 30 && server.isAlive(); ++i) {
+        try {
+          if (hostAvailable(host, port)) {
+            break;
+          }
+        } catch (final UnknownHostException e) {
+          throw new RuntimeException(e);
         }
-      } catch (final UnknownHostException e) {
-        throw new RuntimeException(e);
+        Thread.sleep(1000);
       }
-      Thread.sleep(1000);
-    }
-    assertTrue(server.isAlive());
-    LOGGER.info("Connected to server: {}:{}", host, port);
+      assertTrue(server.isAlive());
+      LOGGER.info("Connected to server: {}:{}", host, port);
 
-    LOGGER.info("Waiting for UP status: {}:{}", host, port);
+      LOGGER.info("Waiting for UP status: {}:{}", host, port);
 
-    for (int i = 0; i < 30 && server.isAlive(); ++i) {
-      try {
-        final ResponseEntity<Health> health = restTemplate.getForEntity(baseUri.resolve("/health"),
-            Health.class);
-        LOGGER.info("Status Response: {}", health);
-        LOGGER.info("Status: {}", health.getBody().status);
-        if (Status.UP.equals(health.getBody().status)) {
-          return;
+      for (int i = 0; i < 30 && server.isAlive(); ++i) {
+        try {
+          final ResponseEntity<Health> health = restTemplate
+              .getForEntity(baseUri.resolve("/health"), Health.class);
+          LOGGER.info("Status Response: {}", health);
+          LOGGER.info("Status: {}", health.getBody().status);
+          if (Status.UP.equals(health.getBody().status)) {
+            return;
+          }
+        } catch (final Exception e) {
+          LOGGER.info("Status: {}", e.getMessage());
         }
-      } catch (final Exception e) {
-        LOGGER.info("Status: {}", e.getMessage());
+        Thread.sleep(1000);
       }
-      Thread.sleep(1000);
-    }
-    assertTrue(server.isAlive());
+      assertTrue(server.isAlive());
 
-    throw new TimeoutException("timeout waiting for server to start");
+      throw new TimeoutException("timeout waiting for server to start");
+    }
   }
 
   protected ProcessBuilder getProcessBuilder() throws IOException {

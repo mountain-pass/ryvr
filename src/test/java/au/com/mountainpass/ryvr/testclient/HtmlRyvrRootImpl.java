@@ -34,4 +34,9 @@ public class HtmlRyvrRootImpl implements RyvrRootImpl {
     throw new NotImplementedException("TODO");
   }
 
+  @Override
+  public void logout() {
+    throw new NotImplementedException("TODO");
+  }
+
 }

@@ -41,7 +41,7 @@ class HttpCacheStatusHeaderAdder implements HttpResponseInterceptor {
     // .getAttribute(HttpCacheContext.HTTP_REQUEST);
     // LOGGER.info("X-Cache: {}\t{}", xCacheString, request.getURI());
     response.addHeader("X-Cache", xCacheString);
-    long length = response.getEntity().getContentLength();
+    long length = response.getEntity() == null ? 0L : response.getEntity().getContentLength();
     response.setHeader(HttpHeaders.CONTENT_LENGTH, Long.toString(length));
   }
 }

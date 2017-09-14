@@ -1,5 +1,9 @@
 package au.com.mountainpass.ryvr.testclient;
 
+import java.io.IOException;
+
+import org.apache.http.client.ClientProtocolException;
+
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrRoot;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
@@ -16,7 +20,7 @@ public interface RyvrTestClient {
 
   public Ryvr getRyvr(String name) throws Throwable;
 
-  public void after(Scenario scenario);
+  public void after(Scenario scenario) throws ClientProtocolException, IOException;
 
   public void before(Scenario scenario);
 

@@ -42,4 +42,8 @@ public class RyvrRoot {
     impl.login(username, password);
   }
 
+  public void logout() throws ClientProtocolException, IOException {
+    impl.logout();
+  }
+
 }

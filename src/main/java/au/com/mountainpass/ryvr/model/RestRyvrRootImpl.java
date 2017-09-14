@@ -45,6 +45,9 @@ public class RestRyvrRootImpl implements RyvrRootImpl {
   @Override
   public SwaggerImpl getApiDocs() throws ClientProtocolException, IOException {
     String uri = LinkHeader.extractUriByRel(response.getHeaders(HttpHeaders.LINK), "describedby");
+    if (uri == null) {
+      return null;
+    }
     HttpGet request = new HttpGet(rootLocation.resolve(uri));
     request.setHeader("Accept", MediaType.APPLICATION_JSON_VALUE);
     CloseableHttpResponse response = httpClient.execute(request);
@@ -97,6 +100,23 @@ public class RestRyvrRootImpl implements RyvrRootImpl {
       }
     }
 
+  }
+
+  @Override
+  public void logout() throws ClientProtocolException, IOException {
+    final HttpPost request = new HttpPost();
+    request.setHeader("Accept", MediaType.APPLICATION_JSON_VALUE);
+    request.setHeader("X-XSRF-TOKEN", cookieStore.getCookies().stream()
+        .filter(cookie -> cookie.getName().equals("XSRF-TOKEN")).findAny().get().getValue());
+    request.reset();
+    request.setURI(rootLocation.resolve("/logout"));
+    try (CloseableHttpResponse response = httpClient.execute(request)) {
+      if (response.getStatusLine().getStatusCode() == HttpStatus.SC_NO_CONTENT) {
+        // TODO: check we are unauthenticated
+      } else {
+        throw new NotImplementedException("TODO: handle " + response.getStatusLine().toString());
+      }
+    }
   }
 
 }

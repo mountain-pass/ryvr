@@ -12,4 +12,6 @@ public interface RyvrRootImpl {
 
   void login(String username, String password) throws ClientProtocolException, IOException;
 
+  void logout() throws ClientProtocolException, IOException;
+
 }

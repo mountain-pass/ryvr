@@ -4,6 +4,7 @@ package au.com.mountainpass.ryvr.steps.basic;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.http.client.ClientProtocolException;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -112,7 +114,7 @@ public class StepDefs {
   }
 
   @After
-  public void _after(final Scenario scenario) {
+  public void _after(final Scenario scenario) throws ClientProtocolException, IOException {
     client.after(scenario);
     configClient._after(scenario);
   }
@@ -173,6 +175,7 @@ public class StepDefs {
 
   @Given("^the client is authenticated$")
   public void the_client_is_authenticated() throws Throwable {
+    configClient.ensureStarted();
     client.getRoot().login("user", "password");
   }
 

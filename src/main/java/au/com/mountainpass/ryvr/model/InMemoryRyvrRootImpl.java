@@ -30,4 +30,9 @@ public class InMemoryRyvrRootImpl implements RyvrRootImpl {
     // do nothing
   }
 
+  @Override
+  public void logout() {
+    // do nothing
+  }
+
 }

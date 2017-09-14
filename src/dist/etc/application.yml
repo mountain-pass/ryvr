@@ -27,6 +27,13 @@ logging:
   file: ryvr.log
   path: ../var/logs
 
+security:
+  user:
+    name: user
+    password: password
+    role: USER
+
+
 au.com.mountainpass.ryvr:
   ssl:
     hostname: localhost
