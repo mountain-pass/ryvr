@@ -8,6 +8,7 @@ import java.util.List;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import au.com.mountainpass.ryvr.model.SwaggerImpl;
 import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
@@ -35,7 +36,8 @@ public class HtmlSwaggerImpl implements SwaggerImpl {
   private void ensureLoaded() {
     if (!loaded) {
       link.click();
-      HtmlRyvrClient.waitTillLoaded(webDriver, 5);
+      HtmlRyvrClient.waitTillLoaded(webDriver, 5,
+          ExpectedConditions.visibilityOfElementLocated(By.id("operations-system-getApiDocs")));
       loaded = true;
     }
   }
