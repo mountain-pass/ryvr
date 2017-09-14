@@ -4,11 +4,13 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.junit.Assume.*;
 
+import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.http.client.ClientProtocolException;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
@@ -25,12 +27,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import au.com.mountainpass.SauceLabsTunnel;
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.model.Ryvr;
-import au.com.mountainpass.ryvr.testclient.model.HtmlRootResponse;
+import au.com.mountainpass.ryvr.model.RyvrRoot;
+import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.testclient.model.HtmlRyvrSource;
-import au.com.mountainpass.ryvr.testclient.model.HtmlRyvrsCollectionResponse;
-import au.com.mountainpass.ryvr.testclient.model.HtmlSwaggerResponse;
-import au.com.mountainpass.ryvr.testclient.model.RootResponse;
-import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
+import au.com.mountainpass.ryvr.testclient.model.HtmlSwaggerImpl;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
 import cucumber.api.Scenario;
 
@@ -54,15 +54,15 @@ public class HtmlRyvrClient implements RyvrTestClient {
     webDriver.get(url.toString());
     waitTillLoaded(webDriver, 5,
         ExpectedConditions.visibilityOfElementLocated(By.id("operations-tag-system")));
-    return new HtmlSwaggerResponse(webDriver);
+    return new HtmlSwaggerImpl(webDriver);
   }
 
   @Override
-  public RootResponse getRoot() {
+  public RyvrRoot getRoot() {
     URI url = config.getBaseUri().resolve("/");
     webDriver.get(url.toString());
     waitTillLoaded(webDriver, 5);
-    return new HtmlRootResponse(webDriver);
+    return new RyvrRoot("ryvr", new HtmlRyvrRootImpl(webDriver));
   }
 
   public static void waitTillLoaded(WebDriver webDriver, long timeoutInSeconds) {
@@ -81,13 +81,13 @@ public class HtmlRyvrClient implements RyvrTestClient {
   }
 
   @Override
-  public RyvrsCollectionResponse getRyvrsCollection() {
-    return getRoot().followRyvrsLink();
+  public RyvrsCollection getRyvrsCollection() throws ClientProtocolException, IOException {
+    return getRoot().getRyvrsCollection();
   }
 
   @Override
-  public Ryvr getRyvr(String name) {
-    return getRyvrsCollection().followRyvrLink(name);
+  public Ryvr getRyvr(String name) throws ClientProtocolException, IOException {
+    return getRyvrsCollection().get(name);
   }
 
   @Override
@@ -156,8 +156,7 @@ public class HtmlRyvrClient implements RyvrTestClient {
   public Ryvr getRyvrDirect(String name, int page) throws Throwable {
     // instead of following the links, we are going to just construct the
     // URL and hit it directly, to ensure the correct 404 is returned
-    URL contextUrl = getRyvrsCollection().getContextUrl();
-    URI ryvrUri = contextUrl.toURI().resolve("/ryvrs/" + name + "?page=" + page);
+    URI ryvrUri = config.getBaseUri().resolve("/ryvrs/" + name + "?page=" + page);
     webDriver.get(ryvrUri.toString());
     HtmlRyvrClient.waitTillLoaded(webDriver, 5);
     WebElement title = webDriver.findElement(By.cssSelector("body > div > section > div > h1"));
@@ -168,10 +167,11 @@ public class HtmlRyvrClient implements RyvrTestClient {
   }
 
   @Override
-  public RyvrsCollectionResponse getRyvrsCollectionDirect() throws Throwable {
+  public RyvrsCollection getRyvrsCollectionDirect() throws Throwable {
     webDriver.get(config.getBaseUri().resolve("/ryvrs").toString());
     HtmlRyvrClient.waitTillLoaded(webDriver, 5);
-    return new HtmlRyvrsCollectionResponse(webDriver);
+    // return new HtmlRyvrsCollectionResponse(webDriver);
+    throw new NotImplementedException();
   }
 
 }

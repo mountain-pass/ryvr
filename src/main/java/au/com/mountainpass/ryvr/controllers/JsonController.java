@@ -170,20 +170,20 @@ public class JsonController {
     res.addHeader("Link-Template", headerValue);
   }
 
-  private void addLinks(RyvrRoot root, HttpServletResponse res) {
+  public static void addLinks(RyvrRoot root, HttpServletResponse res) {
     addLink("self", "/", res, "Home");
     addLink(RyvrsCollection.RELS_RYVRS_COLLECTION, "/ryvrs", res, "Ryvrs");
     addLink("describedby", "/api-docs", res, "API Docs");
   }
 
-  private void addLinks(RyvrsCollection ryvrsCollection, HttpServletResponse res) {
+  private static void addLinks(RyvrsCollection ryvrsCollection, HttpServletResponse res) {
     addLink("self", "/ryvrs", res, "Ryvrs");
     ryvrsCollection.entrySet().forEach(entry -> {
       addLink("item", "/ryvrs/" + entry.getKey() + "?page=1", res, entry.getKey());
     });
   }
 
-  private void addLink(String rel, String href, HttpServletResponse res, String title) {
+  private static void addLink(String rel, String href, HttpServletResponse res, String title) {
     String headerValue = "<" + href + ">; rel=\"" + rel + "\"";
     if (title != null) {
       headerValue += "; title=\"" + title + "\"";

@@ -5,8 +5,6 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import javax.servlet.ServletOutputStream;
-
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -123,12 +121,13 @@ public class RyvrSerialiser {
     }
   }
 
-  public void toJson(RyvrRoot root, ServletOutputStream o) throws IOException {
+  public void toJson(RyvrRoot root, OutputStream o) throws IOException {
     writer.getBuilder().setLength(0);
     o.flush();
     writer.write(titlePre, 0, 10);
     writer.write(root.getTitle());
     writer.write(closeStringAndObject, 0, 2);
+    o.write(writer.getBuilder().toString().getBytes());
     if (o instanceof ServletOutputStreamImpl) {
       ServletOutputStreamImpl sosi = (ServletOutputStreamImpl) o;
       sosi.closeAsync();
@@ -137,12 +136,13 @@ public class RyvrSerialiser {
     }
   }
 
-  public void toJson(RyvrsCollection ryvrsCollection, ServletOutputStream o) throws IOException {
+  public void toJson(RyvrsCollection ryvrsCollection, OutputStream o) throws IOException {
     writer.getBuilder().setLength(0);
     o.flush();
     writer.write(titlePre, 0, 10);
     writer.write(ryvrsCollection.getTitle());
     writer.write(closeStringAndObject, 0, 2);
+    o.write(writer.getBuilder().toString().getBytes());
     if (o instanceof ServletOutputStreamImpl) {
       ServletOutputStreamImpl sosi = (ServletOutputStreamImpl) o;
       sosi.closeAsync();

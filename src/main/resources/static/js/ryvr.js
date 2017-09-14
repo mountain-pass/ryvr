@@ -159,7 +159,7 @@ define(['angular'], function(angular) {
         controller.actionValues = {};
         controller.error = {};
         controller.href = $window.location.href;
-        controller.debug = false;
+        controller.debug = true;
 
         
         controller.processNavClick = function(event) {

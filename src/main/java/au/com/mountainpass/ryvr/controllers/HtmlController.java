@@ -68,6 +68,9 @@ public class HtmlController {
 
   private String swaggerUiVersion;
 
+  @Autowired
+  private RyvrRoot root;
+
   @PostConstruct
   private void postConstruct() {
     Map<String, String> webJars = new WebJarAssetLocator().getWebJars();
@@ -91,35 +94,37 @@ public class HtmlController {
 
   }
 
-  public ResponseEntity<?> getRoot(final HttpServletResponse res, HttpServletRequest req) {
-    // RyvrRoot root = (RyvrRoot) jsonController.getRoot(res, req).getBody();
-    // return getIndex(root, root, null);
-    throw new NotImplementedException("TODO");
+  public void getRoot(final HttpServletResponse res, HttpServletRequest req) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    serialiser.toJson(root, baos);
+    String serializedRoot = baos.toString();
+    res.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE);
+    JsonController.addLinks(root, res);
+    getIndex(res, serializedRoot, serializedRoot, new HttpHeaders());
+    res.setStatus(HttpStatus.OK.value());
+
   }
 
-  private ResponseEntity<?> getIndex(RyvrRoot root, Object resource, HttpHeaders headers) {
+  private void getIndex(HttpServletResponse res, String root, String resource,
+      HttpHeaders headers) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     ClassPathResource index = new ClassPathResource("static/index.html");
     try {
       Mustache mustache = mustacheFactory.compile(new InputStreamReader(index.getInputStream()),
           "static/index.html", "<%", "%>");
       Map<String, String> scope = new HashMap<>();
-      scope.put("root", om.writeValueAsString(root));
+      scope.put("root", root);
       // scope.put("root-links", TODO);
-      if (resource instanceof String) {
-        String body = (String) resource;
-        scope.put("resource", body);
-        scope.put("resource-headers", om.writeValueAsString(headers));
-      } else {
-        scope.put("resource", om.writeValueAsString(resource));
-        scope.put("resource-headers", "{}");
-      }
+
+      scope.put("resource", resource);
+      scope.put("resource-headers", om.writeValueAsString(headers));
 
       OutputStreamWriter writer = new OutputStreamWriter(baos);
       mustache.execute(writer, scope).flush();
       writer.flush();
-
-      return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(baos.toByteArray());
+      res.getOutputStream().write(baos.toByteArray());
+      res.getOutputStream().flush();
+      res.setStatus(org.apache.http.HttpStatus.SC_OK);
     } catch (IOException e) {
       throw new NotImplementedException(e);
     }

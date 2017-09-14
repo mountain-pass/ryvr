@@ -4,6 +4,7 @@ Feature: Root
     As a user
     I want to get a list of services when accessing the server
 
+@current
 Scenario: Get Root
     When a request is made to the server's base URL
     Then the root entity will contain a link to the api-docs

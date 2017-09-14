@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,7 @@ public class RyvrsCollectionController {
 
   @RequestMapping(method = RequestMethod.GET, produces = { MediaType.TEXT_HTML_VALUE })
   public ResponseEntity<?> getHtml(final HttpServletRequest req) {
-    return htmlController.getRyvrsCollection(req);
+    // return htmlController.getRyvrsCollection(req);
+    throw new NotImplementedException("TODO");
   }
 }

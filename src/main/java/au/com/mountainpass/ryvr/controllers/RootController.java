@@ -38,8 +38,9 @@ public class RootController {
   }
 
   @RequestMapping(method = RequestMethod.GET, produces = { MediaType.ALL_VALUE })
-  public ResponseEntity<?> getHtml(final HttpServletRequest req) {
-    return htmlController.getRoot(req);
+  public void getHtml(final HttpServletResponse res, final HttpServletRequest req)
+      throws IOException {
+    htmlController.getRoot(res, req);
   }
 
   @RequestMapping(value = "/webjars.js", method = RequestMethod.GET, produces = "application/javascript")
