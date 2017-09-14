@@ -26,6 +26,7 @@ Feature: DB Ryvr
     Then the ryvrs list will contain the following entries
       | transactions |
 
+    @current
   Scenario: Find Ryvr in Collection - Direct
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -34,6 +35,7 @@ Feature: DB Ryvr
       | name      | transactions                                                                          |
       | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
       | page size |                                                                                    10 |
+    And the client is authenticated
     When the ryvrs list is retrieved directly
     Then the count of ryvrs will be 1
     Then the ryvrs list will contain the following entries

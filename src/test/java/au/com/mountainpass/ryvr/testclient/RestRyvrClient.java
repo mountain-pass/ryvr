@@ -23,13 +23,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import au.com.mountainpass.ryvr.config.RyvrConfiguration;
+import au.com.mountainpass.ryvr.model.RestRyvrCollectionImpl;
 import au.com.mountainpass.ryvr.model.RestRyvrRootImpl;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrRoot;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.rest.RestRyvrSource;
-import au.com.mountainpass.ryvr.testclient.model.RestRyvrsCollectionResponse;
-import au.com.mountainpass.ryvr.testclient.model.RyvrsCollectionResponse;
 import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
 import cucumber.api.Scenario;
 
@@ -123,16 +122,18 @@ public class RestRyvrClient implements RyvrTestClient {
   }
 
   @Override
-  public RyvrsCollectionResponse getRyvrsCollectionDirect() throws Throwable {
-    try {
-      URI ryvrsUri = config.getBaseUri().resolve("/ryvrs");
-      RyvrsCollection ryvrsCollection = restTemplate.getForEntity(ryvrsUri, RyvrsCollection.class)
-          .getBody();
-      return new RestRyvrsCollectionResponse(httpClient, httpAsyncClient, ryvrsUri.toURL(),
-          ryvrsCollection);
-    } catch (MalformedURLException e) {
-      throw new NotImplementedException(e);
+  public RyvrsCollection getRyvrsCollectionDirect() throws Throwable {
+    URI ryvrsUri = config.getBaseUri().resolve("/ryvrs");
+    HttpGet request = new HttpGet(ryvrsUri);
+    request.setHeader("Accept", MediaType.APPLICATION_JSON_VALUE);
+    CloseableHttpResponse response = httpClient.execute(request);
+    if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+      return new RyvrsCollection(
+          new RestRyvrCollectionImpl(httpClient, cookies, response, config.getBaseUri()));
+    } else {
+      throw new NotImplementedException("TODO: handle " + response.getStatusLine().toString());
     }
+
   }
 
 }
