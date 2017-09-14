@@ -140,7 +140,6 @@ Feature: DB Ryvr
     Then it will contain
       | id | account | description | amount |
 
-  @current
   Scenario: Get Ryvr - Multiple Transactions
     Given the "transactions" table has the following events
       | id | account | description    | amount |

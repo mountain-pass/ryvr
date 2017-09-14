@@ -4,6 +4,7 @@ Feature: DB Ryvr
     As a user
     I want to get a paginated list of events from the DB
 
+
   Background: 
     Given a database "test_db"
     And it has a table "transactions" with the following structure
@@ -12,6 +13,7 @@ Feature: DB Ryvr
       | description | VARCHAR(255)  |
       | amount      | DECIMAL(19,4) |
 
+  @current
   Scenario: Get Ryvr - Multiple Pages - One Page Plus One
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -30,6 +32,7 @@ Feature: DB Ryvr
       | name      | transactions                                                                          |
       | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
       | page size |                                                                                    10 |
+    And the client is authenticated
     When the "transactions" ryvr is retrieved
     Then it will contain
       | id | account | description    | amount  |
@@ -66,6 +69,7 @@ Feature: DB Ryvr
       | name      | transactions                                                                          |
       | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
       | page size |                                                                                    10 |
+    And the client is authenticated
     When the "transactions" ryvr is retrieved
     Then it will contain
       | id | account | description    | amount  |
