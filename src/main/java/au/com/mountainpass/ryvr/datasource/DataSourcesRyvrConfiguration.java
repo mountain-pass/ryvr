@@ -23,9 +23,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.validation.annotation.Validated;
 
-import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.model.Ryvr;
-import au.com.mountainpass.ryvr.model.RyvrsCollection;
 
 @Configuration
 @ConfigurationProperties(prefix = "au.com.mountainpass.ryvr")
@@ -33,12 +31,6 @@ import au.com.mountainpass.ryvr.model.RyvrsCollection;
 public class DataSourcesRyvrConfiguration {
 
   private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-
-  @Autowired
-  private RyvrsCollection ryvrs;
-
-  @Autowired
-  private RyvrConfiguration rc;
 
   @Autowired
   @Qualifier("spring.datasource-org.springframework.boot.autoconfigure.jdbc.DataSourceProperties")
