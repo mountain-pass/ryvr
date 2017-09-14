@@ -17,6 +17,7 @@ Feature: DB Ryvr
       | name      | transactions                                                                          |
       | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
       | page size |                                                                                  8192 |
+    And the client is authenticated
 
   Scenario: Get Ryvr First Hit
     When the "transactions" ryvr is retrieved
@@ -37,7 +38,6 @@ Feature: DB Ryvr
     And the event retrieval throughput should be at least 900MB/s
     And the event retrieval rate should be at least 20MTPS
 
-  @current
   Scenario: Get Ryvr Multiple Consumers
     When the "transactions" ryvr is retrieved
     And all the events are retrieved

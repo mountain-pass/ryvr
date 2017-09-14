@@ -18,7 +18,6 @@ Feature: DB Many Pages
       | page size |                                                                                    10 |
     And the client is authenticated
 
-  @current
   Scenario: Get Ryvr - Multiple Pages - Current Page
     When the "transactions" ryvr is retrieved
     Then it will have the following structure

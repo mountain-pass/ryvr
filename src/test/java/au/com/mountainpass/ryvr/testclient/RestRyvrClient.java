@@ -1,7 +1,6 @@
 package au.com.mountainpass.ryvr.testclient;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
@@ -74,8 +73,8 @@ public class RestRyvrClient implements RyvrTestClient {
   }
 
   @Override
-  public Ryvr getRyvr(String name) throws MalformedURLException {
-    return getRyvrsCollection().followRyvrLink(name);
+  public Ryvr getRyvr(String name) throws ClientProtocolException, IOException {
+    return getRyvrsCollection().get(name);
   }
 
   @Override
