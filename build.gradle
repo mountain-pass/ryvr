@@ -476,26 +476,30 @@ task githubDeleteDrafts('description': 'removes any draft releases with the same
   }
 }
 
-if( project.releaseNotes.exists() ) {
-  github {
-    owner = 'mountain-pass'
-    repo = 'ryvr'
-    token = project.hasProperty('githubToken') ? project.getProperty('githubToken') : 'NOTSET'
-    tagName = "${project.version}"
-    targetCommitish = 'master'
-    name = "v${project.version}"
 
+github {
+  owner = 'mountain-pass'
+  repo = 'ryvr'
+  token = project.hasProperty('githubToken') ? project.getProperty('githubToken') : 'NOTSET'
+  tagName = "${project.version}"
+  targetCommitish = 'master'
+  name = "v${project.version}"
+
+  if( project.releaseNotes.exists() ) {
     body = file(releaseNotes.path).text
-    assets = [
-      "build/distributions/ryvr-${project.version}.zip",
-      "build/distributions/ryvr-${project.version}.tar.gz"
-    ]
-    prerelease = false
-    draft = true
   }
-  githubRelease.dependsOn assembleDist
-  githubRelease.dependsOn githubDeleteDrafts
+  else {
+    body = ""
+  }
+  assets = [
+    "build/distributions/ryvr-${project.version}.zip",
+    "build/distributions/ryvr-${project.version}.tar.gz"
+  ]
+  prerelease = false
+  draft = true
 }
+githubRelease.dependsOn assembleDist 
+githubRelease.dependsOn githubDeleteDrafts
 
 
 task printOutputs(group: 'build') {
