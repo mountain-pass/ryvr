@@ -10,7 +10,7 @@ import au.com.mountainpass.ryvr.model.InMemoryRyvrRootImpl;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrRoot;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
-import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
+import au.com.mountainpass.ryvr.model.SwaggerImpl;
 import cucumber.api.Scenario;
 
 public class JavaRyvrClient implements RyvrTestClient {

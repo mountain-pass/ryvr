@@ -4,8 +4,6 @@ import java.io.IOException;
 
 import org.apache.http.client.ClientProtocolException;
 
-import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
-
 public class RyvrRoot {
 
   public static final String RELS_RYVRS_COLLECTION = "https://mountain-pass.github.io/ryvr/rels/ryvrs-collection";

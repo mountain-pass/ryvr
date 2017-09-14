@@ -9,6 +9,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import au.com.mountainpass.ryvr.model.SwaggerImpl;
 import au.com.mountainpass.ryvr.testclient.HtmlRyvrClient;
 
 public class HtmlSwaggerImpl implements SwaggerImpl {

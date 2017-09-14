@@ -6,8 +6,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
-
 @Component
 public class InMemoryRyvrRootImpl implements RyvrRootImpl {
 

@@ -8,8 +8,8 @@ import org.openqa.selenium.WebDriver;
 
 import au.com.mountainpass.ryvr.model.RyvrRootImpl;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
+import au.com.mountainpass.ryvr.model.SwaggerImpl;
 import au.com.mountainpass.ryvr.testclient.model.HtmlSwaggerImpl;
-import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
 
 public class HtmlRyvrRootImpl implements RyvrRootImpl {
 

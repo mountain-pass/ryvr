@@ -7,7 +7,6 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
 import io.swagger.models.Swagger;
 import io.swagger.parser.SwaggerParser;
 

@@ -21,7 +21,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import au.com.mountainpass.ryvr.rest.LinkHeader;
-import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
 
 public class RestRyvrRootImpl implements RyvrRootImpl {
 

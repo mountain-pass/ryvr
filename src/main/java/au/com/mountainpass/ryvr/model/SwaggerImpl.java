@@ -1,4 +1,4 @@
-package au.com.mountainpass.ryvr.testclient.model;
+package au.com.mountainpass.ryvr.model;
 
 public interface SwaggerImpl {
 

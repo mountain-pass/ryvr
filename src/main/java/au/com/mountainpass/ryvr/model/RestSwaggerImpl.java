@@ -8,7 +8,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
 import io.swagger.models.Swagger;
 import io.swagger.parser.Swagger20Parser;
 

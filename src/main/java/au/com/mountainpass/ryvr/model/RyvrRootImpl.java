@@ -4,8 +4,6 @@ import java.io.IOException;
 
 import org.apache.http.client.ClientProtocolException;
 
-import au.com.mountainpass.ryvr.testclient.model.SwaggerImpl;
-
 public interface RyvrRootImpl {
 
   SwaggerImpl getApiDocs() throws ClientProtocolException, IOException;
