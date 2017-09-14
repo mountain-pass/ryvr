@@ -4,8 +4,9 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 import java.util.AbstractMap;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.openqa.selenium.By;
@@ -14,6 +15,7 @@ import org.openqa.selenium.WebElement;
 
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrCollectionImpl;
+import au.com.mountainpass.ryvr.testclient.model.HtmlRyvrSource;
 
 public class HtmlRyvrCollectionImpl extends AbstractMap<String, Ryvr>
     implements RyvrCollectionImpl {
@@ -32,9 +34,16 @@ public class HtmlRyvrCollectionImpl extends AbstractMap<String, Ryvr>
   }
 
   @Override
-  public Set<java.util.Map.Entry<String, Ryvr>> entrySet() {
+  public Set<Map.Entry<String, Ryvr>> entrySet() {
     ensureLoaded();
-    return new HashSet<>();
+    List<WebElement> items = webDriver.findElements(By.cssSelector("a[rel~='item']"));
+    Map<String, Ryvr> rval = new HashMap<>();
+    for (WebElement item : items) {
+      String title = item.getText().trim();
+      rval.put(title, new Ryvr(title, 10, new HtmlRyvrSource(webDriver, item)));
+
+    }
+    return rval.entrySet();
   }
 
   private void ensureLoaded() {

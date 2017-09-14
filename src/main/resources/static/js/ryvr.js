@@ -253,12 +253,14 @@ define(['angular'], function(angular) {
         controller.initResource = function() {
             controller.resource = JSON.parse(document.getElementById('init-resource').textContent);
             controller.resourceHeaders = JSON.parse(document.getElementById('init-resource-headers').textContent);
-            if( "Link" in controller.resourceHeaders ) {
-                controller.resourceLinks = linkHeaderParse(controller.resourceHeaders["Link"]);
+            console.log("resource headers", controller.resourceHeaders);
+            if( "link" in controller.resourceHeaders ) {
+                controller.resourceLinks = linkHeaderParse(controller.resourceHeaders["link"]);
             }
             else {
                 controller.resourceLinks = {};
             }
+            console.log("resource links", controller.resourceLinks);
         };
 
 

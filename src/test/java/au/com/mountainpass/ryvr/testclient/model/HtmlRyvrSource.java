@@ -75,8 +75,11 @@ public class HtmlRyvrSource extends RyvrSource {
     }
   };
 
-  public HtmlRyvrSource(WebDriver webDriver) {
+  private WebElement link;
+
+  public HtmlRyvrSource(WebDriver webDriver, WebElement link) {
     this.webDriver = webDriver;
+    this.link = link;
   }
 
   @Override

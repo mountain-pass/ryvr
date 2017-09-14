@@ -163,7 +163,7 @@ public class HtmlRyvrClient implements RyvrTestClient {
     if ("Tumbleweeds blow past".equals(title.getText())) {
       throw new NoSuchElementException("No value present");
     }
-    return new Ryvr(name, 10, new HtmlRyvrSource(webDriver));
+    return new Ryvr(name, 10, new HtmlRyvrSource(webDriver, null));
   }
 
   @Override

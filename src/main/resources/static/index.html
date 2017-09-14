@@ -134,7 +134,7 @@
 
       <div id="linkedItems"
         ng-if="controller.resourceLinks.hasOwnProperty('item') && 
-        controller.resourceLinks.item !== null && controller.resourceLinks.item.length > 0)">
+        controller.resourceLinks.item !== null && controller.resourceLinks.item.length > 0">
         <h2>Links</h2>
         <ul>
           <li ng-repeat="item in [].concat(controller.resourceLinks.item)" id="item:row:{{item.href}}"><a
