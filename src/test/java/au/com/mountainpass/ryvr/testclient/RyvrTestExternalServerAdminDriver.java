@@ -188,14 +188,14 @@ public class RyvrTestExternalServerAdminDriver implements RyvrTestServerAdminDri
         }
         final URI baseUri = ryvrConfig.getBaseUri();
         final String host = baseUri.getHost();
-        final int port = baseUri.getPort();
+        final int port = 8443;
 
         LOGGER.info("Waiting for server to stop listening: {}:{}", host, port);
         boolean stopped = false;
         for (int i = 0; i < 30; ++i) {
           try {
-            if (!hostAvailable(host, port)) {
-              stopped = true;
+            stopped = !hostAvailable(host, port);
+            if (stopped) {
               break;
             }
             LOGGER.info("waiting...");
