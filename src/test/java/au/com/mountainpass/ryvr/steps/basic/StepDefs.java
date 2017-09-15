@@ -40,6 +40,7 @@ import au.com.mountainpass.ryvr.model.RyvrsCollection;
 import au.com.mountainpass.ryvr.model.SwaggerImpl;
 import au.com.mountainpass.ryvr.testclient.RyvrTestClient;
 import au.com.mountainpass.ryvr.testclient.RyvrTestDbDriver;
+import au.com.mountainpass.ryvr.testclient.RyvrTestExternalServerAdminDriver;
 import au.com.mountainpass.ryvr.testclient.RyvrTestServerAdminDriver;
 import au.com.mountainpass.ryvr.testclient.model.Util;
 import cucumber.api.PendingException;
@@ -263,6 +264,11 @@ public class StepDefs {
     configClient.deleteRvyr(uniquifyRyvrName(name));
     // this results in a stale ryvrsCollection, which is what we want, because
     // we want to test what happens when we follow the link that doesn't exist anymore.
+    //
+    // BUT! If the configClient is an External Driver, then we need to re-authenticate
+    if (configClient instanceof RyvrTestExternalServerAdminDriver) {
+      client.getRoot().login("user", "password");
+    }
   }
 
   @When("^the \"([^\"]*)\" ryvr is retrieved directly$")

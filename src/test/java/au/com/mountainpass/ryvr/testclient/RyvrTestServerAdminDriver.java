@@ -16,6 +16,6 @@ public interface RyvrTestServerAdminDriver {
 
   void _after(Scenario scenario);
 
-  void deleteRvyr(String name);
+  void deleteRvyr(String name) throws Throwable;
 
 }
