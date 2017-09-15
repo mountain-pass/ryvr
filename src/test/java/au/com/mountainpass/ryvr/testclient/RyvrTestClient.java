@@ -32,4 +32,6 @@ public interface RyvrTestClient {
 
   public RyvrsCollection getRyvrsCollectionDirect() throws Throwable;
 
+  public void logout() throws ClientProtocolException, IOException;
+
 }

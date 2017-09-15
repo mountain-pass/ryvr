@@ -115,6 +115,7 @@ public class StepDefs {
 
   @After
   public void _after(final Scenario scenario) throws ClientProtocolException, IOException {
+    client.logout();
     client.after(scenario);
     configClient._after(scenario);
   }

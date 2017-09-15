@@ -2,7 +2,6 @@ package au.com.mountainpass.ryvr.testclient;
 
 import java.io.IOException;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.client.ClientProtocolException;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -43,7 +42,7 @@ public class HtmlRyvrRootImpl implements RyvrRootImpl {
 
   @Override
   public void logout() {
-    throw new NotImplementedException("TODO");
+    webDriver.findElement(By.cssSelector("#logout")).click();
   }
 
 }

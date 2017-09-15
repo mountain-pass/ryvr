@@ -116,10 +116,9 @@ public class HtmlRyvrSource extends RyvrSource {
 
   public void followLink(String rel) {
     HtmlRyvrClient.waitTillLoaded(webDriver, 5);
-    WebElement link = webDriver.findElement(By.cssSelector("section a[rel~='" + rel + "']"));
     HtmlRyvrClient.waitTillLoaded(webDriver, 5,
         ExpectedConditions.elementToBeClickable(By.cssSelector("section a[rel~='" + rel + "']")));
-    link.click();
+    webDriver.findElement(By.cssSelector("section a[rel~='" + rel + "']")).click();
     HtmlRyvrClient.waitTillLoaded(webDriver, 5);
   }
 

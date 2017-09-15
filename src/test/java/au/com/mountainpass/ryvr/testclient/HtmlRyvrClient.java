@@ -171,4 +171,9 @@ public class HtmlRyvrClient implements RyvrTestClient {
     return new RyvrsCollection(new HtmlRyvrCollectionImpl(webDriver));
   }
 
+  @Override
+  public void logout() throws ClientProtocolException, IOException {
+    getRoot().logout();
+  }
+
 }
