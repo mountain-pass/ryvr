@@ -179,7 +179,6 @@ public class HtmlController {
       isLastPage = !lastOnPageIterator.hasNext();
     }
 
-    res.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
     res.addHeader(HttpHeaders.VARY, String.join(",", HttpHeaders.AUTHORIZATION, HttpHeaders.ACCEPT,
         HttpHeaders.ACCEPT_ENCODING, HttpHeaders.ACCEPT_LANGUAGE, HttpHeaders.ACCEPT_CHARSET));
 

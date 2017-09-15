@@ -1,6 +1,5 @@
 package au.com.mountainpass.ryvr.testclient.model;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -35,12 +34,19 @@ class HtmlRyvrSourceIterator implements Iterator<Record> {
       URI currentUri = URI.create(htmlRyvrSource.webDriver.getCurrentUrl());
       String currentFile = currentUri.getPath();
       String newQuery = "page=" + page;
-      try {
-        // LOGGER.info("getting new page: {} for position {}", page, position);
-        htmlRyvrSource.followUri(currentUri.resolve(currentFile + "?" + newQuery));
-      } catch (IOException e) {
-        throw new RuntimeException(e);
+      if (page == 1) {
+        htmlRyvrSource.followLink("first");
+      } else {
+        while (page > currentPage) {
+          htmlRyvrSource.followLink("next");
+          currentPage = htmlRyvrSource.getPageNo();
+        }
+        while (page < currentPage) {
+          htmlRyvrSource.followLink("prev");
+          currentPage = htmlRyvrSource.getPageNo();
+        }
       }
+      // LOGGER.info("getting new page: {} for position {}", page, position);
     }
     isArchivePage = htmlRyvrSource.isArchivePage();
     if (!isArchivePage) {
