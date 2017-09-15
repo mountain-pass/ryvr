@@ -27,12 +27,12 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew --no-daemon downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies --stacktrace
       - save_cache:
           paths:
             - ~/.gradle
           key: gradle-dependencies-{{ checksum "build.gradle" }}
-      - run: ./gradlew --no-daemon assemble compileTestJava
+      - run: ./gradlew --no-daemon assemble compileTestJava 
       - store_artifacts:
           path: build/distributions
       - persist_to_workspace:
@@ -54,7 +54,7 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew --no-daemon downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies --stacktrace
       - save_cache:
           paths:
             - ~/.gradle
@@ -81,7 +81,7 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew --no-daemon downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies --stacktrace
       - save_cache:
           paths:
             - ~/.gradle
@@ -120,7 +120,7 @@ jobs:
           keys:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           - gradle-dependencies-
-      - run: ./gradlew --no-daemon downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies --stacktrace
       - save_cache:
           paths:
             - ~/.gradle
@@ -157,7 +157,7 @@ jobs:
           keys:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           - gradle-dependencies-
-      - run: ./gradlew --no-daemon downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies --stacktrace
       - save_cache:
           paths:
             - ~/.gradle
@@ -197,7 +197,7 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew --no-daemon downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies --stacktrace
       - save_cache:
           paths:
             - ~/.gradle
@@ -238,7 +238,7 @@ jobs:
           keys:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           - gradle-dependencies-
-      - run: ./gradlew --no-daemon downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies --stacktrace
       - save_cache:
           paths:
             - ~/.gradle
@@ -278,7 +278,7 @@ jobs:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           # fallback to using the latest cache if no exact match is found
           - gradle-dependencies-
-      - run: ./gradlew --no-daemon downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies --stacktrace
       - save_cache:
           paths:
             - ~/.gradle
@@ -320,7 +320,7 @@ jobs:
           keys:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           - gradle-dependencies-
-      - run: ./gradlew --no-daemon downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies --stacktrace
       - save_cache:
           paths:
             - ~/.gradle
@@ -351,7 +351,7 @@ jobs:
           keys:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           - gradle-dependencies-
-      - run: ./gradlew --no-daemon downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies --stacktrace
       - save_cache:
           paths:
             - ~/.gradle
@@ -381,7 +381,7 @@ jobs:
           keys:
           - gradle-dependencies-{{ checksum "build.gradle" }}
           - gradle-dependencies-
-      - run: ./gradlew --no-daemon downloadDependencies
+      - run: ./gradlew --no-daemon downloadDependencies --stacktrace
       - save_cache:
           paths:
             - ~/.gradle
