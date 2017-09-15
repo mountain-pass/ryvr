@@ -12,7 +12,6 @@ Feature: DB Ryvr
       | description | VARCHAR(255)  |
       | amount      | DECIMAL(19,4) |
 
-  @current
   Scenario: Find Ryvr in Collection
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -27,6 +26,7 @@ Feature: DB Ryvr
     Then the ryvrs list will contain the following entries
       | transactions |
 
+  @current
   Scenario: Find Ryvr in Collection - Direct
     Given the "transactions" table has the following events
       | id | account | description    | amount  |

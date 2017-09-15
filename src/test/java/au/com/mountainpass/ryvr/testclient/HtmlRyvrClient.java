@@ -9,7 +9,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.http.client.ClientProtocolException;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -170,8 +169,7 @@ public class HtmlRyvrClient implements RyvrTestClient {
   public RyvrsCollection getRyvrsCollectionDirect() throws Throwable {
     webDriver.get(config.getBaseUri().resolve("/ryvrs").toString());
     HtmlRyvrClient.waitTillLoaded(webDriver, 5);
-    // return new HtmlRyvrsCollectionResponse(webDriver);
-    throw new NotImplementedException();
+    return new RyvrsCollection(new HtmlRyvrCollectionImpl(webDriver));
   }
 
 }

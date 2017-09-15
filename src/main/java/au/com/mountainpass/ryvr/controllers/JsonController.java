@@ -188,6 +188,22 @@ public class JsonController {
     if (title != null) {
       headerValue += "; title=\"" + title + "\"";
     }
-    res.addHeader(HttpHeaders.LINK, headerValue);
+    res.addHeader(HttpHeaders.LINK.toLowerCase(), headerValue);
   }
+
+  public static void addLinks(RyvrsCollection ryvrsCollection, HttpHeaders resourceHeaders) {
+    addLink("self", "/ryvrs", resourceHeaders, "Ryvrs");
+    ryvrsCollection.entrySet().forEach(entry -> {
+      addLink("item", "/ryvrs/" + entry.getKey() + "?page=1", resourceHeaders, entry.getKey());
+    });
+  }
+
+  private static void addLink(String rel, String href, HttpHeaders resourceHeaders, String title) {
+    String headerValue = "<" + href + ">; rel=\"" + rel + "\"";
+    if (title != null) {
+      headerValue += "; title=\"" + title + "\"";
+    }
+    resourceHeaders.add(HttpHeaders.LINK.toLowerCase(), headerValue);
+  }
+
 }

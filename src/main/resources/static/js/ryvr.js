@@ -236,8 +236,8 @@ define(['angular'], function(angular) {
             controller.root = JSON.parse(document.getElementById('init-root').textContent);
             controller.rootHeaders = JSON.parse(document.getElementById('init-root-headers').textContent);
             console.log("root headers", controller.rootHeaders);
-            if( "Link" in controller.rootHeaders ) {
-                controller.rootLinks = linkHeaderParse(controller.rootHeaders["Link"]);
+            if( "link" in controller.rootHeaders ) {
+                controller.rootLinks = linkHeaderParse(controller.rootHeaders["link"]);
             }
             else {
                 controller.rootLinks = {};

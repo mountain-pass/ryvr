@@ -85,13 +85,20 @@ public class HtmlController {
         .build();
   }
 
-  public ResponseEntity<?> getRyvrsCollection(final HttpServletResponse res,
-      HttpServletRequest req) {
-    // RyvrRoot root = (RyvrRoot) jsonController.getRoot(res, req).getBody();
-    // RyvrsCollection collection = (RyvrsCollection)
-    // jsonController.getRyvrsCollection(req).getBody();
-    // return getIndex(root, collection, null);
-    throw new NotImplementedException("TODO");
+  public void getRyvrsCollection(final HttpServletResponse res, HttpServletRequest req)
+      throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    serialiser.toJson(root, baos);
+    String serializedRoot = baos.toString();
+    res.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE);
+    JsonController.addLinks(root, res);
+    ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+    serialiser.toJson(ryvrsCollection, baos2);
+    String serializedRyvrsCollection = baos2.toString();
+    HttpHeaders resourceHeaders = new HttpHeaders();
+    JsonController.addLinks(ryvrsCollection, resourceHeaders);
+    getIndex(res, serializedRoot, serializedRyvrsCollection, resourceHeaders);
+    res.setStatus(HttpStatus.OK.value());
 
   }
 
@@ -118,7 +125,7 @@ public class HtmlController {
       Collection<String> rootLinkHeaders = res.getHeaders(HttpHeaders.LINK);
       HttpHeaders rootLinkHttpHeaders = new HttpHeaders();
       for (String header : rootLinkHeaders) {
-        rootLinkHttpHeaders.add(HttpHeaders.LINK, header);
+        rootLinkHttpHeaders.add(HttpHeaders.LINK.toLowerCase(), header);
       }
       scope.put("root-headers", om.writeValueAsString(rootLinkHttpHeaders));
 
