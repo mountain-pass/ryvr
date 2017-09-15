@@ -71,4 +71,9 @@ public class JavaRyvrClient implements RyvrTestClient {
   public RyvrsCollection getRyvrsCollectionDirect() throws Throwable {
     return ryvrsCollection;
   }
+
+  @Override
+  public void logout() throws ClientProtocolException, IOException {
+    // no nothing
+  }
 }

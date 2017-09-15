@@ -79,7 +79,7 @@ public class RestRyvrClient implements RyvrTestClient {
 
   @Override
   public void after(Scenario scenario) throws ClientProtocolException, IOException {
-    getRoot().logout();
+
   }
 
   @Override
@@ -128,6 +128,11 @@ public class RestRyvrClient implements RyvrTestClient {
       throw new NotImplementedException("TODO: handle " + response.getStatusLine().toString());
     }
 
+  }
+
+  @Override
+  public void logout() throws ClientProtocolException, IOException {
+    getRoot().logout();
   }
 
 }
