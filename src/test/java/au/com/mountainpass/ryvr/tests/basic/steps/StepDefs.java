@@ -1,5 +1,5 @@
 
-package au.com.mountainpass.ryvr.steps.basic;
+package au.com.mountainpass.ryvr.tests.basic.steps;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;

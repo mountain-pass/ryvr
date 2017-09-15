@@ -1,4 +1,4 @@
-package au.com.mountainpass.ryvr.steps.coverage;
+package au.com.mountainpass.ryvr.tests.coverage.steps;
 
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.io.FileMatchers.*;

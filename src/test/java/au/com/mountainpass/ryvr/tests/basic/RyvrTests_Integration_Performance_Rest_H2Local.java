@@ -9,7 +9,7 @@ import cucumber.api.CucumberOptions;
 @RunWith(SpringProfileCucumber.class)
 @CucumberOptions(plugin = { "pretty" }, features = {
     "src/test/resources/features/basic/"  }, strict = false, glue = {
-        "au.com.mountainpass.ryvr.steps.basic" }, tags = { "@performance", "~@coverage" })
+        "au.com.mountainpass.ryvr.tests.basic.steps", "au.com.mountainpass.ryvr.tests.common.steps" }, tags = { "@performance", "~@coverage" })
 @ActiveProfiles({ "integrationTest", "restApi", "h2", "performance" })
 public class RyvrTests_Integration_Performance_Rest_H2Local {
 
