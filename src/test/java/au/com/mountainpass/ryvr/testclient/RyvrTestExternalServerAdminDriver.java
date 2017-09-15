@@ -100,15 +100,15 @@ public class RyvrTestExternalServerAdminDriver implements RyvrTestServerAdminDri
   public void ensureStarted() throws Throwable {
     final URI baseUri = ryvrConfig.getBaseUri();
     final String host = baseUri.getHost();
-    final int port = baseUri.getPort();
+    final int port = 8443;
+    testConfig.setPort(port);
+    ryvrConfig.setPort(port);
 
     if ((server == null || !server.isAlive()) && !hostAvailable(host, port)) {
       processBuilder.createApplicationProperties(dataSourcesRyvrConfigs);
       this.shutdowner = new Shutdowner(this);
       final ProcessBuilder pb = getProcessBuilder().inheritIO();
       server = pb.start();
-      testConfig.setPort(8443);
-      ryvrConfig.setPort(8443);
 
       LOGGER.info("Waiting for server to start: {}:{}", host, port);
       for (int i = 0; i < 30 && server.isAlive(); ++i) {
