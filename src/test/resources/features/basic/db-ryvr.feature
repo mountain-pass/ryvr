@@ -114,7 +114,6 @@ Feature: DB Ryvr
     When -1th page of the "transactions" ryvr is retrieved
     Then the page will not be found
 
-  @current
   Scenario: Get Ryvr - Single Record
     Given the "transactions" table has the following events
       | id | account | description    | amount  |

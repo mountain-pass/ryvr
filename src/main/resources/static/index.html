@@ -147,7 +147,7 @@
         <div class="btn-group" role="group" aria-label="navigation" id="itemNavLinksBefore">
           <a class="btn btn-default" ng-repeat="rel in ['first', 'prev', 'next']"
             ng-class="{disabled: !controller.resourceLinks.hasOwnProperty(rel)}"
-            href="{{controller.resourceLinks[rel][0]}}" rel="{{rel}}">{{rel}}</a>
+            href="{{controller.resourceLinks[rel][0].href}}" rel="{{rel}}">{{rel}}</a>
         </div>
 
         <table class="table records table-striped table-hover">

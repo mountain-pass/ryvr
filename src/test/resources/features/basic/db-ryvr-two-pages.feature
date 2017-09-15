@@ -12,6 +12,7 @@ Feature: DB Ryvr
       | description | VARCHAR(255)  |
       | amount      | DECIMAL(19,4) |
 
+  @current
   Scenario: Get Ryvr - Multiple Pages - One Page Plus One
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
