@@ -77,16 +77,27 @@ public class HtmlRyvrSource extends RyvrSource {
 
   private WebElement link;
 
+  private boolean loaded;
+
   public HtmlRyvrSource(WebDriver webDriver, WebElement link) {
     this.webDriver = webDriver;
     this.link = link;
+    this.loaded = false;
   }
 
   @Override
   public Iterator<Record> iterator() {
+    ensureLoaded();
     return new HtmlRyvrSourceIterator(this);
   }
 
+  private void ensureLoaded() {
+    if (!loaded) {
+      link.click();
+      HtmlRyvrClient.waitTillLoaded(webDriver, 5);
+      loaded = true;
+    }
+  }
   // @Override
   // public ListIterator<Record> listIterator(int position) {
   // return new RyvrIterator(position);
