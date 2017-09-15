@@ -26,7 +26,6 @@ Feature: DB Ryvr
     Then the ryvrs list will contain the following entries
       | transactions |
 
-  @current
   Scenario: Find Ryvr in Collection - Direct
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -53,6 +52,7 @@ Feature: DB Ryvr
     When the "doesNotExist" ryvr is retrieved
     Then the ryvr will not be found
 
+  @current
   Scenario: Get Ryvr That Doesnt Exist - Direct
     Given the "transactions" table has the following events
       | id | account | description    | amount  |

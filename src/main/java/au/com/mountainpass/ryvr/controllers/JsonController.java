@@ -146,11 +146,11 @@ public class JsonController {
 
   }
 
-  private long getPageEndPosition(long page, long pageSize) {
+  public static long getPageEndPosition(long page, long pageSize) {
     return getPageStartPosition(page + 1L, pageSize) - 1L;
   }
 
-  private long getPageStartPosition(long page, long pageSize) {
+  public static long getPageStartPosition(long page, long pageSize) {
     return (page - 1L) * pageSize;
   }
 
@@ -204,6 +204,22 @@ public class JsonController {
       headerValue += "; title=\"" + title + "\"";
     }
     resourceHeaders.add(HttpHeaders.LINK.toLowerCase(), headerValue);
+  }
+
+  public static void addLinks(Ryvr ryvr, long page, boolean isLastPage,
+      HttpHeaders resourceHeaders) {
+    String base = "/ryvrs/" + ryvr.getTitle();
+    addLink("self", base + "?page=" + page, resourceHeaders, ryvr.getTitle());
+    addLink("first", base + "?page=1", resourceHeaders, "First");
+    if (page > 1L) {
+      addLink("prev", base + "?page=" + (page - 1L), resourceHeaders, "Prev");
+    }
+    if (!isLastPage) {
+      addLink("next", base + "?page=" + (page + 1L), resourceHeaders, "Next");
+    }
+    String headerValue = "<" + base + "?page={page}" + ">; rel=\"" + RELS_PAGE
+        + "\"; var-base=\"https://mountain-pass.github.io/ryvr/vars/\"";
+    resourceHeaders.add("Link-Template", headerValue);
   }
 
 }

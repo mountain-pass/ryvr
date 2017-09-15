@@ -7,7 +7,6 @@ import static org.junit.Assume.*;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import org.apache.http.client.ClientProtocolException;
 import org.openqa.selenium.By;
@@ -160,7 +159,7 @@ public class HtmlRyvrClient implements RyvrTestClient {
     HtmlRyvrClient.waitTillLoaded(webDriver, 5);
     WebElement title = webDriver.findElement(By.cssSelector("body > div > section > div > h1"));
     if ("Tumbleweeds blow past".equals(title.getText())) {
-      throw new NoSuchElementException("No value present");
+      return null;
     }
     return new Ryvr(name, 10, new HtmlRyvrSource(webDriver, null));
   }

@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +20,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,6 +33,8 @@ import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 
 import au.com.mountainpass.ryvr.io.RyvrSerialiser;
+import au.com.mountainpass.ryvr.model.Record;
+import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrRoot;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
 
@@ -143,33 +147,70 @@ public class HtmlController {
     }
   }
 
-  public ResponseEntity<?> getRyvr(HttpServletResponse res, HttpServletRequest req, String ryvrName,
-      long page) throws URISyntaxException, IOException {
+  public void getRyvr(HttpServletResponse res, HttpServletRequest req, String ryvrName, long page)
+      throws URISyntaxException, IOException {
 
-    // Ryvr ryvr = null;
-    // try {
-    // ryvr = ryvrsCollection.get(ryvrName);
-    // } catch (NoSuchElementException e) {
-    // // res.setStatus(org.apache.http.HttpStatus.SC_NOT_FOUND);
-    // // return null;
-    // throw new ResourceNotFoundException(req);
-    // }
-    //
-    // if (ryvr == null) {
-    // throw new ResourceNotFoundException(req);
-    // }
-    //
-    // RyvrRoot root = (RyvrRoot) jsonController.getRoot(req).getBody();
-    //
-    // MockHttpServletResponse rvyrRes = new MockHttpServletResponse();
-    // jsonController.getRyvr(rvyrRes, req, ryvrName, page);
-    // HttpHeaders headers = new HttpHeaders();
-    // for (Iterator<String> i = rvyrRes.getHeaderNames().iterator(); i.hasNext();) {
-    // String headerName = i.next();
-    // headers.put(headerName.toLowerCase(), rvyrRes.getHeaders(headerName));
-    // }
-    // return getIndex(root, rvyrRes.getContentAsString(), headers);
-    throw new NotImplementedException("TODO");
+    Ryvr ryvr = ryvrsCollection.get(ryvrName);
+    if (ryvr == null) {
+      throw new ResourceNotFoundException(req);
+    }
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    serialiser.toJson(root, baos);
+    String serializedRoot = baos.toString();
+    res.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE);
+    JsonController.addLinks(root, res);
+
+    boolean isLastPage = false;
+    long pageSize = ryvr.getPageSize();
+    long pageRecordCount = 0;
+
+    boolean isLoaded = ryvr.getSource().isLoaded(page);
+    long pageEndPosition = JsonController.getPageEndPosition(page, pageSize);
+    Iterator<Record> lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition + 1L);
+
+    isLastPage = !lastOnPageIterator.hasNext();
+    if (isLastPage && isLoaded) {
+      // since we are on the last page, and we already had the page loaded, refresh to see if
+      // there are new records
+      // and then check if we are on the lastPage again.
+      ryvr.getSource().refresh();
+      lastOnPageIterator = ryvr.getSource().iterator(pageEndPosition + 1L);
+      isLastPage = !lastOnPageIterator.hasNext();
+    }
+
+    res.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+    res.addHeader(HttpHeaders.VARY, String.join(",", HttpHeaders.AUTHORIZATION, HttpHeaders.ACCEPT,
+        HttpHeaders.ACCEPT_ENCODING, HttpHeaders.ACCEPT_LANGUAGE, HttpHeaders.ACCEPT_CHARSET));
+
+    if (isLastPage) {
+      res.addHeader(HttpHeaders.CACHE_CONTROL,
+          CacheControl.maxAge(currentPageMaxAge, currentPageMaxAgeUnit).getHeaderValue());
+      pageRecordCount = ryvr.getSource()
+          .getRecordsRemaining(JsonController.getPageStartPosition(page, pageSize));
+      res.addHeader(HttpHeaders.ETAG,
+          "\"" + Long.toHexString(page) + "." + Long.toHexString(pageRecordCount) + "\"");
+      res.addHeader("Current-Page-Size", Long.toString(pageRecordCount));
+      res.addHeader("Archive-Page", "false");
+
+    } else {
+      res.addHeader(HttpHeaders.CACHE_CONTROL,
+          CacheControl.maxAge(archivePageMaxAge, archivePageMaxAgeUnit).getHeaderValue());
+      res.addHeader(HttpHeaders.ETAG, "\"" + Long.toHexString(page) + "\"");
+      res.addHeader("Current-Page-Size", Long.toString(pageSize));
+      res.addHeader("Archive-Page", "true");
+
+    }
+    res.addHeader("Page", Long.toString(page));
+    res.addHeader("Page-Size", Long.toString(pageSize));
+
+    ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+    serialiser.toJson(ryvr, page, baos2);
+    String serializedRyvr = baos2.toString();
+    HttpHeaders resourceHeaders = new HttpHeaders();
+    JsonController.addLinks(ryvr, page, isLastPage, resourceHeaders);
+    getIndex(res, serializedRoot, serializedRyvr, resourceHeaders);
+    res.setStatus(HttpStatus.OK.value());
   }
 
 }
