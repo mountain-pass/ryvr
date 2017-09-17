@@ -14,6 +14,7 @@ import au.com.mountainpass.ryvr.config.RyvrConfiguration;
 import au.com.mountainpass.ryvr.datasource.DataSourceRyvrSource;
 import au.com.mountainpass.ryvr.model.Ryvr;
 import au.com.mountainpass.ryvr.model.RyvrsCollection;
+import au.com.mountainpass.ryvr.myob.MyobRyvrSource;
 import cucumber.api.Scenario;
 
 @Component
@@ -61,6 +62,13 @@ public class RyvrTestEmbeddedServerAdminDriver implements RyvrTestServerAdminDri
   @Override
   public void deleteRvyr(String name) {
     ryvrsCollection.remove(name);
+  }
+
+  @Override
+  public void createMyobRyvr(Map<String, String> config) throws Throwable {
+    MyobRyvrSource ryvr = new MyobRyvrSource();
+    ryvrsCollection.put(config.get("name"),
+        new Ryvr(config.get("name"), Integer.parseInt(config.get("page size")), ryvr));
   }
 
 }

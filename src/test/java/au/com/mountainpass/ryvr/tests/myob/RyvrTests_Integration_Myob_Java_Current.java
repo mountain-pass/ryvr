@@ -10,7 +10,7 @@ import cucumber.api.CucumberOptions;
 @CucumberOptions(plugin = { "pretty" }, features = {
     "src/test/resources/features/myob" }, strict = false, glue = {
         "au.com.mountainpass.ryvr.tests.myob.steps",
-        "au.com.mountainpass.ryvr.steps.common" }, tags = { "@current", "~@performance",
+        "au.com.mountainpass.ryvr.tests.common.steps" }, tags = { "@current", "~@performance",
             "~@coverage" })
 @ActiveProfiles({ "integrationTest", "javaApi", "myob" })
 public class RyvrTests_Integration_Myob_Java_Current {

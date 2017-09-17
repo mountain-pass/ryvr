@@ -12,9 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -43,6 +41,7 @@ import au.com.mountainpass.ryvr.testclient.RyvrTestDbDriver;
 import au.com.mountainpass.ryvr.testclient.RyvrTestExternalServerAdminDriver;
 import au.com.mountainpass.ryvr.testclient.RyvrTestServerAdminDriver;
 import au.com.mountainpass.ryvr.testclient.model.Util;
+import au.com.mountainpass.ryvr.tests.common.steps.CommonState;
 import cucumber.api.PendingException;
 import cucumber.api.Scenario;
 import cucumber.api.java.After;
@@ -59,7 +58,7 @@ import io.prometheus.client.Summary;
 @ContextConfiguration(classes = { Application.class, TestConfiguration.class })
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-public class StepDefs {
+public class BasicStepDefs {
 
   @Autowired
   private RyvrTestClient client;
@@ -70,11 +69,12 @@ public class StepDefs {
   @Autowired
   private RyvrTestDbDriver dbClient;
 
+  @Autowired
+  private CommonState commonState;
+
   private RyvrRoot root;
 
   private Ryvr ryvr;
-
-  private RyvrsCollection ryvrsCollection;
 
   private SwaggerImpl swaggerResponse;
   private String currentTable;
@@ -100,18 +100,17 @@ public class StepDefs {
 
   private long recordCount;
 
-  private String scenarioId;
-
   private Throwable error;
 
   private Record record;
+
+  private RyvrsCollection ryvrsCollection;
 
   @Before
   public void _before(final Scenario scenario) {
     client.before(scenario);
     configClient._before(scenario);
     clearMetrics();
-    scenarioId = scenario.getId();
   }
 
   @After
@@ -144,7 +143,7 @@ public class StepDefs {
   public void a_database_ryvr_with_the_following_configuration(Map<String, String> config)
       throws Throwable {
     Map<String, String> newConfig = dbClient.adjustConfig(config);
-    newConfig.put("name", uniquifyRyvrName(newConfig.get("name")));
+    newConfig.put("name", commonState.uniquifyRyvrName(newConfig.get("name")));
     configClient.createDataSourceRyvr(newConfig);
 
     // assertThat(ryvrsCollection.getRyvrs().keySet(),
@@ -164,21 +163,11 @@ public class StepDefs {
     // ryvrsCollection.getRyvrs().put(config.get("name"), ryvr);
   }
 
-  private String uniquifyRyvrName(String string) {
-    return string + "-" + scenarioId.replace(";", "-");
-  }
-
   @Given("^the \"([^\"]*)\" table has the following events$")
   public void theTableHasTheFollowingEvents(final String table,
       final List<Map<String, String>> events) throws Throwable {
     final String catalog = databaseName;
     dbClient.insertRows(catalog, table, events);
-  }
-
-  @Given("^the client is authenticated$")
-  public void the_client_is_authenticated() throws Throwable {
-    configClient.ensureStarted();
-    client.getRoot().login("user", "password");
   }
 
   @Then("^it will contain$")
@@ -207,11 +196,6 @@ public class StepDefs {
     assertThat(swaggerResponse.containsOperation("getApiDocs"), notNullValue());
   }
 
-  @Then("^the count of ryvrs will be (\\d+)$")
-  public void theCountOfRyvrsWillBe(final int count) throws Throwable {
-    assertThat(ryvrsCollection.size(), equalTo(count));
-  }
-
   @Then("^the root entity will contain a link to the api-docs$")
   public void theRootEntityWillContainALinkToTheApiDocs() throws Throwable {
     assertThat(root.getApiDocs(), notNullValue());
@@ -231,11 +215,12 @@ public class StepDefs {
   @When("^the \"([^\"]*)\" ryvr is retrieved$")
   public void theRyvrIsRetrieved(final String name) throws Throwable {
     if (ryvrsCollection == null) {
-      theRyvrsListIsRetrieved();
+      configClient.ensureStarted();
+      ryvrsCollection = client.getRyvrsCollection();
     } else {
       configClient.ensureStarted();
     }
-    ryvr = ryvrsCollection.get(uniquifyRyvrName(name));
+    ryvr = ryvrsCollection.get(commonState.uniquifyRyvrName(name));
   }
 
   @When("^(-?\\d+)th record of the \"([^\"]*)\" ryvr is retrieved$")
@@ -253,7 +238,7 @@ public class StepDefs {
   public void th_page_of_the_ryvr_is_retrieved(int page, String name) throws Throwable {
     configClient.ensureStarted();
     try {
-      ryvr = client.getRyvrDirect(uniquifyRyvrName(name), page);
+      ryvr = client.getRyvrDirect(commonState.uniquifyRyvrName(name), page);
     } catch (NoSuchElementException e) {
       error = e;
     }
@@ -261,7 +246,7 @@ public class StepDefs {
 
   @When("^the \"([^\"]*)\" rvyr is deleted$")
   public void the_rvyr_is_deleted(String name) throws Throwable {
-    configClient.deleteRvyr(uniquifyRyvrName(name));
+    configClient.deleteRvyr(commonState.uniquifyRyvrName(name));
     // this results in a stale ryvrsCollection, which is what we want, because
     // we want to test what happens when we follow the link that doesn't exist anymore.
     //
@@ -274,7 +259,7 @@ public class StepDefs {
   @When("^the \"([^\"]*)\" ryvr is retrieved directly$")
   public void the_ryvr_is_retrieved_directly(String name) throws Throwable {
     configClient.ensureStarted();
-    ryvr = client.getRyvrDirect(uniquifyRyvrName(name));
+    ryvr = client.getRyvrDirect(commonState.uniquifyRyvrName(name));
   }
 
   @Then("^the ryvr will not be found$")
@@ -292,39 +277,6 @@ public class StepDefs {
     assertThat(record, nullValue());
     assertThat(error, notNullValue());
     assertThat(error, instanceOf(NoSuchElementException.class));
-  }
-
-  @When("^the ryvrs list is retrieved$")
-  public void theRyvrsListIsRetrieved() throws Throwable {
-    configClient.ensureStarted();
-    ryvrsCollection = client.getRyvrsCollection();
-  }
-
-  @When("^the ryvrs list is retrieved directly$")
-  public void the_ryvrs_list_is_retrieved_directly() throws Throwable {
-    configClient.ensureStarted();
-    ryvrsCollection = client.getRyvrsCollectionDirect();
-  }
-
-  @Then("^the ryvrs list will be empty$")
-  public void theRyvrsListWillBeEmpty() throws Throwable {
-    assertThat(ryvrsCollection.entrySet(), empty());
-  }
-
-  @Then("^the ryvrs list will contain the following entries$")
-  public void theRyvrsListWillContainTheFollowingEntries(final List<String> names)
-      throws Throwable {
-    Set<String> actualNames = ryvrsCollection.keySet();
-    Set<String> expectedNames = uniquifyRyvrNames(names);
-    assertTrue(actualNames.stream().allMatch(actualName -> {
-      return expectedNames.contains(actualName);
-    }));
-    assertThat(actualNames.size(), equalTo(names.size()));
-
-  }
-
-  private Set<String> uniquifyRyvrNames(List<String> names) {
-    return names.stream().map(name -> uniquifyRyvrName(name)).collect(Collectors.toSet());
   }
 
   @Given("^there are no ryvrs configured$")

@@ -18,4 +18,6 @@ public interface RyvrTestServerAdminDriver {
 
   void deleteRvyr(String name) throws Throwable;
 
+  void createMyobRyvr(Map<String, String> config) throws Throwable;
+
 }

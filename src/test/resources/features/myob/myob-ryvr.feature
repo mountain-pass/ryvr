@@ -5,25 +5,16 @@ Feature: MYOB Ryvr
     I want to get a paginated list of records from MYOB
 
   @current
-  Scenario: Find Ryvr in Collection
-      Given a MYOB ryvr with the following configuration
-      #| name      | transactions                                                                          |
-      #| query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      #| page size |                                                                                    10 |
-      And the client is authenticated
-  
-    #Given the "transactions" table has the following events
-      #| id | account | description    | amount  |
-      #|  0 | 7786543 | ATM Withdrawal | -200.00 |
-    #And a database ryvr with the following configuration
-      #| name      | transactions                                                                          |
-      #| query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      #| page size |                                                                                    10 |
-    #And the client is authenticated
-    #When the ryvrs list is retrieved
-    #Then the count of ryvrs will be 1
-    #Then the ryvrs list will contain the following entries
-      #| transactions |
+  Scenario: Get Businesses
+    Given a MYOB ryvr with the following configuration
+      | name      | businesses                                    |
+      | page size |                                            10 |
+      | url       | https://api.myob.com/au/essentials/businesses |
+    And the client is authenticated
+    When the ryvrs list is retrieved
+    Then the count of ryvrs will be 1
+    Then the ryvrs list will contain the following entries
+      | businesses |
 #
   #Scenario: Find Ryvr in Collection - Direct
     #Given the "transactions" table has the following events

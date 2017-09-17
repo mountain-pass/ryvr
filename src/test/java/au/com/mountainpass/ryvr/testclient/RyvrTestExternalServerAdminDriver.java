@@ -13,6 +13,7 @@ import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -222,6 +223,11 @@ public class RyvrTestExternalServerAdminDriver implements RyvrTestServerAdminDri
       return name.equals(config.get("name"));
     });
     ensureStarted();
+  }
+
+  @Override
+  public void createMyobRyvr(Map<String, String> config) throws Throwable {
+    throw new NotImplementedException("TODO");
   }
 
 }
