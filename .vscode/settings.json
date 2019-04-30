@@ -1,0 +1,17 @@
+{
+  "editor.formatOnSave": true,
+  "prettier.eslintIntegration": true,
+  "eslint.autoFixOnSave": true,
+  "npm.enableScriptExplorer": true,
+  "eslint.alwaysShowStatus": true,
+  "eslint.provideLintTask": true,
+  "eslint.validate": ["javascript"],
+  "[javascript]": {
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": true
+    },
+    "editor.formatOnSave": false
+  },
+  "git.ignoreLimitWarning": true,
+  "debug.node.autoAttach": "on"
+}

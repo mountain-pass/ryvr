@@ -4,6 +4,7 @@ Feature: Root
     As a user
     I want to get a list of services when accessing the server
 
+@wip
 Scenario: Get Root
     Given the client is authenticated
     When a request is made to the server's base URL

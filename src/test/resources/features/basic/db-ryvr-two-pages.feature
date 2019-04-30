@@ -32,7 +32,7 @@ Feature: DB Ryvr
       | page size |                                                                                    10 |
     And the client is authenticated
     When the "transactions" ryvr is retrieved
-    Then it will contain
+    Then it will contain exactly
       | id | account | description    | amount  |
       |  0 | 7786543 | ATM Withdrawal |  -10.00 |
       |  1 | 7786543 | ATM Withdrawal |  -20.00 |
@@ -68,7 +68,7 @@ Feature: DB Ryvr
       | page size |                                                                                    10 |
     And the client is authenticated
     When the "transactions" ryvr is retrieved
-    Then it will contain
+    Then it will contain exactly
       | id | account | description    | amount  |
       |  0 | 7786543 | ATM Withdrawal |  -10.00 |
       |  1 | 7786543 | ATM Withdrawal |  -20.00 |
@@ -113,7 +113,7 @@ Feature: DB Ryvr
       | page size |                                                                                    10 |
     And the client is authenticated
     When the "transactions" ryvr is retrieved
-    Then it will contain
+    Then it will contain exactly
       | id | account | description    | amount  |
       |  0 | 7786543 | ATM Withdrawal |  -10.00 |
       |  1 | 7786543 | ATM Withdrawal |  -20.00 |

@@ -65,7 +65,6 @@ Feature: DB Ryvr
   #
   #   For data sources that don't have a change notifaction mechansim, the polling can be moved to Ryvr, which would
   #   still allow us to provide a change notifications to ryvr clients (albeit less efficently).
-  @current
   Scenario: Get Ryvr New Records
     When the "transactions" ryvr is retrieved
     And 4000 records are added at a rate of 200 records/s
