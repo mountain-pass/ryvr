@@ -1,7 +1,6 @@
 import { Given, Then, When } from 'cucumber';
 
 Given('the client is authenticated', async function () {
-  console.log('world', this);
   this.root = await this.client.getRoot();
   this.root.login('user', 'password');
 });
@@ -41,10 +40,16 @@ Then('the root entity will contain a link to the ryvrs', async function () {
 });
 
 Then('the ryvrs list will be empty', async function () {
-  expect(this.ryvrs).to.be.an('array');
-  expect(this.ryvrs).to.be.empty;
+  expect(this.ryvrs).to.be.an('object');
+  expect(Object.keys(this.ryvrs)).to.be.empty;
 });
 
 Then('the count of ryvrs will be {int}', async function (length) {
-  expect(this.ryvrs.length).to.equal(length);
+  expect(Object.keys(this.ryvrs).length).to.equal(length);
+});
+
+Then('the ryvrs list will contain the following entries', async function (dataTable) {
+  // make the name unique for this scenario, to prevent conflicts with other tests
+  const names = dataTable.raw()[0].map(name => `${name}-${this.scenarioId}`);
+  expect(this.ryvrs).to.have.keys(names);
 });

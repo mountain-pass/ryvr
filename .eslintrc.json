@@ -9,7 +9,8 @@
     "Atomics": "readonly",
     "SharedArrayBuffer": "readonly",
     "expect": "readonly",
-    "PendingError": "readonly"
+    "PendingError": "readonly",
+    "mysqlConn": "readonly"
   },
   "parserOptions": {
     "ecmaFeatures": {

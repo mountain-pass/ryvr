@@ -1,9 +1,11 @@
 
 /* eslint-disable import/prefer-default-export */
 
+
 export class EmbeddedRyvrRoot {
   constructor(client) {
     this.client = client;
+    this.ryvrsCollection = {};
   }
 
   get title() {
@@ -20,12 +22,29 @@ export class EmbeddedRyvrRoot {
   }
 
   async getRyvrs() {
-    return [];
+    return this.ryvrsCollection;
   }
 }
 
+class MysqlRyvrSource {
+
+}
+class Ryvr {
+
+}
+
 export class EmbeddedRyvrClient {
+  constructor() {
+    this.root = new EmbeddedRyvrRoot(this);
+  }
+
   async getRoot() {
-    return new EmbeddedRyvrRoot(this);
+    return this.root;
+  }
+
+
+  createDataSourceRyvr(conn, config) {
+    const src = new MysqlRyvrSource(conn, config.query);
+    this.root.ryvrsCollection[config.name] = new Ryvr(config.name, config['page size'], src);
   }
 }

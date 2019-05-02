@@ -2,7 +2,6 @@
   "editor.formatOnSave": true,
   "prettier.eslintIntegration": true,
   "eslint.autoFixOnSave": true,
-  "npm.enableScriptExplorer": true,
   "eslint.alwaysShowStatus": true,
   "eslint.provideLintTask": true,
   "eslint.validate": ["javascript"],
@@ -13,5 +12,6 @@
     "editor.formatOnSave": false
   },
   "git.ignoreLimitWarning": true,
-  "debug.node.autoAttach": "on"
+  "debug.node.autoAttach": "on",
+  "cucumberautocomplete.steps": ["src/test/js/**/*.js"]
 }
