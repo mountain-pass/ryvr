@@ -41,7 +41,7 @@
     "@babel/preset-env": "^7.4.3",
     "@babel/register": "^7.4.0",
     "@windyroad/cucumber-js-throwables": "^1.0.4",
-    "@windyroad/quick-containers-js": "^1.0.3",
+    "@windyroad/quick-containers-js": "^1.0.4",
     "babel-eslint": "^10.0.1",
     "chai": "^4.2.0",
     "cli-error-notifier": "^2.1.0",

@@ -7,7 +7,6 @@ import {
 import Docker from 'dockerode';
 import mysql from 'mysql';
 import ShutdownHook from 'shutdown-hook';
-import waitport from 'wait-port';
 import { EmbeddedRyvrClient } from '../../main/js/client/embedded-client';
 
 const shutdownHook = new ShutdownHook();
@@ -28,39 +27,38 @@ BeforeAll({ timeout: 60000 }, async function () {
 
   const docker = new Docker();
   await qc.ensurePulled(docker, DB_IMAGE, console.log);
-  this.containers.mysql = await qc.ensureStarted(docker, {
-    Image: DB_IMAGE,
-    Tty: false,
-    ExposedPorts: {
-      '3306/tcp': {},
-    },
-    HostConfig: {
-      PortBindings: { '3306/tcp': [{ HostPort: '3306' }] },
-    },
-    Env: [
-      'MYSQL_ROOT_PASSWORD=my-secret-pw',
-    ],
-    name: 'qc-mysql-test',
-  }, async () => {
-    await waitport({
-      port: 3306,
-      timeout: 60000,
-    });
-  });
+
+  this.containers.mysql = await qc.ensureMySqlStarted(docker, '5.7.26');
 
 
   global.mysqlConn = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'my-secret-pw',
-    // database: 'my_db',
   });
-  await global.mysqlConn.connect();
+
+  await new Promise(function (resolve, reject) {
+    mysqlConn.connect(function (err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(mysqlConn);
+      }
+    });
+  });
 });
 
 
 AfterAll({ timeout: 30000 }, async function () {
-  // await this.containers.mysql.stop();
+  await new Promise(function (resolve, reject) {
+    mysqlConn.end(function (err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(mysqlConn);
+      }
+    });
+  });
 });
 
 function world({ attach, parameters }) {
