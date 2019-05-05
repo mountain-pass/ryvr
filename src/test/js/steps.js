@@ -1,8 +1,7 @@
 import { Given, Then, When } from 'cucumber';
 
 Given('the client is authenticated', async function () {
-  this.root = await this.client.getRoot();
-  this.root.login('user', 'password');
+  await this.client.login('user', 'password');
 });
 
 Given('there are no ryvrs configured', async function () {
@@ -14,7 +13,7 @@ When('a request is made to the server\'s base URL', async function () {
 });
 
 When('the ryvrs list is retrieved', async function () {
-  this.ryvrs = await this.root.getRyvrs();
+  this.ryvrs = await this.client.getRyvrs();
 });
 
 When('a request is made for the API Docs', async function () {

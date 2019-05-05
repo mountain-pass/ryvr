@@ -7,7 +7,8 @@ import {
 import Docker from 'dockerode';
 import mysql from 'mysql';
 import ShutdownHook from 'shutdown-hook';
-import { EmbeddedRyvrClient } from '../../main/js/client/embedded-client';
+import { RyvrClient } from '../../main/js/client/index';
+import { RyvrApp } from '../../main/js/ryvr-app';
 
 const shutdownHook = new ShutdownHook();
 shutdownHook.register();
@@ -64,7 +65,8 @@ AfterAll({ timeout: 30000 }, async function () {
 function world({ attach, parameters }) {
   this.attach = attach;
   this.parameters = parameters;
-  this.client = new EmbeddedRyvrClient();
+  this.ryvrApp = new RyvrApp();
+  this.client = new RyvrClient(this.ryvrApp);
 }
 
 setWorldConstructor(world);

@@ -286,12 +286,11 @@ The `mysql` spring profile is used to verify the behaviour of Ryvr's using a MyS
 Application
 -> API Docs
 -> Rvyrs Map
-\*-> name, Ryvr
--> Source
+---> name, Ryvr
 
-Source can be
--> MySQL Source
--> RestRyvr Source
--> HTML Source (for testing)
+Ryvr can be
+-> MySQL Ryvr
+-> Rest Ryvr
+-> HTML Ryvr (for testing)
 
-?? Do we need Ryvr abd Source to be different types? or can we just have the Sources being instances of Ryvrs?
+?? Do we need Ryvr and Source to be different types? or can we just have the Sources being instances of Ryvrs?

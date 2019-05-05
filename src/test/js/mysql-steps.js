@@ -1,5 +1,6 @@
 /* eslint-disable no-undef  */
 import { Given } from 'cucumber';
+import { MySqlRyvr } from '../../main/js/rvyrs/mysql-ryvr';
 
 function query(statement, values) {
   return new Promise(function (resolve, reject) {
@@ -55,22 +56,10 @@ Given('the {string} table has the following events', async function (tableName, 
   await query(stmt, [dataTable.rawTable.slice(1)]);
 });
 
-/*
-testCase:
-   { sourceLocation:
-      { uri: 'src/test/resources/features/basic/db-ryvr.feature',
-        line: 16 },
-     pickle:
-      { tags: [Array],
-        name: 'Find Ryvr in Collection',
-        language: 'en',
-        locations: [Array],
-        steps: [Array] } } }
-        */
-
 Given('a database ryvr with the following configuration', async function (dataTable) {
   const config = dataTable.rowsHash();
   // make the name unique for this scenario, to prevent conflicts with other tests
   config.name = `${config.name}-${this.scenarioId}`;
-  this.client.createDataSourceRyvr(mysqlConn, config);
+  const mysqlRyrv = new MySqlRyvr(mysqlConn, config.query);
+  this.ryvrApp.ryvrsCollection[config.name] = mysqlRyrv;
 });
