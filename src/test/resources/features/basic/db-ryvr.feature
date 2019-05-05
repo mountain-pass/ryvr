@@ -42,6 +42,7 @@ Feature: DB Ryvr
     Then the ryvrs list will contain the following entries
       | transactions |
 
+  @wip
   Scenario: Get Ryvr That Doesnt Exist - Links
     Given the "transactions" table has the following events
       | id | account | description    | amount  |

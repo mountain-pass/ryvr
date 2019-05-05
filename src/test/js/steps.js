@@ -20,9 +20,14 @@ When('the ryvrs list is retrieved directly', async function () {
   this.ryvrs = await this.client.getRyvrsDirectly();
 });
 
+When('the {string} ryvr is retrieved', async function (ryvr) {
+  this.currentRyvr = await this.client.getRyvr(ryvr);
+});
+
 When('a request is made for the API Docs', async function () {
   this.apiDocs = await this.root.getApiDocs();
 });
+
 
 Then(
   'the root entity will have an application name of {string}',
@@ -55,4 +60,9 @@ Then('the ryvrs list will contain the following entries', async function (dataTa
   // make the name unique for this scenario, to prevent conflicts with other tests
   const names = dataTable.raw()[0].map(name => `${name}-${this.scenarioId}`);
   expect(this.ryvrs).to.have.keys(names);
+});
+
+
+Then('the ryvr will not be found', async function () {
+  expect(this.currentRyvr).to.be.undefined;
 });

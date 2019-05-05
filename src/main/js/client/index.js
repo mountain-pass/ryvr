@@ -17,6 +17,10 @@ class RyvrClient {
     return this.ryvrApp.getRyvrs();
   }
 
+  async getRyvr(title) {
+    return this.ryvrApp.getRyvr(title);
+  }
+
 
   async getRyvrsDirectly() {
     // in the rest client, this would be done by going straight to the url, rather than

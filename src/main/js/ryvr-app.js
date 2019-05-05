@@ -23,6 +23,11 @@ class RyvrApp {
     return this.ryvrsCollection;
   }
 
+  async getRyvr(title) {
+    return Promise.resolve(this.ryvrsCollection[title]);
+  }
+
+
   async addRvyr(name, rvyr) {
     this.ryvrsCollection[name] = rvyr;
   }
