@@ -16,6 +16,10 @@ When('the ryvrs list is retrieved', async function () {
   this.ryvrs = await this.client.getRyvrs();
 });
 
+When('the ryvrs list is retrieved directly', async function () {
+  this.ryvrs = await this.client.getRyvrsDirectly();
+});
+
 When('a request is made for the API Docs', async function () {
   this.apiDocs = await this.root.getApiDocs();
 });

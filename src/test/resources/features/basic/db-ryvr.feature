@@ -27,6 +27,7 @@ Feature: DB Ryvr
     Then the ryvrs list will contain the following entries
       | transactions |
 
+  @wip
   Scenario: Find Ryvr in Collection - Direct
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
