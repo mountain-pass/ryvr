@@ -28,9 +28,10 @@ class RyvrEmbeddedDriver extends RyvrDriver {
     return this.ryvrApp.getRyvrs();
   }
 
-  async getRyvrDirectly(title) {
-    // in the rest client, this would be done by going straight to the url, rather than
-    // following liks.
+  async getRyvrDirectly(title, page = 1) {
+    if (page < 0) {
+      throw new Error('Not Found');
+    }
     const ryvrs = await this.ryvrApp.getRyvrs();
     return ryvrs.getRyvr(title);
   }

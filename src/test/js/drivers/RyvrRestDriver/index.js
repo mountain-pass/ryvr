@@ -103,8 +103,8 @@ class RyvrRestDriver {
     return new RemoteRyvrsCollection(this.client, response);
   }
 
-  async getRyvrDirectly(title) {
-    const response = await this.client.got(`/ryvrs/${title}?page=1`);
+  async getRyvrDirectly(title, page = 1) {
+    const response = await this.client.got(`/ryvrs/${title}?page=${page}`);
     return new RemoteRvyr(this.client, response);
   }
 

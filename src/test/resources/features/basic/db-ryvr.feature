@@ -96,6 +96,7 @@ Feature: DB Ryvr
     When -1th record of the "transactions" ryvr is retrieved
     Then the record will not be found
 
+  @wip
   Scenario: Get Ryvr Page That Doesnt Exist - 0th page
     Given the "transactions" table has the following events
       | id | account | description    | amount  |

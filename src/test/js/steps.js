@@ -63,6 +63,14 @@ When('{int}th record of the {string} ryvr is retrieved', async function (index, 
   }
 });
 
+When('{int}th page of the {string} ryvr is retrieved', async function (page, title) {
+  try {
+    this.currentRyvr = await this.driver.getRyvrDirectly(title, page);
+  } catch (err) {
+    this.currentError = err;
+  }
+});
+
 Then(
   'the root entity will have an application name of {string}',
   async function (title) {
@@ -103,6 +111,11 @@ Then('the ryvr will not be found', async function () {
 
 Then('the record will not be found', async function () {
   expect(this.currentRecord).to.be.undefined;
+  expect(this.currentError).to.not.be.undefined;
+  expect(this.driver.getErrorMsg(this.currentError)).to.equal('Not Found');
+});
+
+Then('the page will not be found', async function () {
   expect(this.currentError).to.not.be.undefined;
   expect(this.driver.getErrorMsg(this.currentError)).to.equal('Not Found');
 });
