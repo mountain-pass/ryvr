@@ -83,6 +83,7 @@ Feature: DB Ryvr
     And the "transactions" ryvr is retrieved
     Then the ryvr will not be found
 
+  @wip
   Scenario: Get Ryvr Record That Doesnt Exist - minus 1
     Given the "transactions" table has the following events
       | id | account | description    | amount  |

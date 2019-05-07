@@ -52,6 +52,17 @@ When('the {string} rvyr is deleted', async function (title) {
   delete this.ryvrApp.ryvrsCollection[normalizedTitle];
 });
 
+When('{int}th record of the {string} ryvr is retrieved', async function (index, title) {
+  try {
+    this.root = await this.driver.getRoot();
+    this.ryvrs = await this.root.getRyvrs();
+    this.currentRyvr = await this.ryvrs.getRyvr(title);
+    this.currentRecord = await this.currentRyvr[index];
+  } catch (err) {
+    this.currentError = err;
+  }
+});
+
 Then(
   'the root entity will have an application name of {string}',
   async function (title) {
@@ -86,6 +97,12 @@ Then('the ryvrs list will contain the following entries', async function (dataTa
 
 Then('the ryvr will not be found', async function () {
   expect(this.currentRyvr).to.be.undefined;
+  expect(this.currentError).to.not.be.undefined;
+  expect(this.driver.getErrorMsg(this.currentError)).to.equal('Not Found');
+});
+
+Then('the record will not be found', async function () {
+  expect(this.currentRecord).to.be.undefined;
   expect(this.currentError).to.not.be.undefined;
   expect(this.driver.getErrorMsg(this.currentError)).to.equal('Not Found');
 });
