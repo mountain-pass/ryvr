@@ -1,6 +1,6 @@
 /* eslint-disable no-undef  */
 import { Given } from 'cucumber';
-import { MySqlRyvr } from '../../main/js/rvyrs/mysql-ryvr';
+import MySqlRyvr from '../../main/js/ryvrs/MySqlRyvr';
 
 function query(statement, values) {
   return new Promise(function (resolve, reject) {
@@ -59,7 +59,8 @@ Given('the {string} table has the following events', async function (tableName, 
 Given('a database ryvr with the following configuration', async function (dataTable) {
   const config = dataTable.rowsHash();
   // make the name unique for this scenario, to prevent conflicts with other tests
-  config.name = `${config.name}-${this.scenarioId}`;
-  const mysqlRyrv = new MySqlRyvr(mysqlConn, config.query);
-  this.ryvrApp.ryvrsCollection[config.name] = mysqlRyrv;
+  const title = this.normTitle(config.name);
+  const mysqlRyrv = new MySqlRyvr(title, 1024, mysqlConn, config.query);
+  const ryvrs = await this.ryvrApp.getRyvrs();
+  await ryvrs.addRyvr(title, mysqlRyrv);
 });

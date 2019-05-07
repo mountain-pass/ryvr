@@ -7,16 +7,21 @@
     "type": "git",
     "url": "https://github.com/mountain-pass/ryvr.git"
   },
-  "dependencies": {},
+  "dependencies": {
+    "fastify": "^2.3.0",
+    "got": "^9.6.0",
+    "http-link-header": "^1.0.2"
+  },
   "keywords": [
     "stream",
     "data"
   ],
+  "main": "src/main/js/server.js",
   "license": "Apache-2.0",
   "scripts": {
     "prestart": "npm run fix",
-    "start": "node src/main/js/index.js",
-    "debug": "node --inspect-brk src/main/js/index.js",
+    "start": "node src/main/js/server.js",
+    "debug": "node --inspect-brk src/main/js/server.js",
     "lint": "npm-run-all lint:js",
     "lint:js": "eslint **/*.js",
     "lint:json": "prettier -c '**/*.{json,css}'",
@@ -26,11 +31,15 @@
     "watch": "npm-run-all --parallel watch:**",
     "watch:lint:js": "onchange \"**/*.js\" -- onerror \"npm run lint:js --silent\"",
     "watch:lint:json": "onchange \"**/*.{json,css}\" -- onerror \"npm run lint:json --silent\"",
-    "watch:test": "nodemon -V  --ext \"*.feature, *.js, *.json, *.css\" -x npm -- run test",
     "npm-check": "npm-check  --skip-unused",
     "npm-check:interactive": "npm-check  --skip-unused -u ",
     "npm-check-unused": "npm-check",
-    "test": "cucumber-js -p default",
+    "test": "npm-run-all --serial test:*",
+    "watch:test": "nodemon -V  --ext \"*.feature, *.js, *.json, *.css\" -x npm -- run test",
+    "test:integration": "cucumber-js -p default",
+    "watch:test:integration": "nodemon -V  --ext \"*.feature, *.js, *.json, *.css\" -x npm -- run test:integration",
+    "test:system": "cucumber-js -p systemTest",
+    "watch:test:system": "nodemon -V  --ext \"*.feature, *.js, *.json, *.css\" -x npm -- run test:system",
     "debug:test": "node --inspect-brk node_modules/.bin/cucumber-js -p default",
     "build": "babel src -d dist --source-maps"
   },
@@ -59,6 +68,7 @@
     "lint-staged": "^8.1.5",
     "mysql": "^2.17.1",
     "nodemon": "^1.18.11",
+    "npm-run-all": "^4.1.5",
     "onchange": "^5.2.0",
     "prettier": "^1.16.4",
     "shutdown-hook": "^1.1.2",
