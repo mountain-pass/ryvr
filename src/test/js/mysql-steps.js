@@ -50,10 +50,13 @@ Given('it has a table {string} with the following structure', async function (ta
 });
 
 Given('the {string} table has the following events', async function (tableName, dataTable) {
-  let stmt = `INSERT INTO \`${tableName}\` (`;
-  stmt += dataTable.rawTable[0].map(k => `\`${k}\``).join();
-  stmt += ') values ?';
-  await query(stmt, [dataTable.rawTable.slice(1)]);
+  const values = dataTable.rawTable.slice(1);
+  if (values.length > 0) {
+    let stmt = `INSERT INTO \`${tableName}\` (`;
+    stmt += dataTable.rawTable[0].map(k => `\`${k}\``).join();
+    stmt += ') values ?';
+    await query(stmt, [dataTable.rawTable.slice(1)]);
+  }
 });
 
 Given('a database ryvr with the following configuration', async function (dataTable) {
@@ -61,6 +64,7 @@ Given('a database ryvr with the following configuration', async function (dataTa
   // make the name unique for this scenario, to prevent conflicts with other tests
   const title = this.normTitle(config.name);
   const mysqlRyrv = new MySqlRyvr(title, 1024, mysqlConn, config.query);
+
   const ryvrs = await this.ryvrApp.getRyvrs();
   await ryvrs.addRyvr(title, mysqlRyrv);
 });

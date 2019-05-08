@@ -8,9 +8,11 @@
     "url": "https://github.com/mountain-pass/ryvr.git"
   },
   "dependencies": {
+    "@types/mysql": "^2.15.6",
     "fastify": "^2.3.0",
     "got": "^9.6.0",
-    "http-link-header": "^1.0.2"
+    "http-link-header": "^1.0.2",
+    "stream-slice": "^0.1.2"
   },
   "keywords": [
     "stream",
@@ -36,9 +38,9 @@
     "npm-check-unused": "npm-check",
     "test": "npm-run-all --serial test:*",
     "watch:test": "nodemon -V  --ext \"*.feature, *.js, *.json, *.css\" -x npm -- run test",
-    "test:integration": "cucumber-js -p default",
+    "test:integration": "cucumber-js -p default -- --harmony_async_iteration",
     "watch:test:integration": "nodemon -V  --ext \"*.feature, *.js, *.json, *.css\" -x npm -- run test:integration",
-    "test:system": "cucumber-js -p systemTest",
+    "test:system": "cucumber-js -p systemTest -- --harmony_async_iteration",
     "watch:test:system": "nodemon -V  --ext \"*.feature, *.js, *.json, *.css\" -x npm -- run test:system",
     "debug:test": "node --inspect-brk node_modules/.bin/cucumber-js -p default",
     "build": "babel src -d dist --source-maps"
@@ -53,6 +55,7 @@
     "@windyroad/quick-containers-js": "^1.0.4",
     "babel-eslint": "^10.0.1",
     "chai": "^4.2.0",
+    "chai-iterator": "^3.0.2",
     "cli-error-notifier": "^2.1.0",
     "cucumber": "^5.1.0",
     "dockerode": "^2.5.8",

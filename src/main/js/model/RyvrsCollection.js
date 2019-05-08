@@ -13,17 +13,20 @@ class RyvrsCollection {
   }
 
 
-  async getRyvr(title) {
+  getRyvr(title) {
     const rval = this.ryvrs[title];
     if (rval) {
       return rval;
     }
-
     throw new Error('Not Found');
   }
 
-  async addRyvr(title, rvyr) {
+  addRyvr(title, rvyr) {
     this.ryvrs[title] = rvyr;
+  }
+
+  deleteRyvr(title) {
+    delete this.ryvrs[title];
   }
 }
 exports.RyvrsCollection = RyvrsCollection;

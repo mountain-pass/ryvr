@@ -40,7 +40,17 @@ class RyvrRestClient {
   async getRelated(response, rel, title = undefined) {
     const link = this.getLink(response, rel, title);
     if (link) {
-      return this.got(this.getLink(response, rel, title).uri);
+      return this.got(link.uri);
+    }
+
+    throw new Error('Not Found');
+  }
+
+
+  async getRelatedStream(response, rel, title = undefined) {
+    const link = this.getLink(response, rel, title);
+    if (link) {
+      return this.got.stream(link.uri);
     }
 
     throw new Error('Not Found');

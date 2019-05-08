@@ -1,4 +1,4 @@
-@basic
+@basic @wip
 Feature: DB Ryvr
   In order create projections from the events that have happened in a DB
   As a user
@@ -12,7 +12,6 @@ Feature: DB Ryvr
       | description | VARCHAR(255)  |
       | amount      | DECIMAL(19,4) |
 
-  @wip
   Scenario: Find Ryvr in Collection
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -27,7 +26,6 @@ Feature: DB Ryvr
     Then the ryvrs list will contain the following entries
       | transactions |
 
-  @wip
   Scenario: Find Ryvr in Collection - Direct
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -42,7 +40,6 @@ Feature: DB Ryvr
     Then the ryvrs list will contain the following entries
       | transactions |
 
-  @wip
   Scenario: Get Ryvr That Doesnt Exist - Links
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -55,7 +52,6 @@ Feature: DB Ryvr
     When the "doesNotExist" ryvr is retrieved
     Then the ryvr will not be found
 
-  @wip
   Scenario: Get Ryvr That Doesnt Exist - Direct
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -68,7 +64,6 @@ Feature: DB Ryvr
     When the "doesNotExist" ryvr is retrieved directly
     Then the ryvr will not be found
 
-  @wip
   Scenario: Get Ryvr That Has Been Deleted
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -83,7 +78,6 @@ Feature: DB Ryvr
     And the "transactions" ryvr is retrieved
     Then the ryvr will not be found
 
-  @wip
   Scenario: Get Ryvr Record That Doesnt Exist - minus 1
     Given the "transactions" table has the following events
       | id | account | description    | amount  |
@@ -96,7 +90,6 @@ Feature: DB Ryvr
     When -1th record of the "transactions" ryvr is retrieved
     Then the record will not be found
 
-  @wip
   Scenario: Get Ryvr Page That Doesnt Exist - 0th page
     Given the "transactions" table has the following events
       | id | account | description    | amount  |

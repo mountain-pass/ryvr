@@ -27,7 +27,32 @@ class RemoteResource {
 }
 
 class RemoteRvyr extends RemoteResource {
+  seek(i) {
+    const ryvr = this;
+    if (ryvr.results === undefined) {
+      ryvr.results = JSON.parse(this.response.body);
+    }
+    let index = i;
+    if (index < 0) {
+      throw new Error('Not Found');
+    }
+    const iterator = {
+      next: async () => {
+        if (index >= ryvr.results.length) {
+          return { done: true };
+        }
+        const value = ryvr.results[index];
+        index += 1;
+        return { value, done: false };
+      },
+    };
 
+    return iterator;
+  }
+
+  [Symbol.asyncIterator]() {
+    return this.seek(0);
+  }
 }
 
 class RemoteRyvrsCollection extends RemoteResource {
@@ -105,6 +130,10 @@ class RyvrRestDriver {
 
   async getRyvrDirectly(title, page = 1) {
     const response = await this.client.got(`/ryvrs/${title}?page=${page}`);
+    console.log('RESPONSE', response);
+    if (response.statusCode === 404) {
+      throw new Error('Not Found');
+    }
     return new RemoteRvyr(this.client, response);
   }
 

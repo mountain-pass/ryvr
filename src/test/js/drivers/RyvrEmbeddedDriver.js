@@ -29,7 +29,7 @@ class RyvrEmbeddedDriver extends RyvrDriver {
   }
 
   async getRyvrDirectly(title, page = 1) {
-    if (page < 0) {
+    if (page < 1) {
       throw new Error('Not Found');
     }
     const ryvrs = await this.ryvrApp.getRyvrs();

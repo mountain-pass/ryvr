@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-syntax */
+import { PendingError } from '@windyroad/cucumber-js-throwables/lib/pending-error';
 import { Given, Then, When } from 'cucumber';
 
 
@@ -28,7 +30,7 @@ When('the {string} ryvr is retrieved', async function (title) {
   try {
     this.root = await this.driver.getRoot();
     this.ryvrs = await this.root.getRyvrs();
-    this.currentRyvr = await this.ryvrs.getRyvr(title);
+    this.currentRyvr = await this.ryvrs.getRyvr(this.normTitle(title));
   } catch (err) {
     this.currentError = err;
   }
@@ -36,7 +38,12 @@ When('the {string} ryvr is retrieved', async function (title) {
 
 When('the {string} ryvr is retrieved directly', async function (title) {
   try {
-    this.currentRyvr = await this.driver.getRyvrDirectly(title);
+    this.currentRyvr = await this.driver.getRyvrDirectly(this.normTitle(title));
+    await new Promise((resolve, reject) => {
+      this.currentRyvr.getStream().on('error', (err) => {
+        reject(err);
+      }).on('end', () => { resolve(); });
+    });
   } catch (err) {
     this.currentError = err;
   }
@@ -49,23 +56,28 @@ When('a request is made for the API Docs', async function () {
 
 When('the {string} rvyr is deleted', async function (title) {
   const normalizedTitle = this.normTitle(title);
-  delete this.ryvrApp.ryvrsCollection[normalizedTitle];
+  delete this.ryvrApp.getRyvrs().deleteRyvr(normalizedTitle);
 });
 
 When('{int}th record of the {string} ryvr is retrieved', async function (index, title) {
   try {
     this.root = await this.driver.getRoot();
     this.ryvrs = await this.root.getRyvrs();
-    this.currentRyvr = await this.ryvrs.getRyvr(title);
-    this.currentRecord = await this.currentRyvr[index];
+    this.currentRyvr = await this.ryvrs.getRyvr(this.normTitle(title));
+    const iterator = await this.currentRyvr.seek(index);
+    console.log('iterator', iterator);
+    throw new PendingError();
   } catch (err) {
+    if (err instanceof PendingError) {
+      throw err;
+    }
     this.currentError = err;
   }
 });
 
 When('{int}th page of the {string} ryvr is retrieved', async function (page, title) {
   try {
-    this.currentRyvr = await this.driver.getRyvrDirectly(title, page);
+    this.currentRyvr = await this.driver.getRyvrDirectly(this.normTitle(title), page);
   } catch (err) {
     this.currentError = err;
   }
@@ -118,4 +130,25 @@ Then('the record will not be found', async function () {
 Then('the page will not be found', async function () {
   expect(this.currentError).to.not.be.undefined;
   expect(this.driver.getErrorMsg(this.currentError)).to.equal('Not Found');
+});
+
+
+Then('it will contain exactly', async function (dataTable) {
+  const expectedRows = dataTable.hashes().map((row) => {
+    const rval = Object.assign({}, row);
+    if (rval.id !== undefined) {
+      rval.id = parseInt(rval.id, 10);
+    }
+    if (rval.amount !== undefined) {
+      rval.amount = parseFloat(rval.amount);
+    }
+    return rval;
+  });
+  expect(this.currentError).to.be.undefined;
+  expect(this.currentRyvr).to.not.be.undefined;
+  const rows = [];
+  for await (const value of this.currentRyvr) {
+    rows.push(value);
+  }
+  expect(rows).to.deep.equal(expectedRows);
 });

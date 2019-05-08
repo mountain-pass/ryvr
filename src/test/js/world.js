@@ -1,6 +1,7 @@
 import { PendingError, stepDefinitionWrapper } from '@windyroad/cucumber-js-throwables';
 import qc from '@windyroad/quick-containers-js';
 import chai from 'chai';
+import chaiIterator from 'chai-iterator';
 import {
   AfterAll, Before, BeforeAll, setDefinitionFunctionWrapper, setWorldConstructor,
 } from 'cucumber';
@@ -13,6 +14,8 @@ import routes from '../../main/js/routes';
 import RyvrEmbeddedDriver from './drivers/RyvrEmbeddedDriver';
 import RyvrRestDriver from './drivers/RyvrRestDriver';
 
+
+chai.use(chaiIterator);
 
 const shutdownHook = new ShutdownHook();
 shutdownHook.register();
