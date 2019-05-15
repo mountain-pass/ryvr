@@ -1,10 +1,12 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable no-undef  */
 import { Given } from 'cucumber';
 import MySqlRyvr from '../../main/js/ryvrs/MySqlRyvr';
 
+
 function query(statement, values) {
   return new Promise(function (resolve, reject) {
-    mysqlConn.query(statement, values, function (error, results, fields) {
+    mysqlTestConn.query(statement, values, function (error, results, fields) {
       if (error) {
         reject(error);
       } else {
@@ -27,26 +29,9 @@ Given('it has a table {string} with the following structure', async function (ta
   let createStatement = `create table ${tableName} (`;
   createStatement += Object.keys(hash).map(k => `${k} ${hash[k]}`).join();
   createStatement += ')';
-
+  this.tableName = tableName;
+  this.columns = hash;
   await query(createStatement);
-  //   final StringBuilder statementBuffer = new StringBuilder();
-  //   statementBuffer
-  //       .append("create table " + identifierQuoteString + table + identifierQuoteString + " (");
-  //   boolean first = true;
-  //   for (Entry<String, String> entry : structure.entrySet()) {
-  //     if (!first) {
-  //       statementBuffer.append(", ");
-  //     } else {
-  //       first = false;
-  //     }
-  //     statementBuffer.append(identifierQuoteString + entry.getKey() + identifierQuoteString + " "
-  //         + entry.getValue());
-  //   }
-  //   statementBuffer
-  //       .append(", CONSTRAINT " + identifierQuoteString + "pk_id" + identifierQuoteString
-  //           + " PRIMARY KEY (" + identifierQuoteString + "id" + identifierQuoteString + "))");
-  //   LOGGER.info("TABLE: {}", statementBuffer.toString());
-  //   currentJt.execute(statementBuffer.toString());
 });
 
 Given('the {string} table has the following events', async function (tableName, dataTable) {
@@ -63,8 +48,44 @@ Given('a database ryvr with the following configuration', async function (dataTa
   const config = dataTable.rowsHash();
   // make the name unique for this scenario, to prevent conflicts with other tests
   const title = this.normTitle(config.name);
-  const mysqlRyrv = new MySqlRyvr(title, 1024, mysqlConn, config.query);
+  const mysqlRyrv = new MySqlRyvr(title, config['page size'], mysqlTestConn, config.query);
 
   const ryvrs = await this.ryvrApp.getRyvrs();
   await ryvrs.addRyvr(title, mysqlRyrv);
+});
+
+Given('it has {int} events', async function (noOfEvents) {
+  const batchSize = 8192;
+  const batches = Math.floor(noOfEvents / batchSize);
+  for (let batch = 0; batch <= batches; batch += 1) {
+    let eventsInBatch = batchSize;
+    if (batch === batches) {
+      eventsInBatch = noOfEvents % batchSize;
+    }
+    const events = [];
+    for (let i = 0; i < eventsInBatch; i += 1) {
+      const event = {
+        id: i + batch * batchSize,
+        account: '78901234',
+        description: 'Buying Stuff',
+        amount: i * -20.00 - (i + batch * batchSize),
+        // created: moment().valueOf(),
+      };
+      events.push([event.id, event.account, event.description, event.amount]);
+    }
+    // eslint-disable-next-line no-loop-func
+    await new Promise((resovle, reject) => {
+      mysqlTestConn.query(`INSERT INTO ${this.tableName} (\`id\`, \`account\`, \`description\`, \`amount\`) VALUES ?`, [events], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resovle(results);
+        }
+      });
+    });
+    const added = eventsInBatch + batch * batchSize;
+    const percent = (added * 1.0) / noOfEvents * 100.0;
+    console.log(`Added ${added} records of ${noOfEvents}. ${percent}%`);
+  }
+  this.expectedRecordCount = noOfEvents;
 });

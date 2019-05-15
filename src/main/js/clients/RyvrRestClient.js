@@ -34,7 +34,20 @@ class RyvrRestClient {
       throw new Error('Not Found');
     }
     const links = LinkHeader.parse(response.headers.link).get('rel', rel);
-    return title ? links.find(l => l.title === title) : links[0];
+    return title !== undefined ? links.find(l => l.title === title) : links[0];
+  }
+
+
+  hasLink(response, rel, title = undefined) {
+    if (response.headers.link === undefined) {
+      return false;
+    }
+    if (title === undefined) {
+      return LinkHeader.parse(response.headers.link).has('rel', rel);
+    }
+
+    const links = LinkHeader.parse(response.headers.link).get('rel', rel);
+    return links.find(l => l.title === title) !== undefined;
   }
 
   async getRelated(response, rel, title = undefined) {

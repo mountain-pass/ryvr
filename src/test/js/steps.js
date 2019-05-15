@@ -150,5 +150,25 @@ Then('it will contain exactly', async function (dataTable) {
   for await (const value of this.currentRyvr) {
     rows.push(value);
   }
+  expect(rows.length).to.equal(expectedRows.length);
   expect(rows).to.deep.equal(expectedRows);
+});
+
+Then('it will have the following structure', async function (dataTable) {
+  const headings = dataTable.raw()[0];
+  expect(this.currentError).to.be.undefined;
+  expect(this.currentRyvr).to.not.be.undefined;
+  const fields = await this.currentRyvr.getFields();
+  expect(fields).to.deep.equal(headings);
+});
+
+
+Then('it will have {int} events', async function (noEvents) {
+  expect(this.currentError).to.be.undefined;
+  expect(this.currentRyvr).to.not.be.undefined;
+  const rows = [];
+  for await (const value of this.currentRyvr) {
+    rows.push(value);
+  }
+  expect(rows.length).to.equal(noEvents);
 });

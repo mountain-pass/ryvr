@@ -1,3 +1,4 @@
+import assert from 'assert';
 import LinkHeader from 'http-link-header';
 import RyvrRestClient from '../../../../main/js/clients/RyvrRestClient';
 
@@ -27,22 +28,56 @@ class RemoteResource {
 }
 
 class RemoteRvyr extends RemoteResource {
+  constructor(client, response) {
+    super(client, response);
+    console.log(response.headers);
+    this.fields = JSON.parse(response.headers.fields);
+  }
+
   seek(i) {
     const ryvr = this;
     if (ryvr.results === undefined) {
+      // should we do this parsing here, or later, when we actually use the value?
       ryvr.results = JSON.parse(this.response.body);
+      ryvr.upstreamPageSize = this.response.headers['page-size'];
+      ryvr.upstreamCurrentPageSize = this.response.headers['current-page-size'];
+      ryvr.upstreamPage = this.response.headers.page;
     }
-    let index = i;
+    const index = i;
     if (index < 0) {
       throw new Error('Not Found');
     }
+    let adjustedIndex = index - (ryvr.upstreamPageSize * (ryvr.upstreamPage - 1));
     const iterator = {
       next: async () => {
-        if (index >= ryvr.results.length) {
+        // if page is >= 10, then the loop is borken (for now)
+        while (adjustedIndex >= ryvr.upstreamPageSize && ryvr.upstreamPage < 10) {
+          // can't assume we are done
+          // need to fetch next page.
+          if (this.client.hasLink(ryvr.response, 'next')) {
+            // eslint-disable-next-line no-await-in-loop
+            const nextPage = await this.client.getRelated(ryvr.response, 'next');
+            ryvr.response = nextPage;
+            // definiatly shouldn't parse the results here
+            ryvr.results = JSON.parse(this.response.body);
+            ryvr.upstreamPageSize = this.response.headers['page-size'];
+            ryvr.upstreamCurrentPageSize = this.response.headers['current-page-size'];
+            ryvr.upstreamPage = this.response.headers.page;
+            console.log(`GOT PAGE ${ryvr.upstreamPage} (size ${ryvr.upstreamCurrentPageSize})`);
+            console.log(`old adjustedIndex = ${adjustedIndex}`);
+            adjustedIndex -= ryvr.upstreamPageSize;
+            console.log(`new adjustedIndex = ${adjustedIndex}`);
+            assert(adjustedIndex === 0, `adjustedIndex should be 0, but it's ${adjustedIndex}. rl = ${ryvr.results.length}`);
+          } else {
+            console.log('NO NEXT PAGE');
+            return { done: true };
+          }
+        }
+        if (adjustedIndex >= ryvr.upstreamCurrentPageSize) {
           return { done: true };
         }
-        const value = ryvr.results[index];
-        index += 1;
+        const value = ryvr.results[adjustedIndex];
+        adjustedIndex += 1;
         return { value, done: false };
       },
     };
@@ -52,6 +87,10 @@ class RemoteRvyr extends RemoteResource {
 
   [Symbol.asyncIterator]() {
     return this.seek(0);
+  }
+
+  async getFields() {
+    return this.fields;
   }
 }
 

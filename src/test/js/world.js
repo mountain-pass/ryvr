@@ -3,6 +3,7 @@ import qc from '@windyroad/quick-containers-js';
 import chai from 'chai';
 import chaiIterator from 'chai-iterator';
 import {
+  // eslint-disable-next-line indent
   AfterAll, Before, BeforeAll, setDefinitionFunctionWrapper, setWorldConstructor,
 } from 'cucumber';
 import Docker from 'dockerode';
@@ -38,22 +39,23 @@ BeforeAll({ timeout: 60000 }, async function () {
 
   this.containers.mysql = await qc.ensureMySqlStarted(docker, '5.7.26');
 
-
-  global.mysqlConn = mysql.createConnection({
+  global.mysqlTestConn = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'my-secret-pw',
+    port: 3306,
   });
 
-  await new Promise(function (resolve, reject) {
-    mysqlConn.connect(function (err) {
+  await new Promise((resolve, reject) => {
+    global.mysqlTestConn.connect((err) => {
       if (err) {
         reject(err);
       } else {
-        resolve(mysqlConn);
+        resolve();
       }
     });
   });
+
   global.fastifyServer = fastify({
     logger: true,
   });
@@ -64,15 +66,16 @@ BeforeAll({ timeout: 60000 }, async function () {
 
 
 AfterAll({ timeout: 30000 }, async function () {
-  await new Promise(function (resolve, reject) {
-    mysqlConn.end(function (err) {
+  await new Promise((resolve, reject) => {
+    global.mysqlTestConn.end((err) => {
       if (err) {
         reject(err);
       } else {
-        resolve(mysqlConn);
+        resolve();
       }
     });
   });
+
   if (global.fastifyServer) {
     await global.fastifyServer.close();
   }

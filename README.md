@@ -294,3 +294,13 @@ Ryvr can be
 -> HTML Ryvr (for testing)
 
 ?? Do we need Ryvr and Source to be different types? or can we just have the Sources being instances of Ryvrs?
+
+## Stream
+
+Thoughts
+
+- Get a stream from the mysql query
+- Use a csv transformer to convert each row
+- Use a custom writeable stream, which only write's out the page. When \_write() stops calling callback(), it stops signalling to the incoming stream that it ready to receive.
+
+See https://blog.developer.bazaarvoice.com/2017/11/01/telling-your-data-to-back-off-or-how-to-effectively-use-streams/
