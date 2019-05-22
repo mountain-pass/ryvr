@@ -1,7 +1,9 @@
+/* eslint-disable radix */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-undef  */
 import { Given } from 'cucumber';
-import MySqlRyvr from '../../main/js/ryvrs/MySqlRyvr';
+import { Ryvr } from '../../main/js/model/Ryvr';
+import MySqlRyvrPage from '../../main/js/ryvrs/MySqlRyvrPage';
 
 
 function query(statement, values) {
@@ -48,13 +50,20 @@ Given('a database ryvr with the following configuration', async function (dataTa
   const config = dataTable.rowsHash();
   // make the name unique for this scenario, to prevent conflicts with other tests
   const title = this.normTitle(config.name);
-  const mysqlRyrv = new MySqlRyvr(title, config['page size'], mysqlTestConn, config.query);
+  const page = new MySqlRyvrPage(mysqlTestConn, config.query, parseInt(config['underlying page size']), 1);
+  const mysqlRyrv = new Ryvr(title, parseInt(config['exposed page size']), page);
+  console.log('Waiting for ryvr to charge');
+  await mysqlRyrv.initPromise;
+  console.log('charged');
 
+
+  this.exposedPageSize = parseInt(config['exposed page size']);
+  console.log('PAGE SIZE', this.exposedPageSize);
   const ryvrs = await this.ryvrApp.getRyvrs();
   await ryvrs.addRyvr(title, mysqlRyrv);
 });
 
-Given('it has {int} events', async function (noOfEvents) {
+Given('it has {int} events', { timeout: 30000 }, async function (noOfEvents) {
   const batchSize = 8192;
   const batches = Math.floor(noOfEvents / batchSize);
   for (let batch = 0; batch <= batches; batch += 1) {

@@ -28,9 +28,10 @@ Feature: DB Ryvr
       | 9  | 7786543 | ATM Withdrawal | -100.00 |
       | 10 | 7786543 | ATM Withdrawal | -110.00 |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
     When the "transactions" ryvr is retrieved
     Then it will contain exactly
@@ -65,9 +66,10 @@ Feature: DB Ryvr
       | 11 | 7786543 | ATM Withdrawal | -120.00 |
       | 12 | 7786543 | ATM Withdrawal | -130.00 |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
     When the "transactions" ryvr is retrieved
     Then it will contain exactly
@@ -111,9 +113,10 @@ Feature: DB Ryvr
       | 18 | 7786543 | ATM Withdrawal | -190.00 |
       | 19 | 7786543 | ATM Withdrawal | -200.00 |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 5                                                                                     |
+      | underlying page size | 10                                                                                    |
     And the client is authenticated
     When the "transactions" ryvr is retrieved
     Then it will contain exactly

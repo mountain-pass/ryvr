@@ -34,7 +34,11 @@ class RyvrRestClient {
       throw new Error('Not Found');
     }
     const links = LinkHeader.parse(response.headers.link).get('rel', rel);
-    return title !== undefined ? links.find(l => l.title === title) : links[0];
+    const rval = title !== undefined ? links.find(l => l.title === title) : links[0];
+    if (rval === undefined) {
+      throw new Error('Not Found');
+    }
+    return rval;
   }
 
 

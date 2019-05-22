@@ -17,9 +17,10 @@ Feature: DB Ryvr
       | id | account | description    | amount  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
     When the ryvrs list is retrieved
     Then the count of ryvrs will be 1
@@ -31,9 +32,10 @@ Feature: DB Ryvr
       | id | account | description    | amount  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
     When the ryvrs list is retrieved directly
     Then the count of ryvrs will be 1
@@ -45,9 +47,10 @@ Feature: DB Ryvr
       | id | account | description    | amount  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
     When the "doesNotExist" ryvr is retrieved
     Then the ryvr will not be found
@@ -57,9 +60,10 @@ Feature: DB Ryvr
       | id | account | description    | amount  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
     When the "doesNotExist" ryvr is retrieved directly
     Then the ryvr will not be found
@@ -69,9 +73,10 @@ Feature: DB Ryvr
       | id | account | description    | amount  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
     When the ryvrs list is retrieved
     And the "transactions" rvyr is deleted
@@ -83,9 +88,10 @@ Feature: DB Ryvr
       | id | account | description    | amount  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
     When -1th record of the "transactions" ryvr is retrieved
     Then the record will not be found
@@ -95,9 +101,10 @@ Feature: DB Ryvr
       | id | account | description    | amount  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
     When 0th page of the "transactions" ryvr is retrieved
     Then the page will not be found
@@ -107,9 +114,10 @@ Feature: DB Ryvr
       | id | account | description    | amount  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
     When -1th page of the "transactions" ryvr is retrieved
     Then the page will not be found
@@ -119,9 +127,10 @@ Feature: DB Ryvr
       | id | account | description    | amount  |
       | 0  | 7786543 | ATM Withdrawal | -200.00 |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
     When the "transactions" ryvr is retrieved
     Then it will contain exactly
@@ -132,9 +141,10 @@ Feature: DB Ryvr
     Given the "transactions" table has the following events
       | id | account | description | amount |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
     When the "transactions" ryvr is retrieved
     Then it will contain exactly
@@ -151,9 +161,10 @@ Feature: DB Ryvr
       | 5  | 7786543 | ATM Withdrawal | -60.00 |
       | 6  | 7786543 | ATM Withdrawal | -70.00 |
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
     When the "transactions" ryvr is retrieved
     Then it will contain exactly

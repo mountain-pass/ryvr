@@ -57,7 +57,7 @@ BeforeAll({ timeout: 60000 }, async function () {
   });
 
   global.fastifyServer = fastify({
-    logger: true,
+    logger: false,
   });
   global.ryvrApp = new RyvrApp();
   global.fastifyServer.register(routes, { ryvrApp: global.ryvrApp });

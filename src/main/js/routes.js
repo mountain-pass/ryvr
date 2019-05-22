@@ -33,7 +33,7 @@ async function routes(fastify, options) {
       const ryvr = ryvrs.getRyvr(key);
       body[key] = {
         title: ryvr.title,
-        pageSize: ryvr.pageSize,
+        exposedPageSize: ryvr.exposedPageSize,
       };
       links.set({ rel: 'item', uri: `/ryvrs/${key}?page=1`, title: key });
     });
@@ -46,8 +46,6 @@ async function routes(fastify, options) {
   fastify.get('/ryvrs/:title', async (request, reply) => {
     // eslint-disable-next-line radix
     const page = parseInt(request.query.page);
-    console.log('PAGE', page);
-
     if (page < 1) {
       reply.code(404).send({ message: 'Not Found' });
       return;
@@ -59,12 +57,11 @@ async function routes(fastify, options) {
       const ryvr = ryvrApp.getRyvrs().getRyvr(request.params.title);
 
       const body = [];
-      const { pageSize } = ryvr;
-
-      const iterator = ryvr.seek((request.query.page - 1) * pageSize);
+      const { exposedPageSize } = ryvr;
+      const iterator = ryvr.seek((request.query.page - 1) * exposedPageSize);
       let { value, done } = await iterator.next();
       for (let i = 0;
-        i < pageSize && !done;
+        i < exposedPageSize && !done;
         // eslint-disable-next-line no-await-in-loop
         i += 1, { value, done } = await iterator.next()) {
         body.push(value);
@@ -93,16 +90,15 @@ async function routes(fastify, options) {
       } else {
         reply.header('cache-control', `max-age=${archivePageMaxAge}`);
         reply.header('etag', `"${page}"`);
-        reply.header('current-page-size', pageSize);
+        reply.header('current-page-size', exposedPageSize);
         reply.header('archive-page', 'true');
         links.set({ rel: 'next', uri: `${base}?page=${page + 1}`, title: 'Next' });
       }
       reply.header('Page', page);
-      reply.header('Page-Size', pageSize);
-      reply.header('fields', JSON.stringify(await ryvr.getFields()));
+      reply.header('Page-Size', exposedPageSize);
+      const fields = await ryvr.getFields();
+      reply.header('fields', JSON.stringify(fields));
 
-      console.log('LINKS', links.toString());
-      console.log('SENDING PAGE', page);
       reply
         .code(200)
         .header('link', links.toString())

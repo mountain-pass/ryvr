@@ -13,9 +13,10 @@ Feature: DB Many Pages
       | amount      | DECIMAL(19,4) |
     And it has 46 events
     And a database ryvr with the following configuration
-      | name      | transactions                                                                          |
-      | query     | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
-      | page size | 10                                                                                    |
+      | name                 | transactions                                                                          |
+      | query                | select `id`, `account`, `description`, `amount` from `transactions` ORDER BY `id` ASC |
+      | exposed page size    | 10                                                                                    |
+      | underlying page size | 20                                                                                    |
     And the client is authenticated
 
   @wip
